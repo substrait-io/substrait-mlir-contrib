@@ -1,0 +1,480 @@
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | FileCheck %s
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
+# CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      %[[V0:.*]] = named_table
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si1, si1, si32, si1, si32>
+# CHECK-NEXT:        groupings {
+# CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si32>):
+# CHECK-DAG:           %[[V2:.*]] = literal -1 : si1
+# CHECK-DAG:           %[[V3:.*]] = literal 0 : si1
+# CHECK-NEXT:          yield %[[V3]], %[[V2]] : si1, si1
+# CHECK-NEXT:        }
+# CHECK-NEXT:        grouping_sets {{\[}}[0], [0, 1], [1], []]
+# CHECK-NEXT:        measures {
+# CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
+# CHECK-DAG:           %[[V4:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
+# CHECK-DAG:           %[[V5:.*]] = call @[[F1]](%[[V4]]) aggregate : (si32) -> si32
+# CHECK-DAG:           %[[V6:.*]] = literal 0 : si1
+# CHECK-DAG:           %[[V7:.*]] = call @[[F1]](%[[V6]]) aggregate : (si1) -> si1
+# CHECK-NEXT:          yield %[[V5]], %[[V7]] : si32, si1
+# CHECK-NEXT:        }
+# CHECK-NEXT:      yield %[[V1]] : tuple<si1, si1, si32, si1, si32>
+
+extension_uris {
+  uri: "http://some.url/with/extensions.yml"
+}
+extensions {
+  extension_function {
+    name: "somefunc"
+  }
+}
+relations {
+  rel {
+    aggregate {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      groupings {
+        grouping_expressions {
+          literal {
+            boolean: false
+          }
+        }
+      }
+      groupings {
+        grouping_expressions {
+          literal {
+            boolean: false
+          }
+        }
+        grouping_expressions {
+          literal {
+            boolean: true
+          }
+        }
+      }
+      groupings {
+        grouping_expressions {
+          literal {
+            boolean: true
+          }
+        }
+      }
+      groupings {
+      }
+      measures {
+        measure {
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          output_type {
+            bool {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              literal {
+                boolean: false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      %[[V0:.*]] = named_table
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si1>
+# CHECK-NEXT:        groupings {
+# CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si32>):
+# CHECK-DAG:           %[[V2:.*]] = literal 0 : si1
+# CHECK-NEXT:          yield %[[V2]] : si1
+# CHECK-NEXT:        }
+# CHECK-NEXT:      yield %[[V1]] : tuple<si1>
+
+relations {
+  rel {
+    aggregate {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      groupings {
+        grouping_expressions {
+          literal {
+            boolean: false
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
+# CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      %[[V0:.*]] = named_table
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si32, si1>
+# CHECK-NEXT:        measures {
+# CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
+# CHECK-DAG:           %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
+# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate unspecified : (si32) -> si32
+# CHECK-DAG:           %[[V4:.*]] = literal 0 : si1
+# CHECK-DAG:           %[[V5:.*]] = call @[[F1]](%[[V4]]) aggregate distinct : (si1) -> si1
+# CHECK-NEXT:          yield %[[V3]], %[[V5]] : si32, si1
+# CHECK-NEXT:        }
+# CHECK-NEXT:      yield %[[V1]] : tuple<si32, si1>
+
+extension_uris {
+  uri: "http://some.url/with/extensions.yml"
+}
+extensions {
+  extension_function {
+    name: "somefunc"
+  }
+}
+relations {
+  rel {
+    aggregate {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      groupings {
+      }
+      measures {
+        measure {
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_UNSPECIFIED
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          output_type {
+            bool {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_DISTINCT
+          arguments {
+            value {
+              literal {
+                boolean: false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
+# CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      %[[V0:.*]] = named_table
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si32>
+# CHECK-NEXT:        grouping_sets []
+# CHECK-NEXT:        measures {
+# CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
+# CHECK-DAG:           %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
+# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate : (si32) -> si32
+# CHECK-NEXT:          yield %[[V3]] : si32
+# CHECK-NEXT:        }
+# CHECK-NEXT:      yield %[[V1]] : tuple<si32>
+
+extension_uris {
+  uri: "http://some.url/with/extensions.yml"
+}
+extensions {
+  extension_function {
+    name: "somefunc"
+  }
+}
+relations {
+  rel {
+    aggregate {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      measures {
+        measure {
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
+# CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      %[[V0:.*]] = named_table
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si32>
+# CHECK-NEXT:        measures {
+# CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
+# CHECK-DAG:           %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
+# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate : (si32) -> si32
+# CHECK-NEXT:          yield %[[V3]] : si32
+# CHECK-NEXT:        }
+# CHECK-NEXT:      yield %[[V1]] : tuple<si32>
+
+extension_uris {
+  uri: "http://some.url/with/extensions.yml"
+}
+extensions {
+  extension_function {
+    name: "somefunc"
+  }
+}
+relations {
+  rel {
+    aggregate {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      groupings {
+      }
+      measures {
+        measure {
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}

@@ -14,6 +14,7 @@
 #include "mlir/IR/OwningOpRef.h"
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
+#include "llvm/ADT/SmallSet.h"
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
@@ -33,6 +34,30 @@ namespace pb = google::protobuf;
 
 namespace {
 
+// Copied from
+// https://github.com/llvm/llvm-project/blob/dea33c/mlir/lib/Transforms/CSE.cpp.
+struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
+  static unsigned getHashValue(const Operation *opC) {
+    return OperationEquivalence::computeHash(
+        const_cast<Operation *>(opC),
+        /*hashOperands=*/OperationEquivalence::directHashValue,
+        /*hashResults=*/OperationEquivalence::ignoreHashValue,
+        OperationEquivalence::IgnoreLocations);
+  }
+  static bool isEqual(const Operation *lhsC, const Operation *rhsC) {
+    auto *lhs = const_cast<Operation *>(lhsC);
+    auto *rhs = const_cast<Operation *>(rhsC);
+    if (lhs == rhs)
+      return true;
+    if (lhs == getTombstoneKey() || lhs == getEmptyKey() ||
+        rhs == getTombstoneKey() || rhs == getEmptyKey())
+      return false;
+    return OperationEquivalence::isEquivalentTo(
+        const_cast<Operation *>(lhsC), const_cast<Operation *>(rhsC),
+        OperationEquivalence::IgnoreLocations);
+  }
+};
+
 // Forward declaration for the import function of the given message type.
 //
 // We need one such function for most message types that we want to import. The
@@ -47,6 +72,8 @@ namespace {
   static FailureOr<OP_TYPE> import##MESSAGE_TYPE(ImplicitLocOpBuilder builder, \
                                                  const ARG_TYPE &message);
 
+DECLARE_IMPORT_FUNC(AggregateFunction, AggregateFunction, CallOp)
+DECLARE_IMPORT_FUNC(AggregateRel, Rel, AggregateOp)
 DECLARE_IMPORT_FUNC(Any, pb::Any, StringAttr)
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
@@ -71,6 +98,10 @@ template <typename MessageType>
 void importAdvancedExtension(ImplicitLocOpBuilder builder,
                              ExtensibleOpInterface op,
                              const MessageType &message);
+
+template <typename MessageType>
+static FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
+                                              const MessageType &message);
 
 template <typename MessageType>
 void importAdvancedExtension(ImplicitLocOpBuilder builder,
@@ -192,6 +223,154 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
                           << desc->name();
   }
   }
+}
+
+mlir::FailureOr<CallOp>
+importAggregateFunction(ImplicitLocOpBuilder builder,
+                        const AggregateFunction &message) {
+  MLIRContext *context = builder.getContext();
+  Location loc = UnknownLoc::get(context);
+
+  FailureOr<CallOp> maybeCallOp = importFunctionCommon(builder, message);
+  if (failed(maybeCallOp))
+    return failure();
+  CallOp callOp = maybeCallOp.value();
+
+  // Import `invocation` field.
+  AggregateFunction::AggregationInvocation invocation = message.invocation();
+  std::optional<AggregationInvocation> invocationEnum =
+      symbolizeAggregationInvocation(invocation);
+  if (!invocationEnum.has_value())
+    return emitError(loc)
+           << "unsupported enum value for aggregate function invocation";
+  callOp.setAggregationInvocation(invocationEnum);
+
+  assert(callOp.isAggregate() && "expected to build aggregate function");
+  return callOp;
+}
+
+static mlir::FailureOr<AggregateOp>
+importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
+  using Grouping = AggregateRel::Grouping;
+  using Measure = AggregateRel::Measure;
+
+  MLIRContext *context = builder.getContext();
+  Location loc = UnknownLoc::get(context);
+
+  const AggregateRel &aggregateRel = message.aggregate();
+
+  // Import input.
+  const Rel &inputRel = aggregateRel.input();
+  mlir::FailureOr<RelOpInterface> inputOp = importRel(builder, inputRel);
+  if (failed(inputOp))
+    return failure();
+  Value inputVal = inputOp.value()->getResult(0);
+
+  // Import measures if any.
+  auto measuresRegion = std::make_unique<Region>();
+  if (aggregateRel.measures_size() > 0) {
+    Block *measuresBlock = &measuresRegion->emplaceBlock();
+    measuresBlock->addArgument(inputVal.getType(), loc);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(measuresBlock);
+    SmallVector<Value> measuresValues;
+    measuresValues.reserve(aggregateRel.measures_size());
+    for (const Measure &measure : aggregateRel.measures()) {
+      const AggregateFunction &aggrFunc = measure.measure();
+
+      // Import measure as `CallOp`.
+      FailureOr<CallOp> callOp = importAggregateFunction(builder, aggrFunc);
+      if (failed(callOp))
+        return failure();
+
+      measuresValues.push_back(callOp.value().getResult());
+    }
+
+    builder.create<YieldOp>(measuresValues);
+  }
+
+  // Import groupings if any.
+  auto groupingsRegion = std::make_unique<Region>();
+  SmallVector<Attribute> groupingSetsAttrs;
+  if (aggregateRel.groupings_size() > 0) {
+    Block *groupingsBlock = &groupingsRegion->emplaceBlock();
+    groupingsBlock->addArgument(inputVal.getType(), loc);
+
+    // Grouping expressions, i.e., values yielded from `groupings`.
+    SmallVector<Value> groupingExprValues;
+    groupingSetsAttrs.reserve(aggregateRel.groupings_size());
+
+    // Ops that produce unique grouping expressions. In the protobuf messages,
+    // each grouping set repeats the grouping expressions whereas the
+    // `AggregateOp` yields unique grouping expressions from the `groupings`
+    // region and represents the grouping sets as references to those.
+    llvm::SmallDenseMap<Operation *, int64_t, 16, SimpleOperationInfo>
+        groupingExprOps;
+
+    // Import one grouping set at a time.
+    for (const Grouping &grouping : aggregateRel.groupings()) {
+      // Collect references of grouping expressions for this grouping set.
+      SmallVector<int64_t> expressionRefs;
+      expressionRefs.reserve(grouping.grouping_expressions_size());
+      for (const Expression &expression : grouping.grouping_expressions()) {
+        // Import expression message into `groupings` region.
+        OpBuilder::InsertionGuard guard(builder);
+        builder.setInsertionPointToStart(groupingsBlock);
+        FailureOr<ExpressionOpInterface> exprOp =
+            importExpression(builder, expression);
+        if (failed(exprOp))
+          return failure();
+
+        // Create or look-up reference.
+        auto [it, hasInserted] = groupingExprOps.try_emplace(exprOp.value());
+
+        // If it's a new expression, assign new reference.
+        if (hasInserted) {
+          it->second = groupingExprOps.size() - 1;
+          groupingExprValues.emplace_back(exprOp.value()->getResult(0));
+        } else {
+          // Otherwise, undo import by removing ops recursively.
+          llvm::SmallVector<Operation *> worklist;
+          worklist.push_back(exprOp.value());
+          while (!worklist.empty()) {
+            Operation *nextOp = worklist.pop_back_val();
+            for (Value v : nextOp->getOperands()) {
+              if (Operation *defOp = v.getDefiningOp())
+                worklist.push_back(defOp);
+            }
+            nextOp->erase();
+          }
+        }
+
+        // Remember reference for grouping set attribute.
+        expressionRefs.push_back(it->second);
+      }
+
+      // Create `ArrayAttr` for current grouping set.
+      ArrayAttr groupingSet = builder.getI64ArrayAttr(expressionRefs);
+      groupingSetsAttrs.push_back(groupingSet);
+    }
+
+    // Assemble `YieldOp` of groupings region if there are grouping expressions.
+    if (!groupingExprOps.empty()) {
+      OpBuilder::InsertionGuard guard(builder);
+      builder.setInsertionPointToEnd(groupingsBlock);
+      builder.create<YieldOp>(loc, groupingExprValues);
+    } else {
+      // If there aren't any, we should clear the `groupings` region.
+      groupingsRegion->getBlocks().clear();
+    }
+  }
+
+  // Create attribute for grouping sets.
+  auto groupingSets = ArrayAttr::get(builder.getContext(), groupingSetsAttrs);
+
+  // Build `AggregateOp` and move regions into it.
+  auto aggregateOp = builder.create<AggregateOp>(
+      inputVal, groupingSets, groupingsRegion.get(), measuresRegion.get());
+
+  return aggregateOp;
 }
 
 static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
@@ -746,6 +925,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
   Rel::RelTypeCase relType = message.rel_type_case();
   FailureOr<RelOpInterface> maybeOp;
   switch (relType) {
+  case Rel::RelTypeCase::kAggregate:
+    maybeOp = importAggregateRel(builder, message);
+    break;
   case Rel::RelTypeCase::kCross:
     maybeOp = importCrossRel(builder, message);
     break;
@@ -803,6 +985,15 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
 static mlir::FailureOr<CallOp>
 importScalarFunction(ImplicitLocOpBuilder builder,
                      const Expression::ScalarFunction &message) {
+  FailureOr<CallOp> callOp = importFunctionCommon(builder, message);
+  assert((failed(callOp) || callOp->isScalar()) &&
+         "expected to build scalar function");
+  return callOp;
+}
+
+template <typename MessageType>
+FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
+                                       const MessageType &message) {
   MLIRContext *context = builder.getContext();
   Location loc = UnknownLoc::get(context);
 

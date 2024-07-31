@@ -35,6 +35,10 @@ class Substrait_StaticallyTypedAttr<string name, string attrMnemonic,
   }];
 }
 
+//===----------------------------------------------------------------------===//
+// Substrait attributes
+//===----------------------------------------------------------------------===//
+
 def Substrait_AdvancedExtensionAttr
     : Substrait_Attr<"AdvancedExtension", "advanced_extension"> {
   let summary = "Represents the `AdvancedExtenssion` message of Substrait";
@@ -90,6 +94,10 @@ def Substrait_TimestampTzAttr
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
 }
 
+//===----------------------------------------------------------------------===//
+// Helpers and constraints
+//===----------------------------------------------------------------------===//
+
 /// Attributes of currently supported atomic types, listed in order of substrait
 /// specification.
 def Substrait_AtomicAttributes {
@@ -112,5 +120,15 @@ def Substrait_AtomicAttributes {
 
 /// Attribute of one of the currently supported atomic types.
 def Substrait_AtomicAttribute : AnyAttrOf<Substrait_AtomicAttributes.attrs>;
+
+/// `ArrayAttr` of `ArrayAttr`s if `i64`s.
+def I64ArrayArrayAttr : TypedArrayAttrBase<
+    I64ArrayAttr, "64-bit integer array array attribute"
+  >;
+
+/// `ArrayAttr` of `ArrayAttr`s if `i64`s with at least one element.
+def NonEmptyI64ArrayArrayAttr :
+  ConfinedAttr<I64ArrayArrayAttr, [ArrayMinCount<1>]>;
+
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITATTRS

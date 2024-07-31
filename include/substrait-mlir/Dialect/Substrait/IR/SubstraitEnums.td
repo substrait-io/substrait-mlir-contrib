@@ -11,9 +11,20 @@
 
 include "mlir/IR/EnumAttr.td"
 
-def AggregationInvocationUnspecified: I32EnumAttrCase<"unspecified", 0>;
-def AggregationInvocationAll: I32EnumAttrCase<"all", 1>;
-def AggregationInvocationDistinct: I32EnumAttrCase<"distinct", 2>;
+/// Represents the `AggregationInvocation` protobuf enum.
+//
+/// The enum values correspond exactly to those in the `JoinRel.JoinType` enum,
+/// i.e., conversion through integers is possible.
+def AggregationInvocation
+    : I32EnumAttr<"AggregationInvocation", "aggregate invocation type", [
+        // clang-format off
+        I32EnumAttrCase<"unspecified", 0>,
+        I32EnumAttrCase<"all", 1>,
+        I32EnumAttrCase<"distinct", 2>,
+        // clang-format on
+      ]> {
+  let cppNamespace = "::mlir::substrait";
+}
 
 /// Represents the `JoinType` protobuf enum.
 def JoinTypeKind : I32EnumAttr<"JoinTypeKind",

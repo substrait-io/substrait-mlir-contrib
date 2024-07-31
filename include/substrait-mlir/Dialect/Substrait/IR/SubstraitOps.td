@@ -246,6 +246,7 @@ def Substrait_PlanRelOp : Substrait_Op<"relation", [
 def Substrait_YieldOp : Substrait_Op<"yield", [
     Terminator,
     ParentOneOf<[
+      "::mlir::substrait::AggregateOp",
       "::mlir::substrait::FilterOp",
       "::mlir::substrait::PlanRelOp",
       "::mlir::substrait::ProjectOp"
@@ -323,9 +324,13 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
   ]> {
   let summary = "Function call expression";
   let description = [{
-    Represents a `ScalarFunction` message (or, in the future, other `*Function`
-    messages) together with all messages it contains and the `Expression`
-    message it is contained in.
+    Represents a `ScalarFunction` or `AggregateFunction` message (or, in the
+    future, a `WindowFunction` message) together with all messages it contains
+    and, where applicable, the `Expression` message it is contained in. Which of
+    the message types this op corresponds to depends on the presence of the
+    (otherwise optional) aggregate or window-related attributes. For aggregate
+    functions, the invocation type is omitted from the custom assembly if it is
+    set to `all`.
 
     Currently, the specification of the function, which is in an external YAML
     file, is not taken into account, for example, to verify whether a matching
@@ -347,11 +352,33 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
   // TODO(ingomueller): Add support for `enum` and `type` argument types.
   let arguments = (ins
     FlatSymbolRefAttr:$callee,
-    Variadic<Substrait_FieldType>:$args
+    Variadic<Substrait_FieldType>:$args,
+    OptionalAttr<AggregationInvocation>:$aggregation_invocation
   );
   let results = (outs Substrait_FieldType:$result);
   let assemblyFormat = [{
-    $callee `(` $args `)` attr-dict `:` `(` type($args) `)` `->` type($result)
+    $callee `(` $args `)`
+    (`aggregate` `` custom<AggregationInvocation>($aggregation_invocation)^)?
+    attr-dict `:` `(` type($args) `)` `->` type($result)
+  }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Type":$result,
+                     "::mlir::FlatSymbolRefAttr":$callee,
+                     "::mlir::ValueRange":$args), [{
+        build($_builder, $_state, result, callee, args,
+              AggregationInvocationAttr());
+      }]>,
+      OpBuilder<(ins "::mlir::Type":$result, "::llvm::StringRef":$callee,
+                     "::mlir::ValueRange":$args), [{
+        build($_builder, $_state, result, callee, args,
+              AggregationInvocationAttr());
+      }]>
+    ];
+  let extraClassDeclaration = [{
+    // Helpers to distinguish function types.
+    bool isAggregate() { return getAggregationInvocation().has_value(); }
+    bool isScalar() { return !isAggregate() && !isWindow(); }
+    bool isWindow() { return false; } // TODO: change once supported.
   }];
 }
 
@@ -374,6 +401,77 @@ class Substrait_RelOp<string mnemonic, list<Trait> traits = []> :
           Substrait_Relation.predicate>
       ]>>
   ]>;
+
+def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
+    DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
+    DeclareOpInterfaceMethods<InferTypeOpInterface>,
+  ]> {
+  let summary = "Aggregate operation";
+  let description = [{
+    Represents an `AggregateRel ` message together with the `RelCommon` and the
+    messages it contains. The `measures` field is represented as a region where
+    the yielded values correspond to the `AggregateFunction`s (and thus have
+    to be produced by a `CallOp` representing an aggregate function). Filters
+    are currently not supported. The `groupings` field is represented as a
+    region yielding the unique (deduplicated) grouping expressions and an array
+    of array of references to these expressions representing the grouping sets.
+    An empty array of grouping sets corresponds to *no* `groupings` messages;
+    an array with an empty grouping set corresponds to an *empty* `groupings`
+    messages. These two protobuf representations are different even though their
+    semantic is equivalent. The op can only be exported to the protobuf format
+    if the expressions yielded by the `groupings` region are all distinct after
+    CSE. The assembly format omits an empty region of groupings, an empty region
+    of measures, and the grouping sets attribute with one grouping set that
+    consists of all values yielded from `groupings` (or the empty grouping set
+    if that region is empty).
+
+    Example:
+
+    ```mlir
+    %0 = ...
+    %1 = aggregate %0 : tuple<si32> -> tuple<si32, si32>
+      groupings {
+      ^bb0(%arg : tuple<si32>):
+        %2 = field_reference %arg[0] : tuple<si32>
+        yield %2 : si32
+      }
+      grouping_sets [[0]]
+      measures {
+      ^bb0(%arg : tuple<si32>):
+        %2 = field_reference %arg[0] : tuple<si32>
+        %3 = call @function(%2) aggregate : (si32) -> si32
+        yield %3 : si32
+      }
+    ```
+  }];
+  let arguments = (ins
+    Substrait_Relation:$input,
+    I64ArrayArrayAttr:$grouping_sets
+  );
+  let results = (outs Substrait_Relation:$result);
+  let regions = (region
+    AnyRegion:$groupings,
+    AnyRegion:$measures
+  );
+  let assemblyFormat = [{
+    $input attr-dict `:` type($input) `->` type($result)
+    custom<AggregateRegions>($groupings, $measures, $grouping_sets)
+  }];
+  let hasRegionVerifier = 1;
+  let builders = [
+      OpBuilder<(ins
+          "::mlir::Value":$input, "::mlir::ArrayAttr":$grouping_sets,
+          "::mlir::Region *":$groupings, "::mlir::Region *":$measures
+        )>,
+    ];
+  let extraClassDefinition = [{
+    /// Implement OpAsmOpInterface.
+    ::llvm::StringRef $cppClass::getDefaultDialect() {
+      return SubstraitDialect::getDialectNamespace();
+    }
+  }];
+}
 
 def Substrait_CrossOp : Substrait_RelOp<"cross", [
     DeclareOpInterfaceMethods<InferTypeOpInterface>
