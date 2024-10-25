@@ -14,6 +14,10 @@ implement database query compilers.
 Licensed under the Apache license with LLVM Exceptions. See [LICENSE](LICENSE)
 for more information.
 
+## Contributing
+
+Check out the [the dedicated document](CONTRIBUTING.md) for how to contribute.
+
 ## Motivation
 
 Substrait defines a serialization format for data-intensive compute operations
