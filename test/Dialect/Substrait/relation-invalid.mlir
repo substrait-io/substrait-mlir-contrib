@@ -1,4 +1,4 @@
-// RUN: structured-opt -verify-diagnostics -split-input-file %s
+// RUN: substrait-opt -verify-diagnostics -split-input-file %s
 
 // Test error if providing too many names (1 name for 0 fields).
 substrait.plan version 0 : 42 : 1 {

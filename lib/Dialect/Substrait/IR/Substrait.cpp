@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "structured/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 
 #include "mlir/Dialect/LLVMIR/LLVMTypes.h"
 #include "mlir/IR/DialectImplementation.h"
@@ -21,16 +21,16 @@ using namespace mlir::substrait;
 // Substrait dialect
 //===----------------------------------------------------------------------===//
 
-#include "structured/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc"
 
 void SubstraitDialect::initialize() {
 #define GET_OP_LIST
   addOperations<
-#include "structured/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
       >();
   addTypes<
 #define GET_TYPEDEF_LIST
-#include "structured/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
       >();
 }
 
@@ -38,15 +38,15 @@ void SubstraitDialect::initialize() {
 // Substrait interfaces
 //===----------------------------------------------------------------------===//
 
-#include "structured/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc"
-#include "structured/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc"
 
 //===----------------------------------------------------------------------===//
 // Substrait operations
 //===----------------------------------------------------------------------===//
 
 #define GET_OP_CLASSES
-#include "structured/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
 
 namespace mlir {
 namespace substrait {
@@ -404,4 +404,4 @@ LogicalResult ProjectOp::verifyRegions() {
 //===----------------------------------------------------------------------===//
 
 #define GET_TYPEDEF_CLASSES
-#include "structured/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef STRUCTURED_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H
-#define STRUCTURED_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H
+#ifndef SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H
+#define SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"         // IWYU: keep
 #include "mlir/IR/Dialect.h"                      // IWYU: keep
@@ -15,15 +15,15 @@
 #include "mlir/IR/SymbolTable.h"                  // IWYU: keep
 #include "mlir/Interfaces/InferTypeOpInterface.h" // IWYU: keep
 
-#include "structured/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc" // IWYU: export
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc" // IWYU: export
 
-#include "structured/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc" // IWYU: export
-#include "structured/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc" // IWYU: export
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc" // IWYU: export
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc" // IWYU: export
 
 #define GET_TYPEDEF_CLASSES
-#include "structured/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc" // IWYU: export
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc" // IWYU: export
 
 #define GET_OP_CLASSES
-#include "structured/Dialect/Substrait/IR/SubstraitOps.h.inc" // IWYU: export
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc" // IWYU: export
 
-#endif // STRUCTURED_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H
+#endif // SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H

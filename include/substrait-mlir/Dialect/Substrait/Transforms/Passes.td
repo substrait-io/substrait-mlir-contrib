@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef STRUCTURED_DIALECT_SUBSTRAIT_TRANSFORMS_PASSES
-#define STRUCTURED_DIALECT_SUBSTRAIT_TRANSFORMS_PASSES
+#ifndef SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_TRANSFORMS_PASSES
+#define SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_TRANSFORMS_PASSES
 
 include "mlir/Pass/PassBase.td"
 
@@ -52,4 +52,4 @@ def SubstraitEmitDeduplicationPass
   let constructor = "::mlir::substrait::createEmitDeduplicationPass()";
 }
 
-#endif // STRUCTURED_DIALECT_SUBSTRAIT_TRANSFORMS_PASSES
+#endif // SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_TRANSFORMS_PASSES

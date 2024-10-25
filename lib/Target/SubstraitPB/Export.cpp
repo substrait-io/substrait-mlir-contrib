@@ -6,12 +6,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "structured/Target/SubstraitPB/Export.h"
+#include "substrait-mlir/Target/SubstraitPB/Export.h"
 #include "ProtobufUtils.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Support/LogicalResult.h"
-#include "structured/Dialect/Substrait/IR/Substrait.h"
-#include "structured/Target/SubstraitPB/Options.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/ADT/TypeSwitch.h"
 
 #include <google/protobuf/text_format.h>

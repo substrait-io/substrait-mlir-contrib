@@ -1,44 +1,44 @@
 include(AddMLIRPython)
 
-# Specifies that all MLIR packages are co-located under the `mlir_structured`
+# Specifies that all MLIR packages are co-located under the `substrait_mlir`
 # top level package (the API has been embedded in a relocatable way).
-add_compile_definitions("MLIR_PYTHON_PACKAGE_PREFIX=mlir_structured.")
+add_compile_definitions("MLIR_PYTHON_PACKAGE_PREFIX=substrait_mlir.")
 
 # ###############################################################################
 # Sources
 # ###############################################################################
-declare_mlir_python_sources(StructuredPythonSources)
-declare_mlir_python_sources(StructuredPythonSources.Dialects
-  ADD_TO_PARENT StructuredPythonSources)
+declare_mlir_python_sources(SubstraitMLIRPythonSources)
+declare_mlir_python_sources(SubstraitMLIRPythonSources.Dialects
+  ADD_TO_PARENT SubstraitMLIRPythonSources)
 
 declare_mlir_dialect_python_bindings(
-  ADD_TO_PARENT StructuredPythonSources.Dialects
-  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/mlir_structured"
+  ADD_TO_PARENT SubstraitMLIRPythonSources.Dialects
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
   TD_FILE dialects/SubstraitOps.td
   SOURCES
   dialects/substrait.py
   DIALECT_NAME substrait
 )
 
-declare_mlir_python_extension(StructuredPythonSources.DialectExtension
-  MODULE_NAME _structuredDialects
-  ADD_TO_PARENT StructuredPythonSources
+declare_mlir_python_extension(SubstraitMLIRPythonSources.DialectExtension
+  MODULE_NAME _substraitDialects
+  ADD_TO_PARENT SubstraitMLIRPythonSources
   SOURCES
-  StructuredDialects.cpp
+  SubstraitDialects.cpp
   EMBED_CAPI_LINK_LIBS
-  StructuredCAPI
+  SubstraitMLIRCAPI
 )
 
 # ###############################################################################
 # Common CAPI
 # ###############################################################################
-add_mlir_python_common_capi_library(StructuredPythonCAPI
-  INSTALL_COMPONENT StructuredPythonModules
-  INSTALL_DESTINATION python_packages/structured/mlir_structured/_mlir_libs
-  OUTPUT_DIRECTORY "${STRUCTURED_BINARY_DIR}/python_packages/mlir_structured/_mlir_libs"
+add_mlir_python_common_capi_library(SubstraitMLIRPythonCAPI
+  INSTALL_COMPONENT SubstraitMLIRPythonModules
+  INSTALL_DESTINATION python_packages/substrait_mlir/_mlir_libs
+  OUTPUT_DIRECTORY "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs"
   RELATIVE_INSTALL_ROOT "../../../.."
   DECLARED_SOURCES
-  StructuredPythonSources
+  SubstraitMLIRPythonSources
   MLIRPythonExtension.RegisterEverything
   MLIRPythonSources.Core
   MLIRPythonSources.Dialects
@@ -48,18 +48,18 @@ add_mlir_python_common_capi_library(StructuredPythonCAPI
 # ###############################################################################
 # Instantiation of all Python modules
 # ###############################################################################
-add_mlir_python_modules(StructuredPythonModules
-  ROOT_PREFIX "${STRUCTURED_BINARY_DIR}/python_packages/mlir_structured"
-  INSTALL_PREFIX "python_packages/mlir_structured"
+add_mlir_python_modules(SubstraitMLIRPythonModules
+  ROOT_PREFIX "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir"
+  INSTALL_PREFIX "python_packages/substrait_mlir"
   DECLARED_SOURCES
-  StructuredPythonSources
+  SubstraitMLIRPythonSources
   LLVMSupport
   MLIRPythonExtension.RegisterEverything
   MLIRPythonSources.Core
   MLIRPythonSources.Dialects
   MLIRPythonSources.ExecutionEngine
   COMMON_CAPI_LINK_LIBS
-  StructuredPythonCAPI
+  SubstraitMLIRPythonCAPI
 )
 
-add_dependencies(structured-all StructuredPythonModules)
+add_dependencies(substrait-mlir-all SubstraitMLIRPythonModules)

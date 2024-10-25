@@ -10,8 +10,8 @@
 
 import json
 
-from mlir_structured.dialects import substrait as ss, arith
-from mlir_structured.ir import Context, Location
+from substrait_mlir.dialects import substrait as ss, arith
+from substrait_mlir.ir import Context, Location
 
 JSON_PLAN = '''
   {

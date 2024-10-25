@@ -9,7 +9,7 @@
 #ifndef SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES
 #define SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES
 
-include "structured/Dialect/Substrait/IR/SubstraitDialect.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
 include "mlir/IR/CommonTypeConstraints.td"
 include "mlir/IR/OpBase.td"
 

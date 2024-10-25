@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef STRUCTURED_C_DIALECTS_H
-#define STRUCTURED_C_DIALECTS_H
+#ifndef SUBSTRAIT_MLIR_C_DIALECTS_H
+#define SUBSTRAIT_MLIR_C_DIALECTS_H
 
 #include "mlir-c/IR.h"
 #include "mlir-c/Support.h"
@@ -49,4 +49,4 @@ MlirAttribute mlirSubstraitExportPlan(MlirOperation op,
 }
 #endif
 
-#endif // STRUCTURED_C_DIALECTS_H
+#endif // SUBSTRAIT_MLIR_C_DIALECTS_H

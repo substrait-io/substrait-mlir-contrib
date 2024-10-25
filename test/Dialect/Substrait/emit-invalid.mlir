@@ -1,4 +1,4 @@
-// RUN: structured-opt -verify-diagnostics -split-input-file %s
+// RUN: substrait-opt -verify-diagnostics -split-input-file %s
 
 substrait.plan version 0 : 42 : 1 {
   relation {

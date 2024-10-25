@@ -10,7 +10,7 @@ from typing import Optional, Sequence
 
 from ._substrait_ops_gen import *
 from ._substrait_ops_gen import _Dialect
-from .._mlir_libs._structuredDialects.substrait import *
+from .._mlir_libs._substraitDialects.substrait import *
 
 try:
   from .. import ir

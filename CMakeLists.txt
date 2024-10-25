@@ -1,8 +1,8 @@
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   message(FATAL_ERROR
     "This project is intended to be built as part of LLVM via "
-    "-DLLVM_EXTERNAL_PROJECTS=structured "
-    "-DLLVM_EXTERNAL_STRUCTURED_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
+    "-DLLVM_EXTERNAL_PROJECTS=substrait_mlir"
+    "-DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
 ################################################################################
@@ -25,11 +25,11 @@ list(APPEND CMAKE_MODULE_PATH ${MLIR_MAIN_SRC_DIR}/cmake/modules)
 list(APPEND CMAKE_MODULE_PATH ${LLVM_MAIN_SRC_DIR}/cmake)
 set(MLIR_TABLEGEN_EXE mlir-tblgen)
 
-set(STRUCTURED_MAIN_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(STRUCTURED_INCLUDE_DIRS ${STRUCTURED_MAIN_SRC_DIR}/include)
-set(STRUCTURED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
-set(STRUCTURED_TABLEGEN_OUTPUT_DIR ${STRUCTURED_BINARY_DIR}/include)
-message(STATUS "Structured build directory: ${STRUCTURED_BINARY_DIR}")
+set(SUBSTRAIT_MLIR_MAIN_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(SUBSTRAIT_MLIR_INCLUDE_DIRS ${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/include)
+set(SUBSTRAIT_MLIR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(SUBSTRAIT_MLIR_TABLEGEN_OUTPUT_DIR ${SUBSTRAIT_MLIR_BINARY_DIR}/include)
+message(STATUS "Substrait MLIR build directory: ${SUBSTRAIT_MLIR_BINARY_DIR}")
 
 ################################################################################
 # Set include paths
@@ -38,8 +38,8 @@ include_directories(SYSTEM ${MLIR_INCLUDE_DIR})
 include_directories(SYSTEM ${MLIR_TABLEGEN_OUTPUT_DIR})
 include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
 
-include_directories(${STRUCTURED_INCLUDE_DIRS})
-include_directories(${STRUCTURED_TABLEGEN_OUTPUT_DIR})
+include_directories(${SUBSTRAIT_MLIR_INCLUDE_DIRS})
+include_directories(${SUBSTRAIT_MLIR_TABLEGEN_OUTPUT_DIR})
 
 ################################################################################
 # Enable python (assumes enabled MLIR bindings via MLIR_ENABLE_BINDINGS_PYTHON)
@@ -67,7 +67,7 @@ add_subdirectory(third_party)
 ################################################################################
 # Subdirs to recurse into
 ################################################################################
-add_custom_target(structured-all)
+add_custom_target(substrait-mlir-all)
 
 add_subdirectory(lib)
 add_subdirectory(include)

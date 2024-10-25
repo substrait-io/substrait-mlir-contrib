@@ -56,8 +56,8 @@ making them permanent in your `$HOME/.bashrc` or in the `activate` script of
 your Python virtual environment (see below):
 
 ```bash
-export IREE_LLVM_SANDBOX_SOURCE_DIR=$HOME/src/iree-llvm-sandbox
-export IREE_LLVM_SANDBOX_BUILD_DIR=${IREE_LLVM_SANDBOX_SOURCE_DIR}/build
+export SUBSTRAIT_MLIR_SOURCE_DIR=$HOME/src/iree-llvm-sandbox
+export SUBSTRAIT_MLIR_BUILD_DIR=${SUBSTRAIT_MLIR_SOURCE_DIR}/build
 ```
 
 ### Python prerequisites
@@ -69,7 +69,7 @@ Create a virtual environment, activate it, and install the dependencies from
 python -m venv ~/.venv/mlirdev
 source ~/.venv/mlirdev/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r ${IREE_LLVM_SANDBOX_SOURCE_DIR}/requirements.txt
+python -m pip install -r ${SUBSTRAIT_MLIR_SOURCE_DIR}/requirements.txt
 ```
 
 For details, see the documentation of the
@@ -95,28 +95,28 @@ cmake \
   -DLLVM_INCLUDE_UTILS=ON \
   -DLLVM_INSTALL_UTILS=ON \
   -DLLVM_BUILD_EXAMPLES=ON \
-  -DLLVM_EXTERNAL_PROJECTS=structured \
-  -DLLVM_EXTERNAL_STRUCTURED_SOURCE_DIR=${IREE_LLVM_SANDBOX_SOURCE_DIR} \
+  -DLLVM_EXTERNAL_PROJECTS=substrait_mlir \
+  -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR=${SUBSTRAIT_MLIR_SOURCE_DIR} \
   -DLLVM_ENABLE_LLD=ON \
   -DLLVM_CCACHE_BUILD=ON \
   -DMLIR_INCLUDE_INTEGRATION_TESTS=ON \
   -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
   -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON \
-  -S${IREE_LLVM_SANDBOX_SOURCE_DIR}/third_party/llvm-project/llvm \
-  -B${IREE_LLVM_SANDBOX_BUILD_DIR} \
+  -S${SUBSTRAIT_MLIR_SOURCE_DIR}/third_party/llvm-project/llvm \
+  -B${SUBSTRAIT_MLIR_BUILD_DIR} \
   -G Ninja
 ```
 
 To build, run:
 
 ```bash
-cd ${IREE_LLVM_SANDBOX_BUILD_DIR} && ninja
+cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja
 ```
 
-## Using structured-opt
+## Using substrait-opt
 
 ```bash
-"${IREE_LLVM_SANDBOX_BUILD_DIR}"/bin/structured-opt --help
+"${SUBSTRAIT_MLIR_BUILD_DIR}"/bin/substrait-opt --help
 ```
 
 ## Running tests
@@ -124,15 +124,15 @@ cd ${IREE_LLVM_SANDBOX_BUILD_DIR} && ninja
 You can run all tests with the following command:
 
 ```bash
-cd ${IREE_LLVM_SANDBOX_BUILD_DIR} && ninja
+cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja
 ```
 
 You may also use `lit` to run a subset of the tests. You may
 
 ```bash
-lit -v ${IREE_LLVM_SANDBOX_BUILD_DIR}/test
-lit -v ${IREE_LLVM_SANDBOX_BUILD_DIR}/test/Integration
-lit -v ${IREE_LLVM_SANDBOX_BUILD_DIR}/test/Dialect/Iterators/map.mlir
+lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test
+lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Integration
+lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Dialect/Iterators/map.mlir
 ```
 
 ## Diagnostics via LSP servers
@@ -143,9 +143,9 @@ order to extend this functionality to the dialects from this repository, use
 the following LSP server binaries:
 
 ```bash
-${IREE_LLVM_SANDBOX_BUILD_DIR}/bin/mlir-proto-lsp-server
-${IREE_LLVM_SANDBOX_BUILD_DIR}/bin/tblgen-lsp-server",
-${IREE_LLVM_SANDBOX_BUILD_DIR}/bin/mlir-pdll-lsp-server
+${SUBSTRAIT_MLIR_BUILD_DIR}/bin/mlir-proto-lsp-server
+${SUBSTRAIT_MLIR_BUILD_DIR}/bin/tblgen-lsp-server",
+${SUBSTRAIT_MLIR_BUILD_DIR}/bin/mlir-pdll-lsp-server
 ```
 
 In VS Code, this is done via the `mlir.server_path`, `mlir.pdll_server_path`,

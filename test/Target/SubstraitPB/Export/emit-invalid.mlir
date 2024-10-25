@@ -1,4 +1,4 @@
-// RUN: structured-translate -verify-diagnostics -split-input-file %s \
+// RUN: substrait-translate -verify-diagnostics -split-input-file %s \
 // RUN:   -substrait-to-protobuf
 
 // Two subsequent `emit` ops: the export can't deal with that.

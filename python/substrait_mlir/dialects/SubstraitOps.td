@@ -9,6 +9,6 @@
 #ifndef PYTHON_BINDINGS_SUBSTRAIT_OPS
 #define PYTHON_BINDINGS_SUBSTRAIT_OPS
 
-include "structured/Dialect/Substrait/IR/SubstraitOps.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.td"
 
 #endif // PYTHON_BINDINGS_SUBSTRAIT_OPS

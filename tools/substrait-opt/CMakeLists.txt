@@ -2,15 +2,15 @@ get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
 get_property(extension_libs GLOBAL PROPERTY MLIR_EXTENSION_LIBS)
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
-add_llvm_executable(structured-opt
-        structured-opt.cpp
+add_llvm_executable(substrait-opt
+        substrait-opt.cpp
   )
-add_dependencies(structured-tools structured-opt)
+add_dependencies(substrait-mlir-tools substrait-opt)
 
 set(test_libs
 )
 
-target_link_libraries(structured-opt
+target_link_libraries(substrait-opt
   PRIVATE
   ${conversion_libs}
   ${extension_libs}
@@ -28,4 +28,4 @@ target_link_libraries(structured-opt
   MLIRIR
 )
 
-mlir_check_all_link_libraries(structured-opt)
+mlir_check_all_link_libraries(substrait-opt)
