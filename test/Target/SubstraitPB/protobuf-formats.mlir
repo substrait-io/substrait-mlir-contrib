@@ -1,40 +1,40 @@
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=text \
-// RUN: | structured-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -protobuf-to-substrait \
 // RUN:   -substrait-protobuf-format=text \
 // RUN: | FileCheck %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=text \
 // RUN: | FileCheck --check-prefix=CHECK-TEXT %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=binary \
-// RUN: | structured-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -protobuf-to-substrait \
 // RUN:   -substrait-protobuf-format=binary \
 // RUN: | FileCheck %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=binary \
 // RUN: | FileCheck --check-prefix=CHECK-BINARY %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=json \
-// RUN: | structured-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -protobuf-to-substrait \
 // RUN:   -substrait-protobuf-format=json \
 // RUN: | FileCheck %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=json \
 // RUN: | FileCheck --check-prefix=CHECK-JSON %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=pretty-json \
-// RUN: | structured-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -protobuf-to-substrait \
 // RUN:   -substrait-protobuf-format=pretty-json \
 // RUN: | FileCheck %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   -substrait-protobuf-format=pretty-json \
 // RUN: | FileCheck --check-prefix=CHECK-PRETTYJSON %s
 

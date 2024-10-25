@@ -1,11 +1,11 @@
-// RUN: structured-translate -substrait-to-protobuf --split-input-file %s \
+// RUN: substrait-translate -substrait-to-protobuf --split-input-file %s \
 // RUN: | FileCheck %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN:   --split-input-file --output-split-marker="# -----" \
-// RUN: | structured-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -protobuf-to-substrait \
 // RUN:   --split-input-file="# -----" --output-split-marker="// ""-----" \
-// RUN: | structured-translate -substrait-to-protobuf \
+// RUN: | substrait-translate -substrait-to-protobuf \
 // RUN:   --split-input-file --output-split-marker="# -----" \
 // RUN: | FileCheck %s
 

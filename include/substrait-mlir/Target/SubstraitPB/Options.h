@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef STRUCTURED_TARGET_SUBSTRAITPB_OPTIONS_H
-#define STRUCTURED_TARGET_SUBSTRAITPB_OPTIONS_H
+#ifndef SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H
+#define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H
 
 #include "llvm/ADT/StringRef.h"
 
@@ -27,4 +27,4 @@ struct ImportExportOptions {
 } // namespace substrait
 } // namespace mlir
 
-#endif // STRUCTURED_TARGET_SUBSTRAITPB_OPTIONS_H
+#endif // SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H

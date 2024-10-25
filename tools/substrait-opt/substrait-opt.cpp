@@ -1,4 +1,4 @@
-//===-- structured-opt.cpp - Optimizer Driver for Structured ----*- C++ -*-===//
+//===-- substrait-opt.cpp - Optimizer Driver for Substrait MLIR -*- C++ -*-===//
 //
 // Licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -16,8 +16,8 @@
 #include "mlir/InitAllExtensions.h"
 #include "mlir/InitAllPasses.h"
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
-#include "structured/Dialect/Substrait/IR/Substrait.h"
-#include "structured/Dialect/Substrait/Transforms/Passes.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/InitLLVM.h"

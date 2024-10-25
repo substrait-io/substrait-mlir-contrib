@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "structured-c/Dialects.h"
+#include "substrait-mlir-c/Dialects.h"
 
 #include "mlir-c/BuiltinTypes.h"
 #include "mlir-c/IR.h"
@@ -14,10 +14,10 @@
 #include "mlir/CAPI/Registration.h"
 #include "mlir/CAPI/Support.h"
 #include "mlir/IR/Types.h"
-#include "structured/Dialect/Substrait/IR/Substrait.h"
-#include "structured/Target/SubstraitPB/Export.h"
-#include "structured/Target/SubstraitPB/Import.h"
-#include "structured/Target/SubstraitPB/Options.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Export.h"
+#include "substrait-mlir/Target/SubstraitPB/Import.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
 
 using namespace mlir;
 using namespace mlir::substrait;

@@ -1,4 +1,4 @@
-//===-- structured-lsp-server.cpp - LSP server for Structured ---*- C++ -*-===//
+//===-- substrait-lsp-server.cpp - Substrait MLIR LSP server ----*- C++ -*-===//
 //
 // Licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -7,9 +7,9 @@
 //===----------------------------------------------------------------------===//
 ///
 /// \file
-/// This file implements a sandbox-specific MLIR LSP Language server. This
-/// extends the as-you-type diagnostics in VS Code to dialects defined in the
-/// sandbox. Implementation essentially as explained here:
+/// This file implements a substrait-specific MLIR LSP Language server. This
+/// extends the as-you-type diagnostics in VS Code to dialects defined in this
+/// repository. Implementation essentially as explained here:
 /// https://mlir.llvm.org/docs/Tools/MLIRLSP/.
 ///
 //===----------------------------------------------------------------------===//
@@ -20,7 +20,7 @@
 #include "mlir/InitAllPasses.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Tools/mlir-lsp-server/MlirLspServerMain.h"
-#include "structured/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
 

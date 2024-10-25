@@ -1,4 +1,4 @@
-// RUN: structured-opt -split-input-file %s -canonicalize \
+// RUN: substrait-opt -split-input-file %s -canonicalize \
 // RUN: | FileCheck %s
 
 // Check that identiy mapping is folded.

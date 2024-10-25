@@ -1,4 +1,4 @@
-name: Structured Build and Test
+name: Substrait MLIR Build and Test
 
 on:
   push:
@@ -11,18 +11,18 @@ on:
 
 jobs:
   build:
-    name: Structured Build and Test (Release Asserts)
+    name: Substrait MLIR Build and Test (Release Asserts)
     runs-on: ubuntu-22.04
     env:
       LLVM_SYMBOLIZER_PATH: /usr/lib/llvm-14/bin/llvm-symbolizer
     steps:
-    - name: Compute Structured base path
+    - name: Compute substrait-mlir base path
       run: |
-        echo "STRUCTURED_MAIN_SRC_DIR=${GITHUB_WORKSPACE}/sandbox" | tee -a $GITHUB_ENV
-        echo "STRUCTURED_MAIN_BINARY_DIR=${GITHUB_WORKSPACE}/sandbox/build" | tee -a $GITHUB_ENV
-        echo "LLVM_SYSPATH=${GITHUB_WORKSPACE}/sandbox/build" | tee -a $GITHUB_ENV
-        echo "MLIR_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/sandbox/build/lib/libmlir_runner_utils.so" | tee -a $GITHUB_ENV
-        echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/sandbox/build/lib/libmlir_c_runner_utils.so" | tee -a $GITHUB_ENV
+        echo "SUBSTRAIT_MLIR_MAIN_SRC_DIR=${GITHUB_WORKSPACE}/substrait-mlir" | tee -a $GITHUB_ENV
+        echo "SUBSTRAIT_MLIR_MAIN_BINARY_DIR=${GITHUB_WORKSPACE}/substrait-mlir/build" | tee -a $GITHUB_ENV
+        echo "LLVM_SYSPATH=${GITHUB_WORKSPACE}/substrait-mlir/build" | tee -a $GITHUB_ENV
+        echo "MLIR_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_runner_utils.so" | tee -a $GITHUB_ENV
+        echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_c_runner_utils.so" | tee -a $GITHUB_ENV
 
     - name: Set up Python
       uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
@@ -32,7 +32,7 @@ jobs:
     - name: Cache git folder
       uses: actions/cache@v3
       with:
-        path: sandbox/.git
+        path: substrait-mlir/.git
         key: git-folder
 
     - name: Install protobuf
@@ -46,7 +46,7 @@ jobs:
     - name: Checkout project
       uses: actions/checkout@v3
       with:
-        path: sandbox
+        path: substrait-mlir
         submodules: recursive
 
     - name: Install Ninja
@@ -55,13 +55,13 @@ jobs:
     - name: Ccache for C++ compilation
       uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041 # v1.2.3
       with:
-        key: ${{ runner.os }}-structured
+        key: ${{ runner.os }}-substrait-mlir
         # LLVM needs serious cache size
         max-size: 6G
 
     - name: Install Python depends
       run: |
-        cd ${STRUCTURED_MAIN_SRC_DIR}
+        cd ${SUBSTRAIT_MLIR_MAIN_SRC_DIR}
         python -m pip install -v -r requirements.txt
 
     - name: Configure CMake
@@ -80,22 +80,22 @@ jobs:
           -DLLVM_INCLUDE_UTILS=ON \
           -DLLVM_INSTALL_UTILS=ON \
           -DLLVM_LIT_ARGS=-v \
-          -DLLVM_EXTERNAL_PROJECTS=structured \
-          -DLLVM_EXTERNAL_STRUCTURED_SOURCE_DIR=${STRUCTURED_MAIN_SRC_DIR} \
+          -DLLVM_EXTERNAL_PROJECTS=substrait_mlir \
+          -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR=${SUBSTRAIT_MLIR_MAIN_SRC_DIR} \
           -DLLVM_ENABLE_LLD=ON \
           -DLLVM_CCACHE_BUILD=ON \
           -DMLIR_INCLUDE_INTEGRATION_TESTS=ON \
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON \
-          -S${STRUCTURED_MAIN_SRC_DIR}/third_party/llvm-project/llvm \
-          -B${STRUCTURED_MAIN_BINARY_DIR} -G Ninja
-        echo "PYTHONPATH=${PYTHONPATH}:${STRUCTURED_MAIN_BINARY_DIR}/tools/structured/python_packages" | tee -a $GITHUB_ENV
+          -S${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/third_party/llvm-project/llvm \
+          -B${SUBSTRAIT_MLIR_MAIN_BINARY_DIR} -G Ninja
+        echo "PYTHONPATH=${PYTHONPATH}:${SUBSTRAIT_MLIR_MAIN_BINARY_DIR}/tools/substrait_mlir/python_packages" | tee -a $GITHUB_ENV
 
     - name: Build main project
       run: |
-        cmake --build ${STRUCTURED_MAIN_BINARY_DIR} --target structured-all
+        cmake --build ${SUBSTRAIT_MLIR_MAIN_BINARY_DIR} --target substrait-mlir-all
         ccache -s
 
     - name: Run lit tests
       run: |
-        cmake --build ${STRUCTURED_MAIN_BINARY_DIR} --target check-structured
+        cmake --build ${SUBSTRAIT_MLIR_MAIN_BINARY_DIR} --target check-substrait-mlir

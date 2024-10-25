@@ -1,4 +1,4 @@
-// RUN: structured-opt -verify-diagnostics -split-input-file %s
+// RUN: substrait-opt -verify-diagnostics -split-input-file %s
 
 
 // expected-error@+1 {{unsuited attribute for literal value: unit}}

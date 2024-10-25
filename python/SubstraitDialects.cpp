@@ -1,4 +1,4 @@
-//===-- StructuredDialects.cpp - Extension module ---------------*- C++ -*-===//
+//===-- SubstraitDialects.cpp - Python module for Substrait MLIR-*- C++ -*-===//
 //
 // Licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -10,7 +10,7 @@
 #include "mlir-c/BuiltinTypes.h"
 #include "mlir-c/IR.h"
 #include "mlir/Bindings/Python/PybindAdaptors.h"
-#include "structured-c/Dialects.h"
+#include "substrait-mlir-c/Dialects.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
 
@@ -19,7 +19,7 @@
 namespace py = pybind11;
 using namespace mlir::python::adaptors;
 
-PYBIND11_MODULE(_structuredDialects, mainModule) {
+PYBIND11_MODULE(_substraitDialects, mainModule) {
 #ifndef NDEBUG
   static std::string executable =
       llvm::sys::fs::getMainExecutable(nullptr, nullptr);

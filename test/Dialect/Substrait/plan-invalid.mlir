@@ -1,4 +1,4 @@
-// RUN: structured-opt -verify-diagnostics -split-input-file %s
+// RUN: substrait-opt -verify-diagnostics -split-input-file %s
 
 // Test error if no symbol was found for `extension_function` op.
 substrait.plan version 0 : 42 : 1 {

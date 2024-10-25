@@ -1,12 +1,11 @@
-//===-- structured-translate.cpp - "structured" mlir-translate --*- C++ -*-===//
+//===-- substrait-translate.cpp - mlir-translate for Substrait --*- C++ -*-===//
 //
 // Licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// `mlir-stranslate` with translations to and from "structured" dialects, i.e.,
-// dialects from this repository.
+// `mlir-stranslate` with translations to and from Substrait MLIR dialects.
 //===----------------------------------------------------------------------===//
 
 #include "mlir/IR/BuiltinOps.h"
@@ -15,10 +14,10 @@
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Tools/mlir-translate/MlirTranslateMain.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
-#include "structured/Dialect/Substrait/IR/Substrait.h"
-#include "structured/Target/SubstraitPB/Export.h"
-#include "structured/Target/SubstraitPB/Import.h"
-#include "structured/Target/SubstraitPB/Options.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Export.h"
+#include "substrait-mlir/Target/SubstraitPB/Import.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
 

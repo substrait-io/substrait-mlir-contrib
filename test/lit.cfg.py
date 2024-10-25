@@ -9,7 +9,7 @@ from lit.llvm.subst import ToolSubst
 # Configuration file for the 'lit' test runner.
 
 # name: The name of this test suite.
-config.name = 'Structured'
+config.name = 'Substrait MLIR'
 
 config.test_format = lit.formats.ShTest(not llvm_config.use_lit_shell)
 
@@ -20,7 +20,7 @@ config.suffixes = ['.mlir', '.textpb', '.py']
 config.test_source_root = os.path.dirname(__file__)
 
 # test_exec_root: The root path where tests should be run.
-config.test_exec_root = os.path.join(config.structured_build_root, 'test')
+config.test_exec_root = os.path.join(config.substrait_mlir_build_root, 'test')
 
 config.substitutions.append(('%PATH%', config.environment['PATH']))
 config.substitutions.append(('%shlibext', config.llvm_shlib_ext))
@@ -72,13 +72,14 @@ config.environment['MLIR_ASYNC_RUNTIME_LIB'] = mlir_async_runtime.command
 config.environment['MLIR_C_RUNNER_UTILS_LIB'] = mlir_c_runner_utils.command
 config.environment['MLIR_RUNNER_UTILS_LIB'] = mlir_runner_utils.command
 
-config.structured_tools_dir = os.path.join(config.structured_build_root, 'bin')
-tool_dirs = [config.structured_tools_dir, config.llvm_tools_dir]
+config.substrait_mlir_tools_dir = os.path.join(config.substrait_mlir_build_root,
+                                               'bin')
+tool_dirs = [config.substrait_mlir_tools_dir, config.llvm_tools_dir]
 tools = [
     mlir_async_runtime,
     mlir_c_runner_utils,
     mlir_runner_utils,
-    'structured-opt',
+    'substrait-opt',
     ToolSubst('%mlir_lib_dir', config.mlir_lib_dir),
 ]
 
@@ -89,7 +90,7 @@ if "LLVM_SYMBOLIZER_PATH" in os.environ:
   config.environment["LLVM_SYMBOLIZER_PATH"] = \
       os.environ["LLVM_SYMBOLIZER_PATH"]
 
-structured_python_path = os.path.join(config.structured_build_root,
-                                      'python_packages')
-llvm_config.with_environment('PYTHONPATH', [structured_python_path],
+substrait_mlir_python_path = os.path.join(config.substrait_mlir_build_root,
+                                          'python_packages')
+llvm_config.with_environment('PYTHONPATH', [substrait_mlir_python_path],
                              append_path=True)

@@ -9,9 +9,9 @@
 #ifndef SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITOPS
 #define SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITOPS
 
-include "structured/Dialect/Substrait/IR/SubstraitDialect.td"
-include "structured/Dialect/Substrait/IR/SubstraitInterfaces.td"
-include "structured/Dialect/Substrait/IR/SubstraitTypes.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypes.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/IR/BuiltinAttributes.td"

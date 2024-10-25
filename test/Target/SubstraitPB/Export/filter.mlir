@@ -1,9 +1,9 @@
-// RUN: structured-translate -substrait-to-protobuf %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN: | FileCheck %s
 
-// RUN: structured-translate -substrait-to-protobuf %s \
-// RUN: | structured-translate -protobuf-to-substrait \
-// RUN: | structured-translate -substrait-to-protobuf \
+// RUN: substrait-translate -substrait-to-protobuf %s \
+// RUN: | substrait-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -substrait-to-protobuf \
 // RUN: | FileCheck %s
 
 // CHECK-LABEL: relations {

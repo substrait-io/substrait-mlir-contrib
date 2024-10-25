@@ -6,10 +6,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef STRUCTURED_TARGET_SUBSTRAITPB_EXPORT_H
-#define STRUCTURED_TARGET_SUBSTRAITPB_EXPORT_H
+#ifndef SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_EXPORT_H
+#define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_EXPORT_H
 
-#include "structured/Target/SubstraitPB/Options.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/Support/raw_ostream.h"
 
 namespace mlir {
@@ -25,4 +25,4 @@ translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
 } // namespace substrait
 } // namespace mlir
 
-#endif // STRUCTURED_TARGET_SUBSTRAITPB_EXPORT_H
+#endif // SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_EXPORT_H

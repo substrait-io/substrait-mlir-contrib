@@ -1,4 +1,4 @@
-// RUN: structured-opt -split-input-file %s \
+// RUN: substrait-opt -split-input-file %s \
 // RUN:   -substrait-emit-deduplication -allow-unregistered-dialect \
 // RUN: | FileCheck %s
 

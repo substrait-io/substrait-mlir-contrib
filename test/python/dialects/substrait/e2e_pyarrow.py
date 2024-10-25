@@ -12,8 +12,8 @@ import pyarrow as pa
 import pyarrow.lib
 import pyarrow.substrait
 
-from mlir_structured.dialects import substrait as ss
-from mlir_structured import ir
+from substrait_mlir.dialects import substrait as ss
+from substrait_mlir import ir
 
 
 def run(f):

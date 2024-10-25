@@ -1,1 +1,1 @@
-add_subdirectory(structured)
+add_subdirectory(substrait-mlir)

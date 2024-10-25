@@ -6,14 +6,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "structured/Target/SubstraitPB/Import.h"
+#include "substrait-mlir/Target/SubstraitPB/Import.h"
 
 #include "ProtobufUtils.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/ImplicitLocOpBuilder.h"
 #include "mlir/IR/OwningOpRef.h"
-#include "structured/Dialect/Substrait/IR/Substrait.h"
-#include "structured/Target/SubstraitPB/Options.h"
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
