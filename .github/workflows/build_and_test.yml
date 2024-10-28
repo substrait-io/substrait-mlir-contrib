@@ -1,4 +1,4 @@
-name: Substrait MLIR Build and Test
+name: Build and Test
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: Substrait MLIR Build and Test (Release Asserts)
+    name: CMake Build and Test (Release Asserts)
     runs-on: ubuntu-22.04
     env:
       LLVM_SYMBOLIZER_PATH: /usr/lib/llvm-14/bin/llvm-symbolizer
