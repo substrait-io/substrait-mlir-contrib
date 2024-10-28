@@ -288,8 +288,8 @@ You may also use `lit` to run a subset of the tests. You may
 
 ```bash
 lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test
-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Integration
-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Dialect/Iterators/map.mlir
+lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Target
+lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/python/dialects/substrait/dialect.py
 ```
 
 ## Diagnostics via LSP servers
