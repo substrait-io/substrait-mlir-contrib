@@ -1,0 +1,14 @@
+name: License headers
+
+on: pull_request
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run SPDX license checker
+      uses: enarx/spdx@c40e51bf57eb8f1d8db4382868ccd41928fd2492  # August 8, 2024
+      with:
+        licenses: Apache-2.0 WITH LLVM-exception
