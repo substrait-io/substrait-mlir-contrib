@@ -1,0 +1,30 @@
+name: PR Title
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+jobs:
+  commitlint:
+    name: Check that commit message forms a "Semantic Commit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install @commitlint/config-conventional@19.5.0
+      - run: >
+          echo 'module.exports = {
+            // Workaround for https://github.com/dependabot/dependabot-core/issues/5923
+            "ignores": [(message) => /^Bumps \[.+]\(.+\) from .+ to .+\.$/m.test(message)],
+            "rules": {
+              "body-max-line-length": [0, "always", Infinity],
+              "footer-max-line-length": [0, "always", Infinity],
+              "body-leading-blank": [0, "always"]
+            }
+          }' > .commitlintrc.js
+      - run: npx commitlint --extends @commitlint/config-conventional --verbose <<< $COMMIT_MSG
+        env:
+          COMMIT_MSG: >
+            ${{ github.event.pull_request.title }}
+
+            ${{ github.event.pull_request.body }}
