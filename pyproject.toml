@@ -1,0 +1,19 @@
+[tool.pyright]
+
+# Point `pyright` to the built files rather than those in the source tree
+# because relative imports won't work in the latter case. (They work in the
+# former because the build process copies files from several places.)
+include = [
+  'test/python/',
+  'build/tools/substrait_mlir/python_packages/substrait_mlir/dialects/substrait.py',
+  'build/tools/substrait_mlir/python_packages/substrait_mlir/_mlir_libs/_substraitDialects/',
+  ]
+
+exclude = [
+  '**/lit.cfg.py',
+  ]
+
+extraPaths = [
+  'build/tools/mlir/python_packages/',
+  'build/tools/substrait_mlir/python_packages/',
+  ]
