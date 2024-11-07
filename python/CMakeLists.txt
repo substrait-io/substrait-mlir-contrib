@@ -29,6 +29,14 @@ declare_mlir_python_extension(SubstraitMLIRPythonSources.DialectExtension
   SubstraitMLIRCAPI
 )
 
+declare_mlir_python_sources(SubstraitMLIRPythonSources.MLIRLibs
+  ADD_TO_PARENT SubstraitMLIRPythonSources
+  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
+  SOURCES
+    _mlir_libs/_substraitDialects/__init__.pyi
+    _mlir_libs/_substraitDialects/substrait.pyi
+)
+
 # ###############################################################################
 # Common CAPI
 # ###############################################################################
