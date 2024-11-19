@@ -380,6 +380,23 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   }];
 }
 
+def Substrait_UnionDistinct_Op : Substrait_RelOp<"union_distinct"> {
+  let summary = "union distinct operation";
+  let description = [{
+    Represents the `SetRel` message where op is set to SET_OP_UNION_DISTINCT.
+    This takes two inputs. 
+
+  }];
+  
+  let arguments = (ins
+    Substrait_Relation:$left,
+    Substrait_Relation:$right
+  );
+
+  let results = (outs Substrait_Relation:$result);
+
+}
+
 def Substrait_EmitOp : Substrait_RelOp<"emit", [
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
     DeclareOpInterfaceMethods<InferTypeOpInterface>
