@@ -394,6 +394,10 @@ def Substrait_UnionDistinct_Op : Substrait_RelOp<"union_distinct"> {
   );
 
   let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = [{
+    $left `u_d` $right attr-dict `:` type($left) `u_d` type($right) `->` type($result)
+  }];
+
 }
 
 def Substrait_EmitOp : Substrait_RelOp<"emit", [
