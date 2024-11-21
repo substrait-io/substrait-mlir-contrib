@@ -5,8 +5,8 @@
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = union_distinct %[[V0]] u_d %[[V1]] 
-// CHECK-SAME:        : tuple<si32> u_d tuple<si32> -> tuple<si32>
+// CHECK-NEXT:      %[[V2:.*]] = union_distinct %[[V0]] u %[[V1]] 
+// CHECK-SAME:        : tuple<si32> u tuple<si32> -> tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 
 
