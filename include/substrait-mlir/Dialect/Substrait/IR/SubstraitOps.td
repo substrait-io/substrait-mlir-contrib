@@ -382,10 +382,10 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
 
 def Substrait_UnionDistinct_Op : Substrait_RelOp<"union_distinct"> {
   let summary = "union distinct operation";
+  // TODO(daliashaaban): This will evolve into an operation for all SetRels.
   let description = [{
     Represents the `SetRel` message where op is set to SET_OP_UNION_DISTINCT.
     This takes two inputs. 
-
   }];
   
   let arguments = (ins
@@ -394,7 +394,6 @@ def Substrait_UnionDistinct_Op : Substrait_RelOp<"union_distinct"> {
   );
 
   let results = (outs Substrait_Relation:$result);
-
 }
 
 def Substrait_EmitOp : Substrait_RelOp<"emit", [
