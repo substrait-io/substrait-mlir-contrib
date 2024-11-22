@@ -188,60 +188,87 @@ The following is a list of features that we inherit by using MLIR:
 ## Build Instructions
 
 This project builds as part of the LLVM External Projects facility (see
-documentation for the `LLVM_EXTERNAL_PROJECTS` config setting).
+[documentation](https://llvm.org/docs/CMake.html#llvm-related-variables)
+for the `LLVM_EXTERNAL_PROJECTS` config setting).
 
-It is left to the reader to adapt paths if deviating. We assume below that
-projects are checked out to `$HOME/src`.
+### Prerequisites
 
-### Check out Project
+You need to have the following software installed and in your `PATH` or
+[discoverable](https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html)
+by CMake:
 
-In your `$HOME/src` directory, clone this project recursively:
+* `git`
+* [`ninja`](<https://ninja-build.org/>)
+* [LLVM prerequisites](https://llvm.org/docs/GettingStarted.html#software) and a
+  [C/C++ toolchain](https://llvm.org/docs/GettingStarted.html#host-c-toolchain-both-compiler-and-standard-library)
+* Protobuf (compiler, runtime, and headers)
 
-```bash
-git clone --recursive https://github.com/substrait-io/substrait-mlir-contrib
-```
-
-If you have cloned non-recursively already and every time a submodule is
-updated, run the following command inside the cloned repository instead:
-
-```bash
-git submodule update --recursive --init
-```
+### Define Paths
 
 Define the following environment variables (adapted to your situation), ideally
 making them permanent in your `$HOME/.bashrc` or in the `activate` script of
 your Python virtual environment (see below):
 
 ```bash
-export SUBSTRAIT_MLIR_SOURCE_DIR=$HOME/src/iree-llvm-sandbox
+export SUBSTRAIT_MLIR_SOURCE_DIR=$HOME/git/substrait-mlir-contrib
 export SUBSTRAIT_MLIR_BUILD_DIR=${SUBSTRAIT_MLIR_SOURCE_DIR}/build
 ```
 
-### Python prerequisites
+### Check out Project
+
+In your `$HOME/src` directory, clone this project recursively:
+
+```bash
+git clone --recursive \
+    https://github.com/substrait-io/substrait-mlir-contrib \
+    ${SUBSTRAIT_MLIR_SOURCE_DIR}
+```
+
+If you have cloned non-recursively already and every time a submodule is
+updated, run the following command inside the cloned repository instead:
+
+```bash
+cd ${SUBSTRAIT_MLIR_SOURCE_DIR}
+git submodule update --recursive --init
+```
+
+### Python Prerequisites
 
 Create a virtual environment, activate it, and install the dependencies from
 [`requirements.txt`](requirements.txt):
 
 ```bash
-python -m venv ~/.venv/mlirdev
-source ~/.venv/mlirdev/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r ${SUBSTRAIT_MLIR_SOURCE_DIR}/requirements.txt
+python3 -m venv ~/.venv/substrait-mlir
+source ~/.venv/substrait-mlir/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -r ${SUBSTRAIT_MLIR_SOURCE_DIR}/requirements.txt
 ```
 
 For details, see the documentation of the
 [MLIR Python Bindings](https://mlir.llvm.org/docs/Bindings/Python/).
 
-### Configure and build main project
+Make some paths available in your Python environment by adding the following
+lines to the end of `~/.venv/substrait-mlir/bin/activate` (then `source` that
+file again):
+
+```bash
+export SUBSTRAIT_MLIR_SOURCE_DIR=$HOME/git/substrait-mlir-contrib
+export SUBSTRAIT_MLIR_BUILD_DIR=${SUBSTRAIT_MLIR_SOURCE_DIR}/build
+export PATH=${SUBSTRAIT_MLIR_BUILD_DIR}/bin:$PATH
+```
+
+### Configure and Build Main Project
 
 Run the command below to set up the build system, possibly adapting it to your
 needs. For example, you may choose not to compile `clang`, `clang-tools-extra`,
 `lld`, and/or the examples to save compilation time, or use a different variant
-than `Debug`.
+than `Debug`. Similarly, you may want to set `DLLVM_ENABLE_LLD=OFF` on some Macs
+that don't have `lld`.
 
 ```bash
 cmake \
   -DPython3_EXECUTABLE=$(which python) \
+  -DABSL_ENABLE_INSTALL=ON \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
   -DCMAKE_BUILD_TYPE=Debug \
@@ -270,10 +297,11 @@ To build, run:
 cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja
 ```
 
-## Using substrait-opt
+## Using `substrait-opt` and `substrait-translate`
 
 ```bash
-"${SUBSTRAIT_MLIR_BUILD_DIR}"/bin/substrait-opt --help
+substrait-opt --help
+substrait-translate --help
 ```
 
 ## Running tests
@@ -281,15 +309,15 @@ cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja
 You can run all tests with the following command:
 
 ```bash
-cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja
+cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja check-substrait-mlir
 ```
 
-You may also use `lit` to run a subset of the tests. You may
+You may also use `lit` to run a subset of the tests.
 
 ```bash
-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test
-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Target
-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/python/dialects/substrait/dialect.py
+llvm-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test
+llvm-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Target
+llvm-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/python/dialects/substrait/dialect.py
 ```
 
 ## Diagnostics via LSP servers
