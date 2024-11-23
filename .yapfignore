@@ -1,0 +1,6 @@
+# These files are generated; we want as little changes to them as possible
+python/substrait_mlir/_mlir_libs/**/*.pyi
+
+# Ignore code that isn't ours
+third_party/
+build*/
