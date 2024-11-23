@@ -6,10 +6,6 @@
 # set by LLVM, leading to linker errors, so we deactivate them.
 set(SUBSTRAIT_CPP_SANITIZE_DEBUG_BUILD OFF)
 
-# In install mode, Abseil creates a target call `check`, which conflicts with an
-# LLVM target with the same name. In non-install mode, the target name changes.
-set(ABSL_ENABLE_INSTALL OFF)
-
 # LLVM sets this to `ON`, leading to a compilation error due to a file called
 # `time.h` in one of Abseil's folders.
 set(CMAKE_INCLUDE_CURRENT_DIR OFF)
