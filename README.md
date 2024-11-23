@@ -268,7 +268,6 @@ that don't have `lld`.
 ```bash
 cmake \
   -DPython3_EXECUTABLE=$(which python) \
-  -DABSL_ENABLE_INSTALL=ON \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
   -DCMAKE_BUILD_TYPE=Debug \
@@ -315,9 +314,9 @@ cd ${SUBSTRAIT_MLIR_BUILD_DIR} && ninja check-substrait-mlir
 You may also use `lit` to run a subset of the tests.
 
 ```bash
-llvm-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test
-llvm-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/Target
-llvm-lit -v ${SUBSTRAIT_MLIR_BUILD_DIR}/test/python/dialects/substrait/dialect.py
+llvm-lit -v ${SUBSTRAIT_MLIR_SOURCE_DIR}/test
+llvm-lit -v ${SUBSTRAIT_MLIR_SOURCE_DIR}/test/Target
+llvm-lit -v ${SUBSTRAIT_MLIR_SOURCE_DIR}/test/python/dialects/substrait/dialect.py
 ```
 
 ## Diagnostics via LSP servers
