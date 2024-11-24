@@ -12,9 +12,12 @@
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/Support/raw_ostream.h"
 
+namespace llvm {
+class LogicalResult;
+}
 namespace mlir {
 class Operation;
-class LogicalResult;
+using LogicalResult = llvm::LogicalResult;
 
 namespace substrait {
 
