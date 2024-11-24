@@ -9,6 +9,6 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Run SPDX license checker
-      uses: enarx/spdx@83697cf00cd75e190c0480b91ae209a338b8ccc9  # November 14, 2024
+      uses: enarx/spdx@8524ffcc5b5ffc02b0e8f0389a2bbb3cb4bbb5a2  # November 23, 2024
       with:
         licenses: Apache-2.0 WITH LLVM-exception
