@@ -93,10 +93,6 @@ LogicalResult UnionDistinctOp::inferReturnTypes(
   TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
   TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
 
-  if (leftFieldTypes != rightFieldTypes)
-    return emitError(loc.value())
-           << "left and right inputs must have the same field types";
-
   auto resultType = TupleType::get(context, leftFieldTypes);
 
   inferredReturnTypes = SmallVector<Type>{resultType};
