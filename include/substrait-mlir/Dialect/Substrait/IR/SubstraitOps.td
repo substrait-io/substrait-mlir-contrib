@@ -380,7 +380,7 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   }];
 }
 
-def Substrait_UnionDistinct_Op : Substrait_RelOp<"union_distinct"> {
+def Substrait_UnionDistinctOp : Substrait_RelOp<"union_distinct"> {
   // TODO(daliashaaban): This will evolve into an operation for all SetRels.
   let summary = "union distinct operation";
   let description = [{
