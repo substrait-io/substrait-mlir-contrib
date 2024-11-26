@@ -16,6 +16,7 @@ set(SUBSTRAIT_MLIR_TEST_DEPENDS
   count
   FileCheck
   substrait-opt
+  substrait-translate
   mlir_async_runtime
   mlir-cpu-runner
   mlir_c_runner_utils
