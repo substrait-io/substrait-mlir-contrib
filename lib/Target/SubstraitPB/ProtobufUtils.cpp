@@ -29,14 +29,14 @@ FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
   switch (relType) {
   case Rel::RelTypeCase::kCross:
     return getCommon(rel.cross());
-  case Rel::RelTypeCase::kSet:
-    return getCommon(rel.set());
   case Rel::RelTypeCase::kFilter:
     return getCommon(rel.filter());
   case Rel::RelTypeCase::kProject:
     return getCommon(rel.project());
   case Rel::RelTypeCase::kRead:
     return getCommon(rel.read());
+  case Rel::RelTypeCase::kSet:
+    return getCommon(rel.set());
   default:
     const pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);
@@ -54,14 +54,14 @@ FailureOr<RelCommon *> getMutableCommon(Rel *rel, Location loc) {
   switch (relType) {
   case Rel::RelTypeCase::kCross:
     return getMutableCommon(rel->mutable_cross());
-  case Rel::RelTypeCase::kSet:
-    return getMutableCommon(rel->mutable_set());
   case Rel::RelTypeCase::kFilter:
     return getMutableCommon(rel->mutable_filter());
   case Rel::RelTypeCase::kProject:
     return getMutableCommon(rel->mutable_project());
   case Rel::RelTypeCase::kRead:
     return getMutableCommon(rel->mutable_read());
+  case Rel::RelTypeCase::kSet:
+    return getMutableCommon(rel->mutable_set());
   default:
     const pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);

@@ -45,7 +45,6 @@ public:
 
   DECLARE_EXPORT_FUNC(CallOp, Expression)
   DECLARE_EXPORT_FUNC(CrossOp, Rel)
-  DECLARE_EXPORT_FUNC(UnionDistinctOp, Rel)
   DECLARE_EXPORT_FUNC(EmitOp, Rel)
   DECLARE_EXPORT_FUNC(ExpressionOpInterface, Expression)
   DECLARE_EXPORT_FUNC(FieldReferenceOp, Expression)
@@ -56,6 +55,7 @@ public:
   DECLARE_EXPORT_FUNC(PlanOp, Plan)
   DECLARE_EXPORT_FUNC(ProjectOp, Rel)
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
+  DECLARE_EXPORT_FUNC(UnionDistinctOp, Rel)
 
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
@@ -220,49 +220,6 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(CrossOp op) {
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_cross(crossRel.release());
-
-  return rel;
-}
-
-FailureOr<std::unique_ptr<Rel>>
-SubstraitExporter::exportOperation(UnionDistinctOp op) {
-  // Build `RelCommon` message.
-  auto relCommon = std::make_unique<RelCommon>();
-  auto direct = std::make_unique<RelCommon::Direct>();
-  relCommon->set_allocated_direct(direct.release());
-
-  // Build `left` input message.
-  auto leftOp =
-      llvm::dyn_cast_if_present<RelOpInterface>(op.getLeft().getDefiningOp());
-  if (!leftOp)
-    return op->emitOpError(
-        "left input was not produced by Substrait relation op");
-
-  FailureOr<std::unique_ptr<Rel>> leftRel = exportOperation(leftOp);
-  if (failed(leftRel))
-    return failure();
-
-  // Build `right` input message.
-  auto rightOp =
-      llvm::dyn_cast_if_present<RelOpInterface>(op.getRight().getDefiningOp());
-  if (!rightOp)
-    return op->emitOpError(
-        "right input was not produced by Substrait relation op");
-
-  FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
-  if (failed(rightRel))
-    return failure();
-
-  // Build `SetRel` message.
-  auto setRel = std::make_unique<SetRel>();
-  setRel->set_allocated_common(relCommon.release());
-  setRel->add_inputs()->CopyFrom(*rightRel->get());
-  setRel->add_inputs()->CopyFrom(*leftRel->get());
-  setRel->set_op(::substrait::proto::SetRel::SET_OP_UNION_DISTINCT);
-
-  // Build `Rel` message.
-  auto rel = std::make_unique<Rel>();
-  rel->set_allocated_set(setRel.release());
 
   return rel;
 }
@@ -761,17 +718,60 @@ SubstraitExporter::exportOperation(ProjectOp op) {
 }
 
 FailureOr<std::unique_ptr<Rel>>
+SubstraitExporter::exportOperation(UnionDistinctOp op) {
+  // Build `RelCommon` message.
+  auto relCommon = std::make_unique<RelCommon>();
+  auto direct = std::make_unique<RelCommon::Direct>();
+  relCommon->set_allocated_direct(direct.release());
+
+  // Build `left` input message.
+  auto leftOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getLeft().getDefiningOp());
+  if (!leftOp)
+    return op->emitOpError(
+        "left input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> leftRel = exportOperation(leftOp);
+  if (failed(leftRel))
+    return failure();
+
+  // Build `right` input message.
+  auto rightOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getRight().getDefiningOp());
+  if (!rightOp)
+    return op->emitOpError(
+        "right input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
+  if (failed(rightRel))
+    return failure();
+
+  // Build `SetRel` message.
+  auto setRel = std::make_unique<SetRel>();
+  setRel->set_allocated_common(relCommon.release());
+  setRel->add_inputs()->CopyFrom(*rightRel->get());
+  setRel->add_inputs()->CopyFrom(*leftRel->get());
+  setRel->set_op(::substrait::proto::SetRel::SET_OP_UNION_DISTINCT);
+
+  // Build `Rel` message.
+  auto rel = std::make_unique<Rel>();
+  rel->set_allocated_set(setRel.release());
+
+  return rel;
+}
+
+FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(RelOpInterface op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::unique_ptr<Rel>>>(op)
       .Case<
           // clang-format off
           CrossOp,
-          UnionDistinctOp,
           EmitOp,
           FieldReferenceOp,
           FilterOp,
           NamedTableOp,
-          ProjectOp
+          ProjectOp,
+          UnionDistinctOp
           // clang-format on
           >([&](auto op) { return exportOperation(op); })
       .Default([](auto op) {
