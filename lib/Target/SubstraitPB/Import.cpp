@@ -156,7 +156,8 @@ importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
     return failure();
 
   if (setRel.op() != SetRel::SET_OP_UNION_DISTINCT)
-    return failure();
+    return op->emitOpError(
+        "only 'union distinct' set operation supported for import");
 
   // Build `UnionDistinctOp`.
   Value leftVal = leftOp.value()->getResult(0);
