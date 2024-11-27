@@ -82,6 +82,28 @@ CrossOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
+LogicalResult UnionDistinctOp::inferReturnTypes(
+    MLIRContext *context, std::optional<Location> loc, ValueRange operands,
+    DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
+    llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
+
+  Value leftInput = operands[0];
+  Value rightInput = operands[1];
+
+  TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
+  TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
+
+  if (leftFieldTypes != rightFieldTypes)
+    return ::emitError(loc.value())
+           << "left and right inputs must have the same field types";
+
+  auto resultType = TupleType::get(context, leftFieldTypes);
+
+  inferredReturnTypes = SmallVector<Type>{resultType};
+
+  return success();
+}
+
 OpFoldResult EmitOp::fold(FoldAdaptor adaptor) {
   MLIRContext *context = getContext();
   Type i64 = IntegerType::get(context, 64);
