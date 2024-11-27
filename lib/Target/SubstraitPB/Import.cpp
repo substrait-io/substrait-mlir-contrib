@@ -155,7 +155,7 @@ importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(leftOp) || failed(rightOp))
     return failure();
 
-  if (setRel.op() == SetRel::SET_OP_UNION_DISTINCT)
+  if (setRel.op() != SetRel::SET_OP_UNION_DISTINCT)
     return failure();
 
   // Build `UnionDistinctOp`.
