@@ -145,8 +145,6 @@ static mlir::FailureOr<UnionDistinctOp>
 importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
   const SetRel &setRel = message.set();
 
-  assert(setRel.inputs_size() == 2 && "expected two inputs");
-
   // Import left and right inputs.
   const Rel &leftRel = setRel.inputs(0);
   const Rel &rightRel = setRel.inputs(1);
@@ -157,8 +155,8 @@ importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(leftOp) || failed(rightOp))
     return failure();
 
-  assert(setRel.op() == SetRel::SET_OP_UNION_DISTINCT &&
-         "expected union distinct op");
+  if (setRel.op() == SetRel::SET_OP_UNION_DISTINCT)
+    return failure();
 
   // Build `UnionDistinctOp`.
   Value leftVal = leftOp.value()->getResult(0);
