@@ -566,9 +566,6 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
   case Rel::RelTypeCase::kCross:
     maybeOp = importCrossRel(builder, message);
     break;
-  case Rel::RelTypeCase::kSet:
-    maybeOp = importSetRel(builder, message);
-    break;
   case Rel::RelTypeCase::kFilter:
     maybeOp = importFilterRel(builder, message);
     break;
@@ -577,6 +574,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     break;
   case Rel::RelTypeCase::kRead:
     maybeOp = importReadRel(builder, message);
+    break;
+  case Rel::RelTypeCase::kSet:
+    maybeOp = importSetRel(builder, message);
     break;
   default:
     const pb::FieldDescriptor *desc =
