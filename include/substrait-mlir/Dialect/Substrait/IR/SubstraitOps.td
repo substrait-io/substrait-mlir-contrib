@@ -380,27 +380,6 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   }];
 }
 
-def Substrait_UnionDistinctOp : Substrait_RelOp<"union_distinct", [
-    DeclareOpInterfaceMethods<InferTypeOpInterface>
-  ]> {
-  // TODO(daliashaaban): This will evolve into an operation for all SetRels.
-  let summary = "union distinct operation";
-  let description = [{
-    Represents the `SetRel` message where op is set to SET_OP_UNION_DISTINCT.
-    The current implementation only allows for two inputs (instead of two or more).
-  }];
-  
-  let arguments = (ins
-    Substrait_Relation:$left,
-    Substrait_Relation:$right
-  );
-
-  let results = (outs Substrait_Relation:$result);
-  let assemblyFormat = [{
-    $left `u` $right attr-dict `:` type($left) `u` type($right) `->` type($result)
-  }];
-}
-
 def Substrait_EmitOp : Substrait_RelOp<"emit", [
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
     DeclareOpInterfaceMethods<InferTypeOpInterface>
@@ -543,6 +522,27 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
     ::llvm::StringRef $cppClass::getDefaultDialect() {
       return SubstraitDialect::getDialectNamespace();
     }
+  }];
+}
+
+def Substrait_UnionDistinctOp : Substrait_RelOp<"union_distinct", [
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
+  // TODO(daliashaaban): This will evolve into an operation for all SetRels.
+  let summary = "union distinct operation";
+  let description = [{
+    Represents the `SetRel` message where op is set to SET_OP_UNION_DISTINCT.
+    The current implementation only allows for two inputs (instead of two or more).
+  }];
+  
+  let arguments = (ins
+    Substrait_Relation:$left,
+    Substrait_Relation:$right
+  );
+
+  let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = [{
+    $left `u` $right attr-dict `:` type($left) `u` type($right) `->` type($result)
   }];
 }
 
