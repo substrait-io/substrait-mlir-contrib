@@ -1,6 +1,11 @@
 // RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN: | FileCheck %s
 
+// RUN: substrait-translate -substrait-to-protobuf %s \
+// RUN: | substrait-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -substrait-to-protobuf \
+// RUN: | FileCheck %s
+
 // CHECK-LABEL: relations {
 // CHECK-NEXT:    rel {
 // CHECK-NEXT:      set {

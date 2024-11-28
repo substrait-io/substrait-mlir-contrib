@@ -47,6 +47,7 @@ namespace {
                                                  const ARG_TYPE &message);
 
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
+DECLARE_IMPORT_FUNC(SetRel, Rel, UnionDistinctOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
@@ -138,6 +139,32 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   Value rightVal = rightOp.value()->getResult(0);
 
   return builder.create<CrossOp>(leftVal, rightVal);
+}
+
+static mlir::FailureOr<UnionDistinctOp>
+importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
+  const SetRel &setRel = message.set();
+
+  // Import left and right inputs.
+  const Rel &leftRel = setRel.inputs(0);
+  const Rel &rightRel = setRel.inputs(1);
+
+  mlir::FailureOr<RelOpInterface> leftOp = importRel(builder, leftRel);
+  mlir::FailureOr<RelOpInterface> rightOp = importRel(builder, rightRel);
+
+  if (failed(leftOp) || failed(rightOp))
+    return failure();
+
+  if (setRel.op() != SetRel::SET_OP_UNION_DISTINCT)
+    return mlir::emitError(
+        builder.getLoc(),
+        "only 'union distinct' set operation supported for import");
+
+  // Build `UnionDistinctOp`.
+  Value leftVal = leftOp.value()->getResult(0);
+  Value rightVal = rightOp.value()->getResult(0);
+
+  return builder.create<UnionDistinctOp>(leftVal, rightVal);
 }
 
 static mlir::FailureOr<ExpressionOpInterface>
@@ -547,6 +574,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     break;
   case Rel::RelTypeCase::kRead:
     maybeOp = importReadRel(builder, message);
+    break;
+  case Rel::RelTypeCase::kSet:
+    maybeOp = importSetRel(builder, message);
     break;
   default:
     const pb::FieldDescriptor *desc =
