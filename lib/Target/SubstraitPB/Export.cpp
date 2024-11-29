@@ -16,6 +16,7 @@
 
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
+#include <memory>
 #include <substrait/proto/algebra.pb.h>
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>
@@ -780,6 +781,8 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
 
   return rel;
 }
+
+
 
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(RelOpInterface op) {
