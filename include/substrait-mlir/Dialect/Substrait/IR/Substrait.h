@@ -14,6 +14,7 @@
 #include "mlir/IR/OpImplementation.h"             // IWYU: keep
 #include "mlir/IR/SymbolTable.h"                  // IWYU: keep
 #include "mlir/Interfaces/InferTypeOpInterface.h" // IWYU: keep
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.td.inc"
 
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.h.inc" // IWYU: export
 
@@ -28,4 +29,6 @@
 #define GET_OP_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc" // IWYU: export
 
+
 #endif // SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H
+

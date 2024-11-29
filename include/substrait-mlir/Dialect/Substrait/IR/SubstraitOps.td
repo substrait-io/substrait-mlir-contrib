@@ -19,6 +19,7 @@ include "mlir/IR/CommonAttrConstraints.td"
 include "mlir/IR/EnumAttr.td"
 include "mlir/IR/OpBase.td"
 include "mlir/IR/SymbolInterfaces.td"
+include "mlir/IR/EnumAttr.td"
 
 class Substrait_Op<string mnemonic, list<Trait> traits = []> :
   Op<Substrait_Dialect, mnemonic, traits> {
