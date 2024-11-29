@@ -782,8 +782,6 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   return rel;
 }
 
-
-
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(RelOpInterface op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::unique_ptr<Rel>>>(op)
