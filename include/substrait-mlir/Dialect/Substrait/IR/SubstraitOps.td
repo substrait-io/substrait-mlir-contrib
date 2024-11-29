@@ -541,7 +541,7 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
   let summary = "set operation";
   let description = [{
     Represents the `SetRel` message together with the `RelCommon`, input
-    `Rel`, and `SetOp` messages it contains. This operation performs 
+    `Rel`, and `SetOp` enumeration it contains. This operation performs 
     relational set operations such as intersection, union, and difference.
     The current implementation only allows for two inputs (instead of two or more).
   }];
