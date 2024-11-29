@@ -744,7 +744,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
 
   FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
   if (failed(rightRel))
-    return failure(); 
+    return failure();
 
   // Build `SetRel` message.
   auto setRel = std::make_unique<SetRel>();
@@ -759,8 +759,6 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
 
   return rel;
 }
-
-
 
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(RelOpInterface op) {
