@@ -256,10 +256,11 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
-LogicalResult SetOp::inferReturnTypes(
-    MLIRContext *context, std::optional<Location> loc, ValueRange operands,
-    DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
-    llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
+LogicalResult
+SetOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
+                        ValueRange operands, DictionaryAttr attributes,
+                        OpaqueProperties properties, RegionRange regions,
+                        llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
 
   Value leftInput = operands[0];
   Value rightInput = operands[1];
