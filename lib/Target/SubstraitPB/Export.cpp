@@ -16,7 +16,6 @@
 
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
-#include <memory>
 #include <substrait/proto/algebra.pb.h>
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>
