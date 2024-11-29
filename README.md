@@ -201,7 +201,7 @@ by CMake:
 * [`ninja`](<https://ninja-build.org/>)
 * [LLVM prerequisites](https://llvm.org/docs/GettingStarted.html#software) and a
   [C/C++ toolchain](https://llvm.org/docs/GettingStarted.html#host-c-toolchain-both-compiler-and-standard-library)
-* Protobuf (compiler, runtime, and headers)
+* Protobuf >= 3.12 (compiler, runtime, and headers)
 
 ### Define Paths
 
@@ -272,7 +272,7 @@ cmake \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
   -DCMAKE_BUILD_TYPE=Debug \
   -DLLVM_ENABLE_PROJECTS="mlir;clang;clang-tools-extra" \
-  -DLLVM_TARGETS_TO_BUILD="X86" \
+  -DLLVM_TARGETS_TO_BUILD="Native" \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_INCLUDE_TESTS=OFF \
   -DLLVM_INCLUDE_UTILS=ON \
