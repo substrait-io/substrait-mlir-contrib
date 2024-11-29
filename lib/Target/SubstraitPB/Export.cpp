@@ -16,6 +16,7 @@
 
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
+#include <memory>
 #include <substrait/proto/algebra.pb.h>
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>
@@ -55,7 +56,7 @@ public:
   DECLARE_EXPORT_FUNC(PlanOp, Plan)
   DECLARE_EXPORT_FUNC(ProjectOp, Rel)
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
-  DECLARE_EXPORT_FUNC(UnionDistinctOp, Rel)
+  DECLARE_EXPORT_FUNC(SetOp, Rel)
 
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
@@ -717,8 +718,27 @@ SubstraitExporter::exportOperation(ProjectOp op) {
   return rel;
 }
 
+SetRel::SetOp getSetOp(SetOpKind kind){
+  switch(kind){
+    case SetOpKind::unspecified:
+      return ::substrait::proto::SetRel::SET_OP_UNSPECIFIED;
+    case SetOpKind::minus_primary:
+      return ::substrait::proto::SetRel::SET_OP_MINUS_PRIMARY;
+    case SetOpKind::minus_multiset:
+      return ::substrait::proto::SetRel::SET_OP_MINUS_MULTISET;
+    case SetOpKind::intersection_primary:
+      return ::substrait::proto::SetRel::SET_OP_INTERSECTION_PRIMARY;
+    case SetOpKind::intersection_multiset:
+      return ::substrait::proto::SetRel::SET_OP_INTERSECTION_MULTISET;
+    case SetOpKind::union_distinct:
+      return ::substrait::proto::SetRel::SET_OP_UNION_DISTINCT;
+    case SetOpKind::union_all:
+      return ::substrait::proto::SetRel::SET_OP_UNION_ALL;
+  }
+}
+
 FailureOr<std::unique_ptr<Rel>>
-SubstraitExporter::exportOperation(UnionDistinctOp op) {
+SubstraitExporter::exportOperation(SetOp op) {
   // Build `RelCommon` message.
   auto relCommon = std::make_unique<RelCommon>();
   auto direct = std::make_unique<RelCommon::Direct>();
@@ -744,14 +764,14 @@ SubstraitExporter::exportOperation(UnionDistinctOp op) {
 
   FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
   if (failed(rightRel))
-    return failure();
+    return failure(); 
 
   // Build `SetRel` message.
   auto setRel = std::make_unique<SetRel>();
   setRel->set_allocated_common(relCommon.release());
   setRel->add_inputs()->CopyFrom(*rightRel->get());
   setRel->add_inputs()->CopyFrom(*leftRel->get());
-  setRel->set_op(::substrait::proto::SetRel::SET_OP_UNION_DISTINCT);
+  setRel->set_op(getSetOp(op.getKind()));
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
@@ -759,6 +779,8 @@ SubstraitExporter::exportOperation(UnionDistinctOp op) {
 
   return rel;
 }
+
+
 
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(RelOpInterface op) {
@@ -771,7 +793,7 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           FilterOp,
           NamedTableOp,
           ProjectOp,
-          UnionDistinctOp
+          SetOp
           // clang-format on
           >([&](auto op) { return exportOperation(op); })
       .Default([](auto op) {

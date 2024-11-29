@@ -18,6 +18,7 @@ include "mlir/IR/BuiltinAttributes.td"
 include "mlir/IR/CommonAttrConstraints.td"
 include "mlir/IR/OpBase.td"
 include "mlir/IR/SymbolInterfaces.td"
+include "mlir/IR/EnumAttr.td"
 
 class Substrait_Op<string mnemonic, list<Trait> traits = []> :
   Op<Substrait_Dialect, mnemonic, traits> {
@@ -525,24 +526,35 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   }];
 }
 
-def Substrait_UnionDistinctOp : Substrait_RelOp<"union_distinct", [
+def SetOpKind : I32EnumAttr<"SetOpKind", "The enum values correspond to those in the SetRel.SetOp message.",[I32EnumAttrCase<"unspecified", 0>,
+  I32EnumAttrCase<"minus_primary", 1>,
+  I32EnumAttrCase<"minus_multiset", 2>,
+  I32EnumAttrCase<"intersection_primary", 3>,
+  I32EnumAttrCase<"intersection_multiset", 4>,
+  I32EnumAttrCase<"union_distinct", 5>,
+  I32EnumAttrCase<"union_all", 6>] >;
+
+def Substrait_SetOp : Substrait_RelOp<"set", [
     DeclareOpInterfaceMethods<InferTypeOpInterface>
   ]> {
-  // TODO(daliashaaban): This will evolve into an operation for all SetRels.
-  let summary = "union distinct operation";
+  // TODO(daliashaaban): This will evolve into an operation that supports more than two inputs.
+  let summary = "set operation";
   let description = [{
-    Represents the `SetRel` message where op is set to SET_OP_UNION_DISTINCT.
+    Represents the `SetRel` message together with the `RelCommon`, input
+    `Rel`, and `SetOp` messages it contains. This operation performs 
+    relational set operations such as intersection, union, and difference.
     The current implementation only allows for two inputs (instead of two or more).
   }];
   
   let arguments = (ins
     Substrait_Relation:$left,
-    Substrait_Relation:$right
+    Substrait_Relation:$right,
+    SetOpKind:$kind
   );
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $left `u` $right attr-dict `:` type($left) `u` type($right) `->` type($result)
+    $kind `,` $left `,` $right attr-dict `:` type($left) `,` type($right) `->` type($result)
   }];
 }
 

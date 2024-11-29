@@ -47,8 +47,8 @@ namespace {
                                                  const ARG_TYPE &message);
 
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
-DECLARE_IMPORT_FUNC(SetRel, Rel, UnionDistinctOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
+DECLARE_IMPORT_FUNC(SetRel, Rel, SetOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
                     FieldReferenceOp)
@@ -141,8 +141,28 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   return builder.create<CrossOp>(leftVal, rightVal);
 }
 
-static mlir::FailureOr<UnionDistinctOp>
-importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
+std::optional<SetOpKind> getSetOpKind(SetRel::SetOp kind){
+  switch(kind){
+    case ::substrait::proto::SetRel::SET_OP_UNSPECIFIED:
+      return SetOpKind::unspecified;
+    case ::substrait::proto::SetRel::SET_OP_MINUS_PRIMARY:
+      return SetOpKind::minus_primary;
+    case ::substrait::proto::SetRel::SET_OP_MINUS_MULTISET:
+      return SetOpKind::minus_multiset;
+    case ::substrait::proto::SetRel::SET_OP_INTERSECTION_PRIMARY:
+      return SetOpKind::intersection_primary;
+    case ::substrait::proto::SetRel::SET_OP_INTERSECTION_MULTISET:
+      return SetOpKind::intersection_multiset;
+    case ::substrait::proto::SetRel::SET_OP_UNION_DISTINCT:
+      return SetOpKind::union_distinct;
+    case ::substrait::proto::SetRel::SET_OP_UNION_ALL:
+      return SetOpKind::union_all;
+    default:
+      return std::nullopt;
+  }
+}
+
+static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
   const SetRel &setRel = message.set();
 
   // Import left and right inputs.
@@ -155,16 +175,19 @@ importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(leftOp) || failed(rightOp))
     return failure();
 
-  if (setRel.op() != SetRel::SET_OP_UNION_DISTINCT)
+  std::optional<SetOpKind> kind = getSetOpKind(setRel.op()); 
+
+  // Check for unsupported set operations.
+  if (!kind)
     return mlir::emitError(
         builder.getLoc(),
-        "only 'union distinct' set operation supported for import");
+        "Set operation not supported for import"); 
 
-  // Build `UnionDistinctOp`.
+  // Build `SetOp`.
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  return builder.create<UnionDistinctOp>(leftVal, rightVal);
+  return builder.create<SetOp>(leftVal, rightVal, *kind);
 }
 
 static mlir::FailureOr<ExpressionOpInterface>

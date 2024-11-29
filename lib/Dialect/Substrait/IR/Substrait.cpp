@@ -34,6 +34,8 @@ void SubstraitDialect::initialize() {
       >();
 }
 
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.cpp.inc"
+
 //===----------------------------------------------------------------------===//
 // Substrait interfaces
 //===----------------------------------------------------------------------===//
@@ -254,7 +256,7 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
-LogicalResult UnionDistinctOp::inferReturnTypes(
+LogicalResult SetOp::inferReturnTypes(
     MLIRContext *context, std::optional<Location> loc, ValueRange operands,
     DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
     llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
