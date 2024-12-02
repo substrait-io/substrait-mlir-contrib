@@ -750,7 +750,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   setRel->set_allocated_common(relCommon.release());
   setRel->add_inputs()->CopyFrom(*rightRel->get());
   setRel->add_inputs()->CopyFrom(*leftRel->get());
-  setRel->set_op(static_cast<::substrait::proto::SetRel::SetOp>(op.getKind()));
+  setRel->set_op(static_cast<SetRel::SetOp>(op.getKind()));
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
