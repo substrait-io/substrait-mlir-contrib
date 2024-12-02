@@ -262,18 +262,22 @@ SetOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                         OpaqueProperties properties, RegionRange regions,
                         llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
 
-  Value leftInput = operands[0];
-  Value rightInput = operands[1];
+  ValueRange inputs = operands;
 
-  TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
-  TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
+  if (inputs.size() < 2)
+    return ::emitError(loc.value()) << "expected at least 2 inputs";
 
-  if (leftFieldTypes != rightFieldTypes)
-    return ::emitError(loc.value())
-           << "left and right inputs must have the same field types";
+  TypeRange fieldType = cast<TupleType>(inputs[0].getType()).getTypes();
 
-  auto resultType = TupleType::get(context, leftFieldTypes);
+  for (Value input : inputs) {
+    TypeRange inputFieldTypes = cast<TupleType>(input.getType()).getTypes();
+    if (fieldType != inputFieldTypes)
+      return ::emitError(loc.value())
+             << "all inputs must have the same field types";
+  }
 
+  TypeRange fieldTypes = cast<TupleType>(inputs[0].getType()).getTypes();
+  auto resultType = TupleType::get(context, fieldTypes);
   inferredReturnTypes = SmallVector<Type>{resultType};
 
   return success();
