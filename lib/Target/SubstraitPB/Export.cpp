@@ -717,25 +717,6 @@ SubstraitExporter::exportOperation(ProjectOp op) {
   return rel;
 }
 
-SetRel::SetOp getSetOp(SetOpKind kind) {
-  switch (kind) {
-  case SetOpKind::unspecified:
-    return ::substrait::proto::SetRel::SET_OP_UNSPECIFIED;
-  case SetOpKind::minus_primary:
-    return ::substrait::proto::SetRel::SET_OP_MINUS_PRIMARY;
-  case SetOpKind::minus_multiset:
-    return ::substrait::proto::SetRel::SET_OP_MINUS_MULTISET;
-  case SetOpKind::intersection_primary:
-    return ::substrait::proto::SetRel::SET_OP_INTERSECTION_PRIMARY;
-  case SetOpKind::intersection_multiset:
-    return ::substrait::proto::SetRel::SET_OP_INTERSECTION_MULTISET;
-  case SetOpKind::union_distinct:
-    return ::substrait::proto::SetRel::SET_OP_UNION_DISTINCT;
-  case SetOpKind::union_all:
-    return ::substrait::proto::SetRel::SET_OP_UNION_ALL;
-  }
-}
-
 FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   // Build `RelCommon` message.
   auto relCommon = std::make_unique<RelCommon>();
@@ -769,7 +750,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   setRel->set_allocated_common(relCommon.release());
   setRel->add_inputs()->CopyFrom(*rightRel->get());
   setRel->add_inputs()->CopyFrom(*leftRel->get());
-  setRel->set_op(getSetOp(op.getKind()));
+  setRel->set_op(static_cast<::substrait::proto::SetRel::SetOp>(op.getKind()));
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();

@@ -181,7 +181,7 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   // Check for unsupported set operations.
   if (!kind)
     return mlir::emitError(builder.getLoc(),
-                           "Set operation not supported for import");
+                           "unexpected 'operation' found");
 
   // Build `SetOp`.
   Value leftVal = leftOp.value()->getResult(0);
