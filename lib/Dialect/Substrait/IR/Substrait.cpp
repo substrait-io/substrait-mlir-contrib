@@ -155,11 +155,11 @@ EmitOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
-LogicalResult FetchOp::inferReturnTypes(
-    MLIRContext *context, std::optional<Location> loc, ValueRange operands,
-    DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
-    llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
-
+LogicalResult
+FetchOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
+                          ValueRange operands, DictionaryAttr attributes,
+                          OpaqueProperties properties, RegionRange regions,
+                          llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   Value input = operands[0];
 
   TypeRange leftFieldTypes = cast<TupleType>(input.getType()).getTypes();

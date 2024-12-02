@@ -330,8 +330,7 @@ SubstraitExporter::exportOperation(FieldReferenceOp op) {
   return expression;
 }
 
-FailureOr<std::unique_ptr<Rel>>
-SubstraitExporter::exportOperation(FetchOp op) {
+FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(FetchOp op) {
   // Build `RelCommon` message.
   auto relCommon = std::make_unique<RelCommon>();
   auto direct = std::make_unique<RelCommon::Direct>();
@@ -341,8 +340,7 @@ SubstraitExporter::exportOperation(FetchOp op) {
   auto inputOp =
       llvm::dyn_cast_if_present<RelOpInterface>(op.getInput().getDefiningOp());
   if (!inputOp)
-    return op->emitOpError(
-        "input was not produced by Substrait relation op");
+    return op->emitOpError("input was not produced by Substrait relation op");
 
   FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
   if (failed(inputRel))
