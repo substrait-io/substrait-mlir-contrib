@@ -141,27 +141,6 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   return builder.create<CrossOp>(leftVal, rightVal);
 }
 
-std::optional<SetOpKind> getSetOpKind(SetRel::SetOp kind) {
-  switch (kind) {
-  case ::substrait::proto::SetRel::SET_OP_UNSPECIFIED:
-    return SetOpKind::unspecified;
-  case ::substrait::proto::SetRel::SET_OP_MINUS_PRIMARY:
-    return SetOpKind::minus_primary;
-  case ::substrait::proto::SetRel::SET_OP_MINUS_MULTISET:
-    return SetOpKind::minus_multiset;
-  case ::substrait::proto::SetRel::SET_OP_INTERSECTION_PRIMARY:
-    return SetOpKind::intersection_primary;
-  case ::substrait::proto::SetRel::SET_OP_INTERSECTION_MULTISET:
-    return SetOpKind::intersection_multiset;
-  case ::substrait::proto::SetRel::SET_OP_UNION_DISTINCT:
-    return SetOpKind::union_distinct;
-  case ::substrait::proto::SetRel::SET_OP_UNION_ALL:
-    return SetOpKind::union_all;
-  default:
-    return std::nullopt;
-  }
-}
-
 static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
                                            const Rel &message) {
   const SetRel &setRel = message.set();
@@ -176,7 +155,7 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   if (failed(leftOp) || failed(rightOp))
     return failure();
 
-  std::optional<SetOpKind> kind = getSetOpKind(setRel.op());
+  std::optional<SetOpKind> kind = static_cast<::SetOpKind>(setRel.op());
 
   // Check for unsupported set operations.
   if (!kind)
