@@ -147,7 +147,7 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
                                            const Rel &message) {
   const SetRel &setRel = message.set();
 
-  // Import inputs 
+  // Import inputs
   const google::protobuf::RepeatedPtrField<Rel> &inputsRel = setRel.inputs();
 
   // Build `SetOp`.

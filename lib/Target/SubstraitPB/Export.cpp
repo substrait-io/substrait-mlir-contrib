@@ -724,8 +724,8 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   auto direct = std::make_unique<RelCommon::Direct>();
   relCommon->set_allocated_direct(direct.release());
 
-  llvm::SmallVector<Operation*> inputsOps;
-  llvm::SmallVector<Operation*> inputRel;
+  llvm::SmallVector<Operation *> inputsOps;
+  llvm::SmallVector<Operation *> inputRel;
 
   // Build `SetRel` message.
   auto setRel = std::make_unique<SetRel>();
@@ -733,7 +733,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   setRel->set_op(static_cast<SetRel::SetOp>(op.getKind()));
 
   // Build `inputs` message.
-  for (Value input : op.getInputs()){
+  for (Value input : op.getInputs()) {
     auto inputOp =
         llvm::dyn_cast_if_present<RelOpInterface>(input.getDefiningOp());
     if (!inputOp)
@@ -742,7 +742,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
     FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
     setRel->add_inputs()->CopyFrom(*inputRel->get());
   }
-      
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_set(setRel.release());
