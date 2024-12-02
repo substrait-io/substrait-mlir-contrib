@@ -29,6 +29,8 @@ FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
   switch (relType) {
   case Rel::RelTypeCase::kCross:
     return getCommon(rel.cross());
+  case Rel::RelTypeCase::kFetch:
+    return getCommon(rel.fetch());
   case Rel::RelTypeCase::kFilter:
     return getCommon(rel.filter());
   case Rel::RelTypeCase::kProject:
@@ -54,6 +56,8 @@ FailureOr<RelCommon *> getMutableCommon(Rel *rel, Location loc) {
   switch (relType) {
   case Rel::RelTypeCase::kCross:
     return getMutableCommon(rel->mutable_cross());
+  case Rel::RelTypeCase::kFetch:
+    return getMutableCommon((rel->mutable_fetch()));
   case Rel::RelTypeCase::kFilter:
     return getMutableCommon(rel->mutable_filter());
   case Rel::RelTypeCase::kProject:

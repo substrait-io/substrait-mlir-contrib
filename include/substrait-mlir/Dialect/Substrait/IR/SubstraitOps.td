@@ -415,6 +415,25 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
   }];
 }
 
+def Substrait_FetchOp : Substrait_RelOp<"fetch", [
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
+  let summary = "Fetch operation";
+  let description = [{
+    Represents a `FetchOp` message together with the `RelCommon` and input
+    `Rel` message it contains. 
+  }];
+  let arguments = (ins
+    Substrait_Relation:$input,
+    I64Attr: $offset,
+    I64Attr: $count
+  );
+  let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = [{
+    $input `,` $offset `,` $count attr-dict `:` type($input) `->` type($result)
+  }];
+}
+
 def Substrait_FilterOp : Substrait_RelOp<"filter", [
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,

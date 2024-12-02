@@ -48,6 +48,7 @@ namespace {
 
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(SetRel, Rel, UnionDistinctOp)
+DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
@@ -271,6 +272,21 @@ importLiteral(ImplicitLocOpBuilder builder,
     return emitError(loc) << Twine("unsupported Literal type: ") + desc->name();
   }
   }
+}
+
+static mlir::FailureOr<FetchOp>
+importFetchRel(ImplicitLocOpBuilder builder, const Rel &message) {
+  const FetchRel &fetchRel = message.fetch();
+
+  // Import input.
+  const Rel &inputRel = fetchRel.input();
+
+  mlir::FailureOr<RelOpInterface> inputOp = importRel(builder, inputRel);
+
+  // Build `FetchOp`.
+  Value inputVal = inputOp.value()->getResult(0);
+
+  return builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
 }
 
 static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
@@ -565,6 +581,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
   switch (relType) {
   case Rel::RelTypeCase::kCross:
     maybeOp = importCrossRel(builder, message);
+    break;
+  case Rel::RelTypeCase::kFetch:
+    maybeOp = importFetchRel(builder, message);
     break;
   case Rel::RelTypeCase::kFilter:
     maybeOp = importFilterRel(builder, message);
