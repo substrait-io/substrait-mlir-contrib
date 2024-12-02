@@ -545,8 +545,10 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   }];
 }
 
-def SetOpKind : I32EnumAttr<"SetOpKind", [{The enum values correspond to those 
-in the SetRel.SetOp message.}],[I32EnumAttrCase<"unspecified", 0>,
+def SetOpKind : I32EnumAttr<"SetOpKind",
+  "The enum values correspond to those in the SetRel.SetOp message.", [
+    I32EnumAttrCase<"unspecified", 0>,
+  // Remaining cases indented by four spaces
   I32EnumAttrCase<"minus_primary", 1>,
   I32EnumAttrCase<"minus_multiset", 2>,
   I32EnumAttrCase<"intersection_primary", 3>,
