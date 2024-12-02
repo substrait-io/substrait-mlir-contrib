@@ -35,7 +35,6 @@ void SubstraitDialect::initialize() {
 }
 
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.cpp.inc"
-
 //===----------------------------------------------------------------------===//
 // Substrait interfaces
 //===----------------------------------------------------------------------===//
