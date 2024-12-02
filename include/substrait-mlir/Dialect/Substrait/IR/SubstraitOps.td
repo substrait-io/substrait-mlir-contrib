@@ -19,7 +19,6 @@ include "mlir/IR/CommonAttrConstraints.td"
 include "mlir/IR/EnumAttr.td"
 include "mlir/IR/OpBase.td"
 include "mlir/IR/SymbolInterfaces.td"
-include "mlir/IR/EnumAttr.td"
 
 class Substrait_Op<string mnemonic, list<Trait> traits = []> :
   Op<Substrait_Dialect, mnemonic, traits> {
@@ -546,15 +545,14 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   }];
 }
 
-def SetOpKind : I32EnumAttr<"SetOpKind",
-  "The enum values correspond to those in the SetRel.SetOp message.", [
-    I32EnumAttrCase<"unspecified", 0>,
-    I32EnumAttrCase<"minus_primary", 1>,
-    I32EnumAttrCase<"minus_multiset", 2>,
-    I32EnumAttrCase<"intersection_primary", 3>,
-    I32EnumAttrCase<"intersection_multiset", 4>,
-    I32EnumAttrCase<"union_distinct", 5>,
-    I32EnumAttrCase<"union_all", 6>] >;
+def SetOpKind : I32EnumAttr<"SetOpKind", [{The enum values correspond to those 
+in the SetRel.SetOp message.}],[I32EnumAttrCase<"unspecified", 0>,
+  I32EnumAttrCase<"minus_primary", 1>,
+  I32EnumAttrCase<"minus_multiset", 2>,
+  I32EnumAttrCase<"intersection_primary", 3>,
+  I32EnumAttrCase<"intersection_multiset", 4>,
+  I32EnumAttrCase<"union_distinct", 5>,
+  I32EnumAttrCase<"union_all", 6>] >;
 
 def Substrait_SetOp : Substrait_RelOp<"set", [
     DeclareOpInterfaceMethods<InferTypeOpInterface>

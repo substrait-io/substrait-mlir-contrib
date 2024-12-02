@@ -163,7 +163,8 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
 
   // Check for unsupported set operations.
   if (!kind)
-    return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
+    return mlir::emitError(builder.getLoc(),
+                           "unexpected 'operation' found");
 
   return builder.create<SetOp>(inputsVal, *kind);
 }
