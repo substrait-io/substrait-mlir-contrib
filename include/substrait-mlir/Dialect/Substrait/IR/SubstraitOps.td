@@ -555,10 +555,11 @@ def SetOpKind : I32EnumAttr<"SetOpKind",
     I32EnumAttrCase<"union_distinct", 5>,
     I32EnumAttrCase<"union_all", 6>] >;
 
+
+ //TODO(daliashaaban): Change type inference logic once nullability is supported. 
 def Substrait_SetOp : Substrait_RelOp<"set", [
     SameOperandsAndResultType
   ]> {
-  //TODO(daliashaaban): Change type inference logic once nullability is supported. 
   let summary = "set operation";
   let description = [{
     Represents the `SetRel` message together with the `RelCommon`, input
