@@ -738,7 +738,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
       return op->emitOpError(
           "inputs were not produced by Substrait relation op");
     FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
-    if (failed(inputRel))  
+    if (failed(inputRel))
       return failure();
     setRel->add_inputs()->CopyFrom(*inputRel->get());
   }

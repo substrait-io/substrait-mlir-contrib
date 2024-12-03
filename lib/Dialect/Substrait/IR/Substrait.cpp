@@ -270,8 +270,10 @@ SetOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   Type inputType = inputs[0].getType();
   TypeRange firstInputFieldTypes = cast<TupleType>(inputType).getTypes();
 
-  //TODO(daliashaaban): Update to check type equality ignoring nullability and handle 
-  //                                                 nullable fields based on op kind.
+  // TODO(daliashaaban): Update to check type equality ignoring nullability and
+  // handle
+  //                                                  nullable fields based on
+  //                                                  op kind.
   for (Value input : inputs) {
     TypeRange inputFieldTypes = cast<TupleType>(input.getType()).getTypes();
     if (firstInputFieldTypes != inputFieldTypes)

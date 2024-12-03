@@ -548,7 +548,6 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
   }];
   
   let arguments = (ins
-    // ConfinedType<Variadic<Substrait_Relation>, CPred<"($_self.size()>2)">>: $inputs,
     Variadic<Substrait_Relation>:$inputs,
     SetOpKind:$kind
   );
