@@ -277,15 +277,13 @@ importLiteral(ImplicitLocOpBuilder builder,
 static mlir::FailureOr<FetchOp> importFetchRel(ImplicitLocOpBuilder builder,
                                                const Rel &message) {
   const FetchRel &fetchRel = message.fetch();
-
+  
   // Import input.
   const Rel &inputRel = fetchRel.input();
-
   mlir::FailureOr<RelOpInterface> inputOp = importRel(builder, inputRel);
 
   // Build `FetchOp`.
   Value inputVal = inputOp.value()->getResult(0);
-
   return builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
 }
 

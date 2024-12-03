@@ -416,7 +416,7 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
 }
 
 def Substrait_FetchOp : Substrait_RelOp<"fetch", [
-    DeclareOpInterfaceMethods<InferTypeOpInterface>
+    SameOperandsAndResultType
   ]> {
   let summary = "Fetch operation";
   let description = [{
@@ -425,12 +425,12 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   }];
   let arguments = (ins
     Substrait_Relation:$input,
-    I64Attr: $offset,
-    I64Attr: $count
+    DefaultValuedAttr<ConfinedAttr<I64Attr, [IntNonNegative]>, "0">: $offset,
+    ConfinedAttr<I64Attr, [IntMinValue<-1>]>: $count
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $input `,` $offset `,` $count attr-dict `:` type($input) `->` type($result)
+    $count `offset` $offset `from` $input attr-dict `:` type($input)
   }];
 }
 

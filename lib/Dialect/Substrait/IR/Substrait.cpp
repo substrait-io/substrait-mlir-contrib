@@ -155,22 +155,6 @@ EmitOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
-LogicalResult
-FetchOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
-                          ValueRange operands, DictionaryAttr attributes,
-                          OpaqueProperties properties, RegionRange regions,
-                          llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
-  Value input = operands[0];
-
-  TypeRange leftFieldTypes = cast<TupleType>(input.getType()).getTypes();
-
-  auto resultType = TupleType::get(context, leftFieldTypes);
-
-  inferredReturnTypes = SmallVector<Type>{resultType};
-
-  return success();
-}
-
 /// Computes the type of the nested field of the given `type` identified by
 /// `position`. Each entry `n` in the given index array `position` corresponds
 /// to the `n`-th entry in that level. The function is thus implemented
