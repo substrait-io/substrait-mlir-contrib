@@ -724,7 +724,6 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   auto direct = std::make_unique<RelCommon::Direct>();
   relCommon->set_allocated_direct(direct.release());
 
-  llvm::SmallVector<Operation *> inputsOps;
   llvm::SmallVector<Operation *> inputRel;
 
   // Build `SetRel` message.

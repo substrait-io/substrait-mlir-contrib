@@ -275,9 +275,7 @@ SetOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
       return ::emitError(loc.value())
              << "all inputs must have the same field types";
   }
-
-  TypeRange fieldTypes = cast<TupleType>(inputs[0].getType()).getTypes();
-  auto resultType = TupleType::get(context, fieldTypes);
+  auto resultType = TupleType::get(context, fieldType);
   inferredReturnTypes = SmallVector<Type>{resultType};
 
   return success();
