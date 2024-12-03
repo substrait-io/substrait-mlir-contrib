@@ -47,9 +47,9 @@ namespace {
                                                  const ARG_TYPE &message);
 
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
-DECLARE_IMPORT_FUNC(SetRel, Rel, UnionDistinctOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
+DECLARE_IMPORT_FUNC(SetRel, Rel, SetOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
                     FieldReferenceOp)
@@ -142,8 +142,8 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   return builder.create<CrossOp>(leftVal, rightVal);
 }
 
-static mlir::FailureOr<UnionDistinctOp>
-importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
+static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
+                                           const Rel &message) {
   const SetRel &setRel = message.set();
 
   // Import left and right inputs.
@@ -156,16 +156,17 @@ importSetRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(leftOp) || failed(rightOp))
     return failure();
 
-  if (setRel.op() != SetRel::SET_OP_UNION_DISTINCT)
-    return mlir::emitError(
-        builder.getLoc(),
-        "only 'union distinct' set operation supported for import");
+  std::optional<SetOpKind> kind = static_cast<::SetOpKind>(setRel.op());
 
-  // Build `UnionDistinctOp`.
+  // Check for unsupported set operations.
+  if (!kind)
+    return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
+
+  // Build `SetOp`.
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  return builder.create<UnionDistinctOp>(leftVal, rightVal);
+  return builder.create<SetOp>(leftVal, rightVal, *kind);
 }
 
 static mlir::FailureOr<ExpressionOpInterface>
