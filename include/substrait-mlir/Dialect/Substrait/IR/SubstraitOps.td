@@ -430,7 +430,7 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $count `offset` $offset `from` $input attr-dict `:` type($input)
+    $count (`offset` $offset^)? `from` $input attr-dict `:` type($input)
   }];
 }
 
