@@ -9,7 +9,6 @@
 #include "substrait-mlir/Target/SubstraitPB/Import.h"
 
 #include "ProtobufUtils.h"
-#include "google/protobuf/message_lite.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/ImplicitLocOpBuilder.h"
 #include "mlir/IR/OwningOpRef.h"
@@ -19,7 +18,6 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
-#include <mlir/IR/ValueRange.h>
 #include <substrait/proto/algebra.pb.h>
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>

@@ -267,16 +267,19 @@ SetOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   if (inputs.size() < 2)
     return ::emitError(loc.value()) << "expected at least 2 inputs";
 
-  TypeRange fieldType = cast<TupleType>(inputs[0].getType()).getTypes();
+  Type inputType = inputs[0].getType();
+  TypeRange firstInputFieldTypes = cast<TupleType>(inputType).getTypes();
 
+  //TODO(daliashaaban): Update to check type equality ignoring nullability and handle 
+  //                                                 nullable fields based on op kind.
   for (Value input : inputs) {
     TypeRange inputFieldTypes = cast<TupleType>(input.getType()).getTypes();
-    if (fieldType != inputFieldTypes)
+    if (firstInputFieldTypes != inputFieldTypes)
       return ::emitError(loc.value())
              << "all inputs must have the same field types";
   }
-  auto resultType = TupleType::get(context, fieldType);
-  inferredReturnTypes = SmallVector<Type>{resultType};
+
+  inferredReturnTypes = SmallVector<Type>{inputType};
 
   return success();
 }

@@ -16,7 +16,6 @@
 
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
-#include <mlir/IR/ValueRange.h>
 #include <substrait/proto/algebra.pb.h>
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>
@@ -739,6 +738,8 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
       return op->emitOpError(
           "inputs were not produced by Substrait relation op");
     FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
+    if (failed(inputRel))  
+      return failure();
     setRel->add_inputs()->CopyFrom(*inputRel->get());
   }
 
