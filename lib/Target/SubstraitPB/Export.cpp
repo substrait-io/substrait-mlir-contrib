@@ -55,7 +55,7 @@ public:
   DECLARE_EXPORT_FUNC(PlanOp, Plan)
   DECLARE_EXPORT_FUNC(ProjectOp, Rel)
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
-  DECLARE_EXPORT_FUNC(UnionDistinctOp, Rel)
+  DECLARE_EXPORT_FUNC(SetOp, Rel)
 
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
@@ -717,8 +717,7 @@ SubstraitExporter::exportOperation(ProjectOp op) {
   return rel;
 }
 
-FailureOr<std::unique_ptr<Rel>>
-SubstraitExporter::exportOperation(UnionDistinctOp op) {
+FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   // Build `RelCommon` message.
   auto relCommon = std::make_unique<RelCommon>();
   auto direct = std::make_unique<RelCommon::Direct>();
@@ -751,7 +750,7 @@ SubstraitExporter::exportOperation(UnionDistinctOp op) {
   setRel->set_allocated_common(relCommon.release());
   setRel->add_inputs()->CopyFrom(*rightRel->get());
   setRel->add_inputs()->CopyFrom(*leftRel->get());
-  setRel->set_op(::substrait::proto::SetRel::SET_OP_UNION_DISTINCT);
+  setRel->set_op(static_cast<SetRel::SetOp>(op.getKind()));
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
@@ -771,7 +770,7 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           FilterOp,
           NamedTableOp,
           ProjectOp,
-          UnionDistinctOp
+          SetOp
           // clang-format on
           >([&](auto op) { return exportOperation(op); })
       .Default([](auto op) {
