@@ -754,34 +754,25 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   auto direct = std::make_unique<RelCommon::Direct>();
   relCommon->set_allocated_direct(direct.release());
 
-  // Build `left` input message.
-  auto leftOp =
-      llvm::dyn_cast_if_present<RelOpInterface>(op.getLeft().getDefiningOp());
-  if (!leftOp)
-    return op->emitOpError(
-        "left input was not produced by Substrait relation op");
-
-  FailureOr<std::unique_ptr<Rel>> leftRel = exportOperation(leftOp);
-  if (failed(leftRel))
-    return failure();
-
-  // Build `right` input message.
-  auto rightOp =
-      llvm::dyn_cast_if_present<RelOpInterface>(op.getRight().getDefiningOp());
-  if (!rightOp)
-    return op->emitOpError(
-        "right input was not produced by Substrait relation op");
-
-  FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
-  if (failed(rightRel))
-    return failure();
+  llvm::SmallVector<Operation *> inputRel;
 
   // Build `SetRel` message.
   auto setRel = std::make_unique<SetRel>();
   setRel->set_allocated_common(relCommon.release());
-  setRel->add_inputs()->CopyFrom(*rightRel->get());
-  setRel->add_inputs()->CopyFrom(*leftRel->get());
   setRel->set_op(static_cast<SetRel::SetOp>(op.getKind()));
+
+  // Build `inputs` message.
+  for (Value input : op.getInputs()) {
+    auto inputOp =
+        llvm::dyn_cast_if_present<RelOpInterface>(input.getDefiningOp());
+    if (!inputOp)
+      return op->emitOpError(
+          "inputs were not produced by Substrait relation op");
+    FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
+    if (failed(inputRel))
+      return failure();
+    setRel->add_inputs()->CopyFrom(*inputRel->get());
+  }
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();

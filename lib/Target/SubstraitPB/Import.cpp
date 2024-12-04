@@ -146,15 +146,18 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
                                            const Rel &message) {
   const SetRel &setRel = message.set();
 
-  // Import left and right inputs.
-  const Rel &leftRel = setRel.inputs(0);
-  const Rel &rightRel = setRel.inputs(1);
+  // Import inputs
+  const google::protobuf::RepeatedPtrField<Rel> &inputsRel = setRel.inputs();
 
-  mlir::FailureOr<RelOpInterface> leftOp = importRel(builder, leftRel);
-  mlir::FailureOr<RelOpInterface> rightOp = importRel(builder, rightRel);
+  // Build `SetOp`.
+  llvm::SmallVector<Value> inputsVal;
 
-  if (failed(leftOp) || failed(rightOp))
-    return failure();
+  for (const Rel &inputRel : inputsRel) {
+    mlir::FailureOr<RelOpInterface> inputOp = importRel(builder, inputRel);
+    if (failed(inputOp))
+      return failure();
+    inputsVal.push_back(inputOp.value()->getResult(0));
+  }
 
   std::optional<SetOpKind> kind = static_cast<::SetOpKind>(setRel.op());
 
@@ -162,11 +165,7 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   if (!kind)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  // Build `SetOp`.
-  Value leftVal = leftOp.value()->getResult(0);
-  Value rightVal = rightOp.value()->getResult(0);
-
-  return builder.create<SetOp>(leftVal, rightVal, *kind);
+  return builder.create<SetOp>(inputsVal, *kind);
 }
 
 static mlir::FailureOr<ExpressionOpInterface>

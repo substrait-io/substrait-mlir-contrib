@@ -558,24 +558,22 @@ def SetOpKind : I32EnumAttr<"SetOpKind",
 def Substrait_SetOp : Substrait_RelOp<"set", [
     DeclareOpInterfaceMethods<InferTypeOpInterface>
   ]> {
-  // TODO(daliashaaban): This will evolve into an operation that supports more than two inputs.
   let summary = "set operation";
   let description = [{
     Represents the `SetRel` message together with the `RelCommon`, input
     `Rel`, and `SetOp` enumeration it contains. This operation performs 
     relational set operations such as intersection, union, and difference.
-    The current implementation only allows for two inputs (instead of two or more).
+    There must be at least two inputs.
   }];
   
   let arguments = (ins
-    Substrait_Relation:$left,
-    Substrait_Relation:$right,
+    Variadic<Substrait_Relation>:$inputs,
     SetOpKind:$kind
   );
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind `,` $left `,` $right attr-dict `:` type($left) `,` type($right) `->` type($result)
+    $kind `,` $inputs attr-dict `:` type($inputs) `->` type($result)
   }];
 }
 
