@@ -555,8 +555,9 @@ def SetOpKind : I32EnumAttr<"SetOpKind",
     I32EnumAttrCase<"union_distinct", 5>,
     I32EnumAttrCase<"union_all", 6>] >;
 
+ //TODO(daliashaaban): Change type inference logic once nullability is supported. 
 def Substrait_SetOp : Substrait_RelOp<"set", [
-    DeclareOpInterfaceMethods<InferTypeOpInterface>
+    SameOperandsAndResultType
   ]> {
   let summary = "set operation";
   let description = [{
@@ -573,7 +574,7 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind `,` $inputs attr-dict `:` type($inputs) `->` type($result)
+    $kind `,` $inputs attr-dict `:` type($result) 
   }];
 }
 

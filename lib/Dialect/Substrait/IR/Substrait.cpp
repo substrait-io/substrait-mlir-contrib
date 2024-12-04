@@ -256,34 +256,6 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
-LogicalResult
-SetOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
-                        ValueRange operands, DictionaryAttr attributes,
-                        OpaqueProperties properties, RegionRange regions,
-                        llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
-
-  ValueRange inputs = operands;
-
-  if (inputs.size() < 2)
-    return ::emitError(loc.value()) << "expected at least 2 inputs";
-
-  Type inputType = inputs[0].getType();
-  TypeRange firstInputFieldTypes = cast<TupleType>(inputType).getTypes();
-
-  // TODO(daliashaaban): Update to check type equality ignoring nullability and
-  // handle nullable fields based on op kind.
-  for (Value input : inputs) {
-    TypeRange inputFieldTypes = cast<TupleType>(input.getType()).getTypes();
-    if (firstInputFieldTypes != inputFieldTypes)
-      return ::emitError(loc.value())
-             << "all inputs must have the same field types";
-  }
-
-  inferredReturnTypes = SmallVector<Type>{inputType};
-
-  return success();
-}
-
 /// Verifies that the provided field names match the provided field types. While
 /// the field types are potentially nested, the names are given in a single,
 /// flat list and correspond to the field types in depth first order (where each
