@@ -48,6 +48,7 @@ public:
   DECLARE_EXPORT_FUNC(EmitOp, Rel)
   DECLARE_EXPORT_FUNC(ExpressionOpInterface, Expression)
   DECLARE_EXPORT_FUNC(FieldReferenceOp, Expression)
+  DECLARE_EXPORT_FUNC(FetchOp, Rel)
   DECLARE_EXPORT_FUNC(FilterOp, Rel)
   DECLARE_EXPORT_FUNC(LiteralOp, Expression)
   DECLARE_EXPORT_FUNC(ModuleOp, Plan)
@@ -327,6 +328,36 @@ SubstraitExporter::exportOperation(FieldReferenceOp op) {
   expression->set_allocated_selection(fieldReference.release());
 
   return expression;
+}
+
+FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(FetchOp op) {
+  // Build `RelCommon` message.
+  auto relCommon = std::make_unique<RelCommon>();
+  auto direct = std::make_unique<RelCommon::Direct>();
+  relCommon->set_allocated_direct(direct.release());
+
+  // Build `input` message.
+  auto inputOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getInput().getDefiningOp());
+  if (!inputOp)
+    return op->emitOpError("input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
+  if (failed(inputRel))
+    return failure();
+
+  // Build `FetchRel` message.
+  auto fetchRel = std::make_unique<FetchRel>();
+  fetchRel->set_allocated_common(relCommon.release());
+  fetchRel->set_allocated_input(inputRel->release());
+  fetchRel->set_offset(op.getOffset());
+  fetchRel->set_count(op.getCount());
+
+  // Build `Rel` message.
+  auto rel = std::make_unique<Rel>();
+  rel->set_allocated_fetch(fetchRel.release());
+
+  return rel;
 }
 
 FailureOr<std::unique_ptr<Rel>>
@@ -766,6 +797,7 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           // clang-format off
           CrossOp,
           EmitOp,
+          FetchOp,
           FieldReferenceOp,
           FilterOp,
           NamedTableOp,
