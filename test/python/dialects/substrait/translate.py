@@ -9,6 +9,7 @@
 # RUN: %PYTHON %s 2>&1 | FileCheck %s
 
 import json
+from typing import cast
 
 from substrait_mlir.dialects import substrait as ss, arith
 from substrait_mlir.ir import Context, Location
@@ -42,7 +43,7 @@ def testJsonFormat():
   print(json_plan)
   # CHECK: {"version":{"minorNumber":42,"patchNumber":1}}
 
-  plan_op = plan_module.body.operations[0]
+  plan_op = cast(ss.PlanOp, plan_module.body.operations[0])
   print(plan_op.to_json())
   # CHECK: {"version":{"minorNumber":42,"patchNumber":1}}
 
@@ -68,7 +69,7 @@ def testTextPB():
   # CHECK-NEXT:   minor_number: 42
   # CHECK-NEXT:   patch_number: 1
 
-  plan_op = plan_module.body.operations[0]
+  plan_op = cast(ss.PlanOp, plan_module.body.operations[0])
   print(plan_op.to_textpb())
   # CHECK:      version {
 
@@ -86,7 +87,7 @@ def testBinPB():
   print(bin_plan)
   # CHECK: 2
 
-  plan_op = plan_module.body.operations[0]
+  plan_op = cast(ss.PlanOp, plan_module.body.operations[0])
   print(plan_op.to_binpb())
   # CHECK: 2
 

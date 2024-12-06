@@ -97,3 +97,11 @@ jobs:
     - name: Run lit tests
       run: |
         cmake --build ${SUBSTRAIT_MLIR_MAIN_BINARY_DIR} --target check-substrait-mlir
+
+    # Run this as part of the `build` job because we need the `build` folder.
+    - name: Run pyright to test if typing annotations are correct
+      uses: jakebailey/pyright-action@v2
+      with:
+        stats: true
+        working-directory: substrait-mlir
+        project: pyproject.toml
