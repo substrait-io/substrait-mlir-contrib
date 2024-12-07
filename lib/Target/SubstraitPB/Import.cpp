@@ -249,7 +249,7 @@ importFieldReference(ImplicitLocOpBuilder builder,
 }
 
 static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
-                                               const Rel &message) {
+                                             const Rel &message) {
   const JoinRel &joinRel = message.join();
 
   // Import left and right inputs.
@@ -266,15 +266,15 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  std::optional<JoinTypeKind> join_type = static_cast<::JoinTypeKind>(joinRel.type());
+  std::optional<JoinTypeKind> join_type =
+      static_cast<::JoinTypeKind>(joinRel.type());
 
   // Check for unsupported set operations.
   if (!join_type)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-
   return builder.create<JoinOp>(leftVal, rightVal, *join_type);
-                                               }
+}
 
 static mlir::FailureOr<LiteralOp>
 importLiteral(ImplicitLocOpBuilder builder,

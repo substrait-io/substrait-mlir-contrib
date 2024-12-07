@@ -262,8 +262,7 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(EmitOp op) {
   return inputRel;
 }
 
-FailureOr<std::unique_ptr<Rel>> 
-SubstraitExporter::exportOperation(JoinOp op) {
+FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(JoinOp op) {
   // Build `RelCommon` message.
   auto relCommon = std::make_unique<RelCommon>();
   auto direct = std::make_unique<RelCommon::Direct>();
@@ -297,7 +296,7 @@ SubstraitExporter::exportOperation(JoinOp op) {
   joinRel->set_allocated_left(leftRel->release());
   joinRel->set_allocated_right(rightRel->release());
   joinRel->set_type(static_cast<JoinRel::JoinType>(op.getJoinType()));
-  
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_join(joinRel.release());
