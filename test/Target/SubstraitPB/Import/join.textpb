@@ -1,0 +1,559 @@
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | FileCheck %s
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join unspecified %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join inner %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_INNER
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join outer %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_OUTER
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join left %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_LEFT
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join right %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_RIGHT
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join semi %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_SEMI
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join anti %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_ANTI
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation {
+# CHECK:           %[[V0:.*]] = named_table
+# CHECK:           %[[V1:.*]] = named_table
+# CHECK-NEXT:      %[[V2:.*]] = join single %[[V0]] j %[[V1]] : tuple<si32> j tuple<si32>
+# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+
+relations {
+  rel {
+    join {
+      common {
+        direct {
+        }
+      }
+      left {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      right {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      type: JOIN_TYPE_SINGLE
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}

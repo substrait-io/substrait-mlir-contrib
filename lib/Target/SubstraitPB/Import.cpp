@@ -53,6 +53,7 @@ DECLARE_IMPORT_FUNC(SetRel, Rel, SetOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
                     FieldReferenceOp)
+DECLARE_IMPORT_FUNC(JoinRel, Rel, JoinOp)
 DECLARE_IMPORT_FUNC(Literal, Expression::Literal, LiteralOp)
 DECLARE_IMPORT_FUNC(NamedTable, Rel, NamedTableOp)
 DECLARE_IMPORT_FUNC(Plan, Plan, PlanOp)
@@ -246,6 +247,34 @@ importFieldReference(ImplicitLocOpBuilder builder,
   // Build and return the op.
   return builder.create<FieldReferenceOp>(container, indices);
 }
+
+static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
+                                               const Rel &message) {
+  const JoinRel &joinRel = message.join();
+
+  // Import left and right inputs.
+  const Rel &leftRel = joinRel.left();
+  const Rel &rightRel = joinRel.right();
+
+  mlir::FailureOr<RelOpInterface> leftOp = importRel(builder, leftRel);
+  mlir::FailureOr<RelOpInterface> rightOp = importRel(builder, rightRel);
+
+  if (failed(leftOp) || failed(rightOp))
+    return failure();
+
+  // Build `JoinOp`.
+  Value leftVal = leftOp.value()->getResult(0);
+  Value rightVal = rightOp.value()->getResult(0);
+
+  std::optional<JoinTypeKind> join_type = static_cast<::JoinTypeKind>(joinRel.type());
+
+  // Check for unsupported set operations.
+  if (!join_type)
+    return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
+
+
+  return builder.create<JoinOp>(leftVal, rightVal, *join_type);
+                                               }
 
 static mlir::FailureOr<LiteralOp>
 importLiteral(ImplicitLocOpBuilder builder,
@@ -585,6 +614,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     break;
   case Rel::RelTypeCase::kFilter:
     maybeOp = importFilterRel(builder, message);
+    break;
+  case Rel::RelTypeCase::kJoin:
+    maybeOp = importJoinRel(builder, message);
     break;
   case Rel::RelTypeCase::kProject:
     maybeOp = importProjectRel(builder, message);
