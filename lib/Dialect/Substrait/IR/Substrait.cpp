@@ -48,26 +48,30 @@ void SubstraitDialect::initialize() {
 //===----------------------------------------------------------------------===//
 
 bool parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
+    // `all` keyword (corresponds to `-1`).
   if (!parser.parseOptionalKeyword("all")) {
     count = parser.getBuilder().getI64IntegerAttr(-1);
-  } else {
-    int64_t result;
-    if (!parser.parseInteger(result)) {
-      count = parser.getBuilder().getI64IntegerAttr(result);
-    } else {
-      return true;
-    }
+    return false;
   }
-  return false;
+  
+  // Normal integer.
+  int64_t result;
+  if (!parser.parseInteger(result)) {
+    count = parser.getBuilder().getI64IntegerAttr(result);
+    return false;
+  }
+  
+  // Error.
+  return true;
 }
 
 void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   if (count.getInt() == -1) {
     printer << "all";
     return;
-  } else {
-    printer << count.getValue();
   }
+  // Normal integer.
+  printer << count.getValue();
 }
 //===----------------------------------------------------------------------===//
 // Substrait operations
