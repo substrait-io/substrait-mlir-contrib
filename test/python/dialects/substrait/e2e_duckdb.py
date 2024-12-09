@@ -49,7 +49,8 @@ def testNamedTable():
   pb_plan = ss.to_binpb(plan.operation).encode()
 
   # Execute in duckdb and print result.
-  query_result = con.from_substrait(proto=pb_plan)
+  # Ignore type because DuckDB's `from_substrait` has wrong type annotation.
+  query_result = con.from_substrait(proto=pb_plan)  # type: ignore
 
   print(query_result.to_arrow_table())
   # CHECK-NEXT:          pyarrow.Table
