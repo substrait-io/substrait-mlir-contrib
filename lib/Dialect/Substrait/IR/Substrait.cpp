@@ -48,19 +48,19 @@ void SubstraitDialect::initialize() {
 //===----------------------------------------------------------------------===//
 
 bool parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
-    // `all` keyword (corresponds to `-1`).
+  // `all` keyword (corresponds to `-1`).
   if (!parser.parseOptionalKeyword("all")) {
     count = parser.getBuilder().getI64IntegerAttr(-1);
     return false;
   }
-  
+
   // Normal integer.
   int64_t result;
   if (!parser.parseInteger(result)) {
     count = parser.getBuilder().getI64IntegerAttr(result);
     return false;
   }
-  
+
   // Error.
   return true;
 }
