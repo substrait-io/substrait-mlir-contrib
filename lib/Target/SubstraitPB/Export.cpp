@@ -50,6 +50,7 @@ public:
   DECLARE_EXPORT_FUNC(FieldReferenceOp, Expression)
   DECLARE_EXPORT_FUNC(FetchOp, Rel)
   DECLARE_EXPORT_FUNC(FilterOp, Rel)
+  DECLARE_EXPORT_FUNC(JoinOp, Rel)
   DECLARE_EXPORT_FUNC(LiteralOp, Expression)
   DECLARE_EXPORT_FUNC(ModuleOp, Plan)
   DECLARE_EXPORT_FUNC(NamedTableOp, Rel)
@@ -259,6 +260,48 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(EmitOp op) {
   relCommon.value()->set_allocated_emit(emit.release());
 
   return inputRel;
+}
+
+FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(JoinOp op) {
+  // Build `RelCommon` message.
+  auto relCommon = std::make_unique<RelCommon>();
+  auto direct = std::make_unique<RelCommon::Direct>();
+  relCommon->set_allocated_direct(direct.release());
+
+  // Build `left` input message.
+  auto leftOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getLeft().getDefiningOp());
+  if (!leftOp)
+    return op->emitOpError(
+        "left input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> leftRel = exportOperation(leftOp);
+  if (failed(leftRel))
+    return failure();
+
+  // Build `right` input message.
+  auto rightOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getRight().getDefiningOp());
+  if (!rightOp)
+    return op->emitOpError(
+        "right input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
+  if (failed(rightRel))
+    return failure();
+
+  // Build `JoinRel` message.
+  auto joinRel = std::make_unique<JoinRel>();
+  joinRel->set_allocated_common(relCommon.release());
+  joinRel->set_allocated_left(leftRel->release());
+  joinRel->set_allocated_right(rightRel->release());
+  joinRel->set_type(static_cast<JoinRel::JoinType>(op.getJoinType()));
+
+  // Build `Rel` message.
+  auto rel = std::make_unique<Rel>();
+  rel->set_allocated_join(joinRel.release());
+
+  return rel;
 }
 
 FailureOr<std::unique_ptr<Expression>>
@@ -791,6 +834,7 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           FetchOp,
           FieldReferenceOp,
           FilterOp,
+          JoinOp,
           NamedTableOp,
           ProjectOp,
           SetOp
