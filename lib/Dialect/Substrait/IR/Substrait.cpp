@@ -44,6 +44,36 @@ void SubstraitDialect::initialize() {
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc"
 
 //===----------------------------------------------------------------------===//
+// Custom Parser and Printer for Substrait
+//===----------------------------------------------------------------------===//
+
+bool parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
+  // `all` keyword (corresponds to `-1`).
+  if (!parser.parseOptionalKeyword("all")) {
+    count = parser.getBuilder().getI64IntegerAttr(-1);
+    return false;
+  }
+
+  // Normal integer.
+  int64_t result;
+  if (!parser.parseInteger(result)) {
+    count = parser.getBuilder().getI64IntegerAttr(result);
+    return false;
+  }
+
+  // Error.
+  return true;
+}
+
+void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
+  if (count.getInt() == -1) {
+    printer << "all";
+    return;
+  }
+  // Normal integer.
+  printer << count.getValue();
+}
+//===----------------------------------------------------------------------===//
 // Substrait operations
 //===----------------------------------------------------------------------===//
 
