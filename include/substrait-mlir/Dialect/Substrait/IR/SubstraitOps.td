@@ -368,7 +368,7 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
     ```mlir
     %0 = ...
     %1 = ...
-    %2 = cross %0 x %1 : tuple<si32> x tuple<si32> -> tuple<si32, si32>
+    %2 = cross %0 x %1 : tuple<si32> x tuple<si32> 
     ```
   }];
   let arguments = (ins
