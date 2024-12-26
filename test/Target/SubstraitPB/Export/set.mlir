@@ -22,7 +22,6 @@
 // CHECK-NEXT:          read {
 // CHECK-NOT:             op: 
 
-  
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
