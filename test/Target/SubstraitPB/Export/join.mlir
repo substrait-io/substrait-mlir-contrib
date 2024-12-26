@@ -20,12 +20,13 @@
 // CHECK-NEXT:          read {
 // CHECK:             right {
 // CHECK-NEXT:          read {
+// CHECK-NOT:             op: 
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join unspecified %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join unspecified %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -49,7 +50,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join inner %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join inner %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -73,7 +74,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join outer %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join outer %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -97,7 +98,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join left %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join left %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -121,7 +122,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join right %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join right %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -145,7 +146,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join semi %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join semi %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -169,7 +170,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join anti %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join anti %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }
@@ -193,7 +194,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = named_table @t2 as ["b"] : tuple<si32>
-    %2 = join single %0 j %1 : tuple<si32> j tuple<si32> 
+    %2 = join single %0, %1 : tuple<si32> , tuple<si32> -> tuple<si32,si32>
     yield %2 : tuple<si32, si32>
   }
 }

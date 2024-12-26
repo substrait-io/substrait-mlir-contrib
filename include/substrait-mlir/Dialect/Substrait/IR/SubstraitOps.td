@@ -500,7 +500,7 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferT
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $join_type `join` $left `,` $right attr-dict `:` type($left) `,` type($right) -> type($result)
+    $join_type $left `,` $right attr-dict `:` type($left) `,` type($right) `->` type($result)
   }];
 }
 

@@ -267,6 +267,49 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
   TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
 
+  // // check join type
+  // Adaptor adaptor(operands, attributes, properties, regions);
+  
+  // JoinTypeKind join_type = adaptor.getJoinType();
+
+  // // get instance of join_type inner, outer, right, left
+  // std::set<JoinTypeKind> join_types = {
+  //   JoinTypeKind::unspecified,
+  //   JoinTypeKind::inner,
+  //   JoinTypeKind::outer,
+  //   JoinTypeKind::right,
+  //   JoinTypeKind::left,
+  //   JoinTypeKind::anti,
+  //   JoinTypeKind::single
+  // };
+
+  // JoinTypeKind join_type_semi = JoinTypeKind::semi;
+  // // JoinTypeKind join_type_anti = JoinTypeKind::anti;
+
+
+  // SmallVector<mlir::Type> fieldTypes;
+
+  // bool is_match = join_types.find(join_type) != join_types.end();
+
+  // if(is_match){
+  //   // return all record for left and right input
+  //   llvm::append_range(fieldTypes, leftFieldTypes);
+  //   llvm::append_range(fieldTypes, rightFieldTypes);
+
+  // } else {
+  //   if (join_type == join_type_semi){
+  //     // return records from left input only
+  //     llvm::append_range(fieldTypes, leftFieldTypes);
+
+  //   // } else if (join_type == join_type_anti){
+  //   //   // return no records 
+
+  //   } else {
+  //     // error - join type not defined
+  //     return failure();
+  //   }
+  // }
+
   SmallVector<mlir::Type> fieldTypes;
   llvm::append_range(fieldTypes, leftFieldTypes);
   llvm::append_range(fieldTypes, rightFieldTypes);
