@@ -475,6 +475,36 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   }];
 }
 
+def JoinTypeKind : I32EnumAttr<"JoinTypeKind",
+  "The enum values correspond to those in the JoinRel.JoinType message.", [
+    I32EnumAttrCase<"unspecified", 0>,
+    I32EnumAttrCase<"inner", 1>,
+    I32EnumAttrCase<"outer", 2>,
+    I32EnumAttrCase<"left", 3>,
+    I32EnumAttrCase<"right", 4>,
+    I32EnumAttrCase<"semi", 5>,
+    I32EnumAttrCase<"anti", 6>,
+    I32EnumAttrCase<"single", 7>] >;
+
+def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferTypeOpInterface>]> {
+  let summary = "join operation";
+  let description = [{
+    Represents a `JoinRel` message together with the `RelCommon`, left and
+    right `Rel` messages and `JoinType` enumeration it contains. The current 
+    implementation assumes the join expression to be True. 
+  }];
+  //TODO(daliashaaban): Add support for join expressions.
+  let arguments = (ins
+    Substrait_Relation:$left,
+    Substrait_Relation:$right,
+    JoinTypeKind:$join_type
+  );
+  let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = [{
+    $join_type $left `,` $right attr-dict `:` type($left) `,` type($right) `->` type($result)
+  }];
+}
+
 def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
   ]> {
   let summary = "Read operation of a named table";
