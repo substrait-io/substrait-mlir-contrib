@@ -272,47 +272,33 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   
   // JoinTypeKind join_type = adaptor.getJoinType();
 
-  // // get instance of join_type inner, outer, right, left
-  // std::set<JoinTypeKind> join_types = {
-  //   JoinTypeKind::unspecified,
-  //   JoinTypeKind::inner,
-  //   JoinTypeKind::outer,
-  //   JoinTypeKind::right,
-  //   JoinTypeKind::left,
-  //   JoinTypeKind::anti,
-  //   JoinTypeKind::single
-  // };
-
-  // JoinTypeKind join_type_semi = JoinTypeKind::semi;
-  // // JoinTypeKind join_type_anti = JoinTypeKind::anti;
-
-
   // SmallVector<mlir::Type> fieldTypes;
 
-  // bool is_match = join_types.find(join_type) != join_types.end();
-
-  // if(is_match){
-  //   // return all record for left and right input
-  //   llvm::append_range(fieldTypes, leftFieldTypes);
-  //   llvm::append_range(fieldTypes, rightFieldTypes);
-
-  // } else {
-  //   if (join_type == join_type_semi){
-  //     // return records from left input only
+  // switch (join_type) {
+  //   case JoinTypeKind::unspecified:
+  //   case JoinTypeKind::inner:
+  //   case JoinTypeKind::outer:
+  //   case JoinTypeKind::right:
+  //   case JoinTypeKind::left:
   //     llvm::append_range(fieldTypes, leftFieldTypes);
-
-  //   // } else if (join_type == join_type_anti){
-  //   //   // return no records 
-
-  //   } else {
-  //     // error - join type not defined
+  //     llvm::append_range(fieldTypes, rightFieldTypes);
+  //     break;
+  //   case JoinTypeKind::semi:
+  //   case JoinTypeKind::anti:
+  //     llvm::append_range(fieldTypes, leftFieldTypes);
+  //     break;
+  //   case JoinTypeKind::single:
+  //     llvm::append_range(fieldTypes, rightFieldTypes);
+  //     break;
+  //   default:
   //     return failure();
-  //   }
   // }
 
   SmallVector<mlir::Type> fieldTypes;
+
   llvm::append_range(fieldTypes, leftFieldTypes);
   llvm::append_range(fieldTypes, rightFieldTypes);
+
   auto resultType = TupleType::get(context, fieldTypes);
 
   inferredReturnTypes = SmallVector<Type>{resultType};
