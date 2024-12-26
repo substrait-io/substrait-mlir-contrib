@@ -575,7 +575,7 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind `,` $inputs attr-dict `:` type($result) 
+    $kind $inputs attr-dict `:` type($result) 
   }];
 }
 
