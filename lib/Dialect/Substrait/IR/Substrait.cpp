@@ -269,29 +269,29 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 
   // get join type
   Adaptor adaptor(operands, attributes, properties, regions);
-  
+
   JoinTypeKind join_type = adaptor.getJoinType();
 
   SmallVector<mlir::Type> fieldTypes;
 
   switch (join_type) {
-    case JoinTypeKind::unspecified:
-    case JoinTypeKind::inner:
-    case JoinTypeKind::outer:
-    case JoinTypeKind::right:
-    case JoinTypeKind::left:
-      llvm::append_range(fieldTypes, leftFieldTypes);
-      llvm::append_range(fieldTypes, rightFieldTypes);
-      break;
-    case JoinTypeKind::semi:
-    case JoinTypeKind::anti:
-      llvm::append_range(fieldTypes, leftFieldTypes);
-      break;
-    case JoinTypeKind::single:
-      llvm::append_range(fieldTypes, rightFieldTypes);
-      break;
-    default:
-      return failure();
+  case JoinTypeKind::unspecified:
+  case JoinTypeKind::inner:
+  case JoinTypeKind::outer:
+  case JoinTypeKind::right:
+  case JoinTypeKind::left:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  case JoinTypeKind::semi:
+  case JoinTypeKind::anti:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    break;
+  case JoinTypeKind::single:
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  default:
+    return failure();
   }
 
   auto resultType = TupleType::get(context, fieldTypes);
