@@ -57,6 +57,7 @@ substrait.plan version 0 : 42 : 1 {
     yield %2 : tuple<si32>
   }
 }
+
 // -----
 
 // CHECK-LABEL: substrait.plan
@@ -75,6 +76,7 @@ substrait.plan version 0 : 42 : 1 {
     yield %2 : tuple<si32>
   }
 }
+
 // -----
 
 // CHECK-LABEL: substrait.plan
@@ -93,6 +95,7 @@ substrait.plan version 0 : 42 : 1 {
     yield %2 : tuple<si32>
   }
 }
+
 // -----
 
 // CHECK-LABEL: substrait.plan
@@ -111,6 +114,7 @@ substrait.plan version 0 : 42 : 1 {
     yield %2 : tuple<si32>
   }
 }
+
 // -----
 
 // CHECK-LABEL: substrait.plan
