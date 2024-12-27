@@ -1,7 +1,7 @@
 add_mlir_dialect(SubstraitOps substrait)
 add_dependencies(MLIRSubstraitDialect MLIRSubstraitOpsIncGen)
 
-# Add SetOpKind attribute
+# Add Enums
 set(LLVM_TARGET_DEFINITIONS SubstraitOps.td)
 mlir_tablegen(SubstraitEnums.h.inc -gen-enum-decls)
 mlir_tablegen(SubstraitEnums.cpp.inc -gen-enum-defs)
