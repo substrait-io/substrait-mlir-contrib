@@ -19,6 +19,12 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+// Base class for Substrait dialect attribute types.
+class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
+    : AttrDef<Substrait_Dialect, name, traits> {
+  let mnemonic = typeMnemonic;
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
