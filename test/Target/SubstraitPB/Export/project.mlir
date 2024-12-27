@@ -1,16 +1,28 @@
-// RUN: substrait-opt -split-input-file %s \
+// RUN: substrait-translate -substrait-to-protobuf %s \
 // RUN: | FileCheck %s
 
-// CHECK:      substrait.plan version 0 : 42 : 1 {
-// CHECK-NEXT:   relation
-// CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si32> -> tuple<si32, si1, si32> {
-// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si32>):
-// CHECK-NEXT:      %[[V2:.*]] = literal -1 : si1
-// CHECK-NEXT:      %[[V3:.*]] = literal 42 : si32
-// CHECK-NEXT:      yield %[[V2]], %[[V3]] : si1, si32
-// CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] :
+// RUN: substrait-translate -substrait-to-protobuf %s \
+// RUN: | substrait-translate -protobuf-to-substrait \
+// RUN: | substrait-translate -substrait-to-protobuf \
+// RUN: | FileCheck %s
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            boolean: true
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:             i32: 42 
 
 substrait.plan version 0 : 42 : 1 {
   relation {
