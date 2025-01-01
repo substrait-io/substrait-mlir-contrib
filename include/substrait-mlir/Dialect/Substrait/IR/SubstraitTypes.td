@@ -19,13 +19,53 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+// Base class for Substrait dialect attribute types.
+class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
+    : AttrDef<Substrait_Dialect, name, traits> {
+  let mnemonic = typeMnemonic;
+}
+
+def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) type. 
+  }];
+}
+
+def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp"> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
+def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) type. 
+  }];
+}
+
+def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz"> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
-    SI32 // I32
+    SI32, // I32
+    Substrait_TimestampType, // Timestamp
+    Substrait_TimestampTzType, // TimestampTZ
   ];
 }
 
@@ -33,7 +73,9 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
-    SI32Attr // I32
+    SI32Attr, // I32
+    Substrait_TimestampAttr, // Timestamp
+    Substrait_TimestampTzAttr, // TimestampTZ
   ];
 }
 
