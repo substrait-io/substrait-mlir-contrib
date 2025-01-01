@@ -97,6 +97,10 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntegerType::get(context, 1, IntegerType::Signed);
   case proto::Type::kI32:
     return IntegerType::get(context, 32, IntegerType::Signed);
+  case proto::Type::kIntervalYear:
+    return IntervalYearType::get(context);
+  case proto::Type::kIntervalDay:
+    return IntervalDayType::get(context);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -264,6 +268,18 @@ importLiteral(ImplicitLocOpBuilder builder,
   case Expression::Literal::LiteralTypeCase::kI32: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 32, IntegerType::Signed), message.i32());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kIntervalYearToMonth: {
+    auto attr =
+        IntervalYearAttr::get(context, message.interval_year_to_month().years(),
+                              message.interval_year_to_month().months());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kIntervalDayToSecond: {
+    auto attr =
+        IntervalDayAttr::get(context, message.interval_day_to_second().days(),
+                             message.interval_day_to_second().seconds());
     return builder.create<LiteralOp>(attr);
   }
   default: {

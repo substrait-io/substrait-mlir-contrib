@@ -118,6 +118,29 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle interval_year.
+  if (mlirType.isa<IntervalYearType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto intervalYearType = std::make_unique<proto::Type::IntervalYear>();
+    intervalYearType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_interval_year(intervalYearType.release());
+    return std::move(type);
+  }
+  // Handle interval_day.
+  if (mlirType.isa<IntervalDayType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto intervalDayType = std::make_unique<proto::Type::IntervalDay>();
+    intervalDayType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_interval_day(intervalDayType.release());
+    return std::move(type);
+  }
+
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
     for (mlir::Type fieldType : tupleType.getTypes()) {
@@ -428,6 +451,26 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     default:
       op->emitOpError("has integer value with unsupported width");
     }
+  } // `IntervalYearType`.
+  else if (literalType.isa<IntervalYearType>()) {
+    auto intervalYearToMonth = std::make_unique<
+        ::substrait::proto::Expression_Literal_IntervalYearToMonth>();
+    auto intervalYear = value.cast<IntervalYearAttr>().getYearsValue();
+    auto intervalMonth = value.cast<IntervalYearAttr>().getMonthsValue();
+    intervalYearToMonth->set_years(intervalYear);
+    intervalYearToMonth->set_months(intervalMonth);
+    literal->set_allocated_interval_year_to_month(
+        intervalYearToMonth.release());
+  } // `IntervalDayType`.
+  else if (literalType.isa<IntervalDayType>()) {
+    auto intervalDaytoSecond = std::make_unique<
+        ::substrait::proto::Expression_Literal_IntervalDayToSecond>();
+    auto intervalDay = value.cast<IntervalDayAttr>().getDaysValue();
+    auto intervalSecond = value.cast<IntervalDayAttr>().getSecondsValue();
+    intervalDaytoSecond->set_days(intervalDay);
+    intervalDaytoSecond->set_seconds(intervalSecond);
+    literal->set_allocated_interval_day_to_second(
+        intervalDaytoSecond.release());
   } else
     op->emitOpError("has unsupported value");
 
