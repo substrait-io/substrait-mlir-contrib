@@ -16,6 +16,31 @@
 // CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
+// CHECK-NEXT:              i64 {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si64>
+    yield %0 : tuple<si64>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              i32 {
 // CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
@@ -29,6 +54,56 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     yield %0 : tuple<si32>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
+// CHECK-NEXT:              i16 {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si16>
+    yield %0 : tuple<si16>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
+// CHECK-NEXT:              i8 {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si8>
+    yield %0 : tuple<si8>
   }
 }
 

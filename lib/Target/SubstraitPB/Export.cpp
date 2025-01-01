@@ -105,6 +105,32 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle SI8.
+  auto si8 = IntegerType::get(context, 8, IntegerType::Signed);
+  if (mlirType == si8) {
+    // TODO(ingomueller): support other nullability modes.
+    auto i8Type = std::make_unique<proto::Type::I8>();
+    i8Type->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_i8(i8Type.release());
+    return std::move(type);
+  }
+
+  // Handle SI6.
+  auto si16 = IntegerType::get(context, 16, IntegerType::Signed);
+  if (mlirType == si16) {
+    // TODO(ingomueller): support other nullability modes.
+    auto i16Type = std::make_unique<proto::Type::I16>();
+    i16Type->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_i16(i16Type.release());
+    return std::move(type);
+  }
+
   // Handle SI32.
   auto si32 = IntegerType::get(context, 32, IntegerType::Signed);
   if (mlirType == si32) {
@@ -115,6 +141,19 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i32(i32Type.release());
+    return std::move(type);
+  }
+
+  // Handle SI64.
+  auto si64 = IntegerType::get(context, 64, IntegerType::Signed);
+  if (mlirType == si64) {
+    // TODO(ingomueller): support other nullability modes.
+    auto i64Type = std::make_unique<proto::Type::I64>();
+    i64Type->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_i64(i64Type.release());
     return std::move(type);
   }
 
@@ -421,9 +460,18 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     case 1:
       literal->set_boolean(value.cast<IntegerAttr>().getSInt());
       break;
+    case 8:
+      literal->set_i8(value.cast<IntegerAttr>().getSInt());
+      break;
+    case 16:
+      literal->set_i16(value.cast<IntegerAttr>().getSInt());
+      break;
     case 32:
       // TODO(ingomueller): Add tests when we can express plans that use i32.
       literal->set_i32(value.cast<IntegerAttr>().getSInt());
+      break;
+    case 64:
+      literal->set_i64(value.cast<IntegerAttr>().getSInt());
       break;
     default:
       op->emitOpError("has integer value with unsupported width");
