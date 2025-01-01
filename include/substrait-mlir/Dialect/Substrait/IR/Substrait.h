@@ -25,6 +25,9 @@
 #define GET_TYPEDEF_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc" // IWYU: export
 
+#define GET_ATTRDEF_CLASSES
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.h.inc" // IWYU: export
+
 #define GET_OP_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc" // IWYU: export
 
