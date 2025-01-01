@@ -99,6 +99,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntegerType::get(context, 32, IntegerType::Signed);
   case proto::Type::kTimestamp:
     return TimestampType::get(context);
+  case proto::Type::kTimestampTz:
+    return TimestampTzType::get(context);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -270,6 +272,10 @@ importLiteral(ImplicitLocOpBuilder builder,
   }
   case Expression::Literal::LiteralTypeCase::kTimestamp: {
     auto attr = TimestampAttr::get(context, message.timestamp());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kTimestampTz: {
+    auto attr = TimestampTzAttr::get(context, message.timestamp_tz());
     return builder.create<LiteralOp>(attr);
   }
   default: {
