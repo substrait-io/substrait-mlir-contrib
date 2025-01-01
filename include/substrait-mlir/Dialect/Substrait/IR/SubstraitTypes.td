@@ -19,13 +19,36 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+// Base class for Substrait dialect attribute types.
+class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
+    : AttrDef<Substrait_Dialect, name, traits> {
+  let mnemonic = typeMnemonic;
+}
+
+def Substrait_DateType : Substrait_Type<"Date", "date"> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date type. 
+  }];
+}
+
+def Substrait_DateAttr : Substrait_Attr<"Date", "date"> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date attribute type.
+  }];  
+  let parameters = (ins "int32_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
-    SI32 // I32
+    SI32, // I32
+    Substrait_DateType // Date
   ];
 }
 
@@ -33,7 +56,8 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
-    SI32Attr // I32
+    SI32Attr, // I32
+    Substrait_DateAttr // Date
   ];
 }
 

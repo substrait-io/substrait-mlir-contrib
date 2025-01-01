@@ -8,6 +8,13 @@ mlir_tablegen(SubstraitEnums.cpp.inc -gen-enum-defs)
 add_public_tablegen_target(MLIRSubstraitEnumsIncGen)
 add_dependencies(MLIRSubstraitDialect MLIRSubstraitEnumsIncGen)
 
+# Add custom type attributes
+set(LLVM_TARGET_DEFINITIONS SubstraitTypes.td)
+mlir_tablegen(SubstraitOpsAttrs.h.inc --gen-attrdef-decls)
+mlir_tablegen(SubstraitOpsAttrs.cpp.inc --gen-attrdef-defs)
+add_public_tablegen_target(MLIRSubstraitAttrsIncGen)
+add_dependencies(MLIRSubstraitDialect MLIRSubstraitAttrsIncGen)
+
 set(LLVM_TARGET_DEFINITIONS SubstraitInterfaces.td)
 mlir_tablegen(SubstraitOpInterfaces.h.inc -gen-op-interface-decls)
 mlir_tablegen(SubstraitOpInterfaces.cpp.inc -gen-op-interface-defs)
