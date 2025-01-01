@@ -97,6 +97,10 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntegerType::get(context, 1, IntegerType::Signed);
   case proto::Type::kI32:
     return IntegerType::get(context, 32, IntegerType::Signed);
+  case proto::Type::kFp32:
+    return FloatType::getF32(context);
+  case proto::Type::kFp64:
+    return FloatType::getF64(context);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -264,6 +268,14 @@ importLiteral(ImplicitLocOpBuilder builder,
   case Expression::Literal::LiteralTypeCase::kI32: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 32, IntegerType::Signed), message.i32());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFp32: {
+    auto attr = FloatAttr::get(FloatType::getF32(context), message.fp32());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFp64: {
+    auto attr = FloatAttr::get(FloatType::getF64(context), message.fp64());
     return builder.create<LiteralOp>(attr);
   }
   default: {
