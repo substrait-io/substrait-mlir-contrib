@@ -48,7 +48,7 @@ def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
     SI32, // I32
-    Substrait_BinaryType // Binary
+    Substrait_BinaryType, // Binary
   ];
 }
 
@@ -57,7 +57,7 @@ def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
     SI32Attr, // I32
-    Substrait_BinaryAttr // Binary
+    Substrait_BinaryAttr, // Binary
   ];
 }
 
