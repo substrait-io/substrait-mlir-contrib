@@ -26,6 +26,13 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
+  let summary = "Substrait binary type";
+  let description = [{
+    This type represents a substrait binary type.
+  }];
+}
+
 def Substrait_StringType : Substrait_Type<"String", "string"> {
   let summary = "Substrait string type";
   let description = [{
@@ -38,6 +45,22 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   let description = [{
     This type represents a substrait binary type.
   }];
+
+
+def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) type. 
+  }];
+}
+
+def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp"> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
 }
 
 /// Currently supported atomic types. These correspond directly to the types in
@@ -54,6 +77,7 @@ def Substrait_AtomicTypes {
     F64, // FP64
     Substrait_StringType, // String
     Substrait_BinaryType, // Binary
+    Substrait_TimestampType, // Timestamp
   ];
 }
 
@@ -69,6 +93,7 @@ def Substrait_AtomicAttributes {
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
     TypedStrAttr<Substrait_BinaryType>, // Binary
+    Substrait_TimestampAttr, // Timestamp
   ];
 }
 
