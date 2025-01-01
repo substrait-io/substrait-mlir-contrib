@@ -84,6 +84,22 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
   }];
 }
 
+def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) type. 
+  }];
+}
+
+def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz"> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
