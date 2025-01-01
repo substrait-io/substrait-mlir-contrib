@@ -25,7 +25,9 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
-    SI32 // I32
+    SI32, // I32
+    F32, // FP32
+    F64 // FP64
   ];
 }
 
@@ -33,7 +35,9 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
-    SI32Attr // I32
+    SI32Attr, // I32
+    F32Attr, // FP32
+    F64Attr // FP64
   ];
 }
 

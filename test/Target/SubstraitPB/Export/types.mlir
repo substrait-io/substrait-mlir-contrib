@@ -16,6 +16,56 @@
 // CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
+// CHECK-NEXT:              fp64 {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<f64>
+    yield %0 : tuple<f64>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
+// CHECK-NEXT:              fp32 {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<f32>
+    yield %0 : tuple<f32>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              i32 {
 // CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
