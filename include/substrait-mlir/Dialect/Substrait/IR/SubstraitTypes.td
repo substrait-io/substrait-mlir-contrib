@@ -19,13 +19,21 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+def Substrait_String : Substrait_Type<"String", "string"> {
+  let summary = "Substrait string type";
+  let description = [{
+    This type represents a substrait string type.
+  }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
-    SI32 // I32
+    SI32, // I32
+    Substrait_String // String
   ];
 }
 
@@ -33,7 +41,8 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
-    SI32Attr // I32
+    SI32Attr, // I32
+    StrAttr // String
   ];
 }
 
