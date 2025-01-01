@@ -13,6 +13,78 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<f64>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            fp64 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<f32>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            fp32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
 # CHECK-SAME:       : tuple<si1, si8, si16, si32, si64>
 
 relations {

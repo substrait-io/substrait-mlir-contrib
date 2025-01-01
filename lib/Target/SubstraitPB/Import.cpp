@@ -104,6 +104,10 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntegerType::get(context, 32, IntegerType::Signed);
   case proto::Type::kI64:
     return IntegerType::get(context, 64, IntegerType::Signed);
+  case proto::Type::kFp32:
+    return FloatType::getF32(context);
+  case proto::Type::kFp64:
+    return FloatType::getF64(context);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -316,7 +320,15 @@ importLiteral(ImplicitLocOpBuilder builder,
         IntegerType::get(context, 64, IntegerType::Signed), message.i64());
     return builder.create<LiteralOp>(attr);
   }
-    // TODO(ingomueller): Support more types.
+  case Expression::Literal::LiteralTypeCase::kFp32: {
+    auto attr = FloatAttr::get(FloatType::getF32(context), message.fp32());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFp64: {
+    auto attr = FloatAttr::get(FloatType::getF64(context), message.fp64());
+    return builder.create<LiteralOp>(attr);
+  }
+  // TODO(ingomueller): Support more types.
   default: {
     const pb::FieldDescriptor *desc =
         Expression::Literal::GetDescriptor()->FindFieldByNumber(literalType);

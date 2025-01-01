@@ -28,7 +28,9 @@ def Substrait_AtomicTypes {
     SI8, // I8
     SI16, // I16
     SI32, // I32
-    SI64 // I64
+    SI64, // I64
+    F32, // FP32
+    F64 // FP64
   ];
 }
 
@@ -40,6 +42,8 @@ def Substrait_AtomicAttributes {
     SI16Attr, // I16
     SI32Attr, // I32
     SI64Attr // I64
+    F32Attr, // FP32
+    F64Attr // FP64
   ];
 }
 
