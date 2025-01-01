@@ -40,6 +40,40 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   }];
 }
 
+def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) type. 
+  }];
+}
+
+def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp", 
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
+}
+
+def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) type. 
+  }];
+}
+
+def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
@@ -54,6 +88,8 @@ def Substrait_AtomicTypes {
     F64, // FP64
     Substrait_StringType, // String
     Substrait_BinaryType, // Binary
+    Substrait_TimestampType, // Timestamp
+    Substrait_TimestampTzType, // TimestampTZ
   ];
 }
 
@@ -69,6 +105,8 @@ def Substrait_AtomicAttributes {
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
     TypedStrAttr<Substrait_BinaryType>, // Binary
+    Substrait_TimestampAttr, // Timestamp
+    Substrait_TimestampTzAttr, // TimestampTZ
   ];
 }
 
