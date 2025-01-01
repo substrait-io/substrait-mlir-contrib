@@ -25,13 +25,30 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+def Substrait_IntervalYearType : Substrait_Type<"IntervalYear", "interval_year"> {
+  let summary = "Substrait interval year to month type";
+  let description = [{
+    This type represents a substrait interval year to month type. 
+  }];
+}
+
+def Substrait_IntervalYearAttr : Substrait_Attr<"IntervalYear", "interval_year"> {
+  let summary = "Substrait interval year to month type";
+  let description = [{
+    This type represents a substrait interval year to month attribute type.
+  }];  
+  let parameters = (ins "int32_t":$years_value, "int32_t":$months_value);
+  let assemblyFormat = [{ `<` $years_value`y` $months_value`m` `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
-    SI32 // I32
+    SI32, // I32
+    Substrait_IntervalYearType, // IntervalYear
   ];
 }
 
@@ -39,7 +56,8 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
-    SI32Attr // I32
+    SI32Attr, // I32
+    Substrait_IntervalYearAttr, // IntervalYear
   ];
 }
 
