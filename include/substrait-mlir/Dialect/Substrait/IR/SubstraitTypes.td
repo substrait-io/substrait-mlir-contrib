@@ -25,13 +25,32 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
+  let summary = "Substrait uuid type";
+  let description = [{
+    This type represents a substrait uuid (universally-unique identifier) type.
+    This is a 16-byte binary value.
+  }];
+}
+
+def Substrait_UUIDAttr : Substrait_Attr<"UUID", "binary"> {
+  let summary = "Substrait uuid type";
+  let description = [{
+    This type represents a substrait uuid (universally-unique identifier) attribute type.
+    This is a 16-byte binary value.
+  }];
+  let parameters = (ins ArrayRefParameter<"uint8_t", "">:$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
-    SI32 // I32
+    SI32, // I32
+    Substrait_UUIDType, // UUID
   ];
 }
 
@@ -39,7 +58,8 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
-    SI32Attr // I32
+    SI32Attr, // I32
+    Substrait_UUIDAttr, // UUID
   ];
 }
 

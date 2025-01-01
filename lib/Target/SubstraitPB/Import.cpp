@@ -97,6 +97,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntegerType::get(context, 1, IntegerType::Signed);
   case proto::Type::kI32:
     return IntegerType::get(context, 32, IntegerType::Signed);
+  case proto::Type::kUuid:
+    return UUIDType::get(context);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -264,6 +266,13 @@ importLiteral(ImplicitLocOpBuilder builder,
   case Expression::Literal::LiteralTypeCase::kI32: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 32, IntegerType::Signed), message.i32());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kUuid: {
+    auto attr = UUIDAttr::get(
+        context, ArrayRef<uint8_t>(
+                     reinterpret_cast<const uint8_t *>(message.uuid().data()),
+                     message.uuid().size()));
     return builder.create<LiteralOp>(attr);
   }
   default: {
