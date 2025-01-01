@@ -118,6 +118,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle binary type.
+  if (mlirType.isa<BinaryType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto binaryType = std::make_unique<proto::Type::Binary>();
+    binaryType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_binary(binaryType.release());
+    return std::move(type);
+  }
+
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
     for (mlir::Type fieldType : tupleType.getTypes()) {
@@ -428,6 +440,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     default:
       op->emitOpError("has integer value with unsupported width");
     }
+  } // `BinaryType`.
+  else if (auto binaryType = dyn_cast<BinaryType>(literalType)) {
+    ArrayRef<uint8_t> ref = value.cast<BinaryAttr>().getValue();
+    literal->set_binary(std::string(ref.begin(), ref.end()));
   } else
     op->emitOpError("has unsupported value");
 

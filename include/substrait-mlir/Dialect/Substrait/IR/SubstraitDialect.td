@@ -34,6 +34,8 @@ def Substrait_Dialect : Dialect {
     more natural in MLIR to represent several message types as a single op and
     express message sub-types with interfaces instead.
   }];
+  let useDefaultAttributePrinterParser = 1;
+  let useDefaultTypePrinterParser = 1;
 }
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITDIALECT
