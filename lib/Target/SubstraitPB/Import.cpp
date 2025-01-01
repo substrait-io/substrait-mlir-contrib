@@ -95,8 +95,14 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
   switch (kindCase) {
   case proto::Type::kBool:
     return IntegerType::get(context, 1, IntegerType::Signed);
+  case proto::Type::kI8:
+    return IntegerType::get(context, 8, IntegerType::Signed);
+  case proto::Type::kI16:
+    return IntegerType::get(context, 16, IntegerType::Signed);
   case proto::Type::kI32:
     return IntegerType::get(context, 32, IntegerType::Signed);
+  case proto::Type::kI64:
+    return IntegerType::get(context, 64, IntegerType::Signed);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -261,11 +267,27 @@ importLiteral(ImplicitLocOpBuilder builder,
         IntegerType::get(context, 1, IntegerType::Signed), message.boolean());
     return builder.create<LiteralOp>(attr);
   }
+  case Expression::Literal::LiteralTypeCase::kI8: {
+    auto attr = IntegerAttr::get(
+        IntegerType::get(context, 8, IntegerType::Signed), message.i8());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kI16: {
+    auto attr = IntegerAttr::get(
+        IntegerType::get(context, 16, IntegerType::Signed), message.i16());
+    return builder.create<LiteralOp>(attr);
+  }
   case Expression::Literal::LiteralTypeCase::kI32: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 32, IntegerType::Signed), message.i32());
     return builder.create<LiteralOp>(attr);
   }
+  case Expression::Literal::LiteralTypeCase::kI64: {
+    auto attr = IntegerAttr::get(
+        IntegerType::get(context, 64, IntegerType::Signed), message.i64());
+    return builder.create<LiteralOp>(attr);
+  }
+    // TODO(ingomueller): Support more types.
   default: {
     const pb::FieldDescriptor *desc =
         Expression::Literal::GetDescriptor()->FindFieldByNumber(literalType);

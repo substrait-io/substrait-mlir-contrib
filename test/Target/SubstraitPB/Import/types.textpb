@@ -13,6 +13,42 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<si64>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            i64 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
 # CHECK-SAME:       : tuple<si32>
 
 relations {
@@ -27,6 +63,78 @@ relations {
         struct {
           types {
             i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<si16>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            i16 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<si8>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            i8 {
               nullability: NULLABILITY_REQUIRED
             }
           }
