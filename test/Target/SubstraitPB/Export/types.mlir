@@ -103,6 +103,31 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
+// CHECK-NEXT:              timestamp_tz {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.timestamp_tz>
+    yield %0 : tuple<!substrait.timestamp_tz>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              timestamp {
 // CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
