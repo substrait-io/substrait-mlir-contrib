@@ -13,6 +13,42 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<!substrait.timestamp_tz>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            timestamp_tz {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
 # CHECK-SAME:       : tuple<!substrait.timestamp>
 
 relations {
