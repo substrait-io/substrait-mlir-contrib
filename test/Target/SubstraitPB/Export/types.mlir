@@ -16,6 +16,31 @@
 // CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
+// CHECK-NEXT:              interval_day {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.interval_day>
+    yield %0 : tuple<!substrait.interval_day>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              interval_year {
 // CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
