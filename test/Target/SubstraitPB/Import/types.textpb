@@ -13,7 +13,7 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<f64>
+# CHECK-SAME:       : tuple<f32, f64>
 
 relations {
   rel {
@@ -24,7 +24,13 @@ relations {
       }
       base_schema {
         names: "a"
+        names: "b"
         struct {
+          types {
+            fp32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
           types {
             fp64 {
               nullability: NULLABILITY_REQUIRED
@@ -49,7 +55,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<f32>
+# CHECK-SAME:       : tuple<f32, tuple<f32>>
 
 relations {
   rel {
@@ -60,10 +66,21 @@ relations {
       }
       base_schema {
         names: "a"
+        names: "b"
+        names: "c"
         struct {
           types {
             fp32 {
               nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            struct {
+              types {
+                fp32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
             }
           }
           nullability: NULLABILITY_REQUIRED
