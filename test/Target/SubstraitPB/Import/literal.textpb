@@ -1,10 +1,74 @@
 # RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
 # RUN: | FileCheck %s
 
 # RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
 # RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | FileCheck %s
+
+# CHECK:      substrait.plan version 0 : 42 : 1 {
+# CHECK-NEXT:   relation 
+# CHECK:         %[[V0:.*]] = named_table
+# CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<f32> -> tuple<f32, f32, f64> {
+# CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<f32>):
+# CHECK-NEXT:      %[[V2:.*]] = literal 3.535000e+01 : f32
+# CHECK-NEXT:      %[[V3:.*]] = literal 4.242000e+01 : f64
+# CHECK-NEXT:      yield %[[V2]], %[[V3]] : f32, f64
+# CHECK-NEXT:    }
+# CHECK-NEXT:    yield %[[V1]] : tuple<f32, f32, f64>
+
+relations {
+  rel {
+    project {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                fp32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      expressions {
+        literal {
+          fp32: 35.35
+        }
+      }
+      expressions {
+        literal {
+          fp64: 42.42
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
 
 # CHECK:      substrait.plan version 0 : 42 : 1 {
 # CHECK-NEXT:   relation

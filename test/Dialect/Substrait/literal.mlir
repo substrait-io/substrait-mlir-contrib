@@ -1,5 +1,31 @@
-// RUN: substrait-opt %s \
+// RUN: substrait-opt -split-input-file %s \
 // RUN: | FileCheck %s
+
+// CHECK:      substrait.plan version 0 : 42 : 1 {
+// CHECK-NEXT:   relation
+// CHECK:         %[[V0:.*]] = named_table
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<f32> -> tuple<f32, f32, f64> {
+// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<f32>):
+// CHECK-NEXT:      %[[V2:.*]] = literal 3.535000e+01 : f32
+// CHECK-NEXT:      %[[V3:.*]] = literal 4.242000e+01 : f64
+// CHECK-NEXT:      yield %[[V2]], %[[V3]] : f32, f64
+// CHECK-NEXT:    }
+// CHECK-NEXT:    yield %[[V1]] : tuple<f32, f32, f64>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<f32>
+    %1 = project %0 : tuple<f32> -> tuple<f32, f32, f64> {
+    ^bb0(%arg : tuple<f32>):
+      %35 = literal 35.35 : f32
+      %42 = literal 42.42 : f64
+      yield %35, %42 : f32, f64
+    }
+    yield %1 : tuple<f32, f32, f64>
+  }
+}
+
+// -----
 
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
