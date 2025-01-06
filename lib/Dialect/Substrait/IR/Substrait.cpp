@@ -267,9 +267,8 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
   TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
 
-  // get join type
+  // Get accessor to `join_type`.
   Adaptor adaptor(operands, attributes, properties, regions);
-
   JoinTypeKind join_type = adaptor.getJoinType();
 
   SmallVector<mlir::Type> fieldTypes;
