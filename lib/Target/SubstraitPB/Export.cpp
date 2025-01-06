@@ -159,7 +159,8 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
   
-  // Handle FP32.
+  // TODO (daliashaaban): Reorganize, test isa<FloatType>(...) first, then
+  // handle cases. Handle FP32.
   auto fp32 = FloatType::getF32(context);
   if (mlirType == fp32) {
     // TODO(ingomueller): support other nullability modes.
