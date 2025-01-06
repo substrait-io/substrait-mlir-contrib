@@ -158,7 +158,7 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     type->set_allocated_i64(i64Type.release());
     return std::move(type);
   }
-  
+
   // TODO (daliashaaban): Reorganize, test isa<FloatType>(...) first, then
   // handle cases. Handle FP32.
   auto fp32 = FloatType::getF32(context);
