@@ -26,11 +26,20 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
-def Substrait_StringType : Substrait_Type<"String", "string"> {
-  let summary = "Substrait string type";
+def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
+  let summary = "Substrait binary type";
   let description = [{
-    This type represents a substrait string type.
+    This type represents a substrait binary type.
   }];
+}
+
+def Substrait_BinaryAttr : Substrait_Attr<"Binary", "binary"> {
+  let summary = "Substrait binary type";
+  let description = [{
+    This type represents a substrait binary attribute type.
+  }];
+  let parameters = (ins ArrayRefParameter<"uint8_t", "">:$value);
+  let assemblyFormat = [{ `<` $value `>` }];
 }
 
 /// Currently supported atomic types. These correspond directly to the types in
@@ -46,6 +55,7 @@ def Substrait_AtomicTypes {
     F32, // FP32
     F64, // FP64
     Substrait_StringType, // String
+    Substrait_BinaryType, // Binary
   ];
 }
 
@@ -60,6 +70,7 @@ def Substrait_AtomicAttributes {
     F32Attr, // FP32
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
+    Substrait_BinaryAttr, // Binary
   ];
 }
 
