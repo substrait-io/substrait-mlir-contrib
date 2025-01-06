@@ -286,6 +286,50 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
+LogicalResult
+JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
+                         ValueRange operands, DictionaryAttr attributes,
+                         OpaqueProperties properties, RegionRange regions,
+                         llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
+  Value leftInput = operands[0];
+  Value rightInput = operands[1];
+
+  TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
+  TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
+
+  // Get accessor to `join_type`.
+  Adaptor adaptor(operands, attributes, properties, regions);
+  JoinTypeKind join_type = adaptor.getJoinType();
+
+  SmallVector<mlir::Type> fieldTypes;
+
+  switch (join_type) {
+  case JoinTypeKind::unspecified:
+  case JoinTypeKind::inner:
+  case JoinTypeKind::outer:
+  case JoinTypeKind::right:
+  case JoinTypeKind::left:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  case JoinTypeKind::semi:
+  case JoinTypeKind::anti:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    break;
+  case JoinTypeKind::single:
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  default:
+    return failure();
+  }
+
+  auto resultType = TupleType::get(context, fieldTypes);
+
+  inferredReturnTypes = SmallVector<Type>{resultType};
+
+  return success();
+}
+
 /// Verifies that the provided field names match the provided field types. While
 /// the field types are potentially nested, the names are given in a single,
 /// flat list and correspond to the field types in depth first order (where each
