@@ -1,4 +1,4 @@
-// RUN: substrait-opt -split-input-file -split-input-file %s \
+// RUN: substrait-opt -split-input-file %s \
 // RUN: | FileCheck %s
 
 // CHECK-LABEL: substrait.plan
