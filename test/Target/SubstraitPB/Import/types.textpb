@@ -13,7 +13,7 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<si32>
+# CHECK-SAME:       : tuple<si1, si8, si16, si32, si64>
 
 relations {
   rel {
@@ -24,9 +24,33 @@ relations {
       }
       base_schema {
         names: "a"
+        names: "b"
+        names: "c"
+        names: "d"
+        names: "e"
         struct {
           types {
+            bool {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i8 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i16 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
             i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i64 {
               nullability: NULLABILITY_REQUIRED
             }
           }

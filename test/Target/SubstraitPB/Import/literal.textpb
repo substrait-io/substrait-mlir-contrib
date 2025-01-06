@@ -1,0 +1,83 @@
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN: | FileCheck %s
+
+# CHECK:      substrait.plan version 0 : 42 : 1 {
+# CHECK-NEXT:   relation
+# CHECK:         %[[V0:.*]] = named_table
+# CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, si1, si8, si16, si32, si64> {
+# CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
+# CHECK-NEXT:      %[[V2:.*]] = literal 0 : si1
+# CHECK-NEXT:      %[[V3:.*]] = literal 2 : si8
+# CHECK-NEXT:      %[[V4:.*]] = literal -1 : si16
+# CHECK-NEXT:      %[[V5:.*]] = literal 35 : si32
+# CHECK-NEXT:      %[[V6:.*]] = literal 42 : si64
+# CHECK-NEXT:      yield %[[V2]], %[[V3]], %[[V4]], %[[V5]], %[[V6]] : si1, si8, si16, si32, si64
+# CHECK-NEXT:    }
+# CHECK-NEXT:    yield %[[V1]] : tuple<si1, si1, si8, si16, si32, si64>
+
+relations {
+  rel {
+    project {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                bool {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      expressions {
+        literal {
+          boolean: false
+        }
+      }
+      expressions {
+        literal {
+          i8: 2
+        }
+      }
+      expressions {
+        literal {
+          i16: -1
+        }
+      }
+      expressions {
+        literal {
+          i32: 35
+        }
+      }
+      expressions {
+        literal {
+          i64: 42
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
