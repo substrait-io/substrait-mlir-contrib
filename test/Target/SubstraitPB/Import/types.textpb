@@ -1,163 +1,15 @@
 # RUN: substrait-translate -protobuf-to-substrait %s \
-# RUN:   --split-input-file="# ""-----" \
 # RUN: | FileCheck %s
 
 # RUN: substrait-translate -protobuf-to-substrait %s \
-# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | substrait-translate -substrait-to-protobuf \
-# RUN:   --split-input-file --output-split-marker="# ""-----" \
 # RUN: | substrait-translate -protobuf-to-substrait \
-# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | FileCheck %s
 
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<si64>
-
-relations {
-  rel {
-    read {
-      common {
-        direct {
-        }
-      }
-      base_schema {
-        names: "a"
-        struct {
-          types {
-            i64 {
-              nullability: NULLABILITY_REQUIRED
-            }
-          }
-          nullability: NULLABILITY_REQUIRED
-        }
-      }
-      named_table {
-        names: "t1"
-      }
-    }
-  }
-}
-version {
-  minor_number: 42
-  patch_number: 1
-}
-
-# -----
-
-# CHECK:      substrait.plan
-# CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<si32>
-
-relations {
-  rel {
-    read {
-      common {
-        direct {
-        }
-      }
-      base_schema {
-        names: "a"
-        struct {
-          types {
-            i32 {
-              nullability: NULLABILITY_REQUIRED
-            }
-          }
-          nullability: NULLABILITY_REQUIRED
-        }
-      }
-      named_table {
-        names: "t1"
-      }
-    }
-  }
-}
-version {
-  minor_number: 42
-  patch_number: 1
-}
-
-# -----
-
-# CHECK:      substrait.plan
-# CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<si16>
-
-relations {
-  rel {
-    read {
-      common {
-        direct {
-        }
-      }
-      base_schema {
-        names: "a"
-        struct {
-          types {
-            i16 {
-              nullability: NULLABILITY_REQUIRED
-            }
-          }
-          nullability: NULLABILITY_REQUIRED
-        }
-      }
-      named_table {
-        names: "t1"
-      }
-    }
-  }
-}
-version {
-  minor_number: 42
-  patch_number: 1
-}
-
-# -----
-
-# CHECK:      substrait.plan
-# CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<si8>
-
-relations {
-  rel {
-    read {
-      common {
-        direct {
-        }
-      }
-      base_schema {
-        names: "a"
-        struct {
-          types {
-            i8 {
-              nullability: NULLABILITY_REQUIRED
-            }
-          }
-          nullability: NULLABILITY_REQUIRED
-        }
-      }
-      named_table {
-        names: "t1"
-      }
-    }
-  }
-}
-version {
-  minor_number: 42
-  patch_number: 1
-}
-
-# -----
-
-# CHECK:      substrait.plan
-# CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table
-# CHECK-SAME:       : tuple<si1, tuple<si1>>
+# CHECK-SAME:       : tuple<si1, si8, si16, si32, si64>
 
 relations {
   rel {
@@ -170,6 +22,8 @@ relations {
         names: "a"
         names: "b"
         names: "c"
+        names: "d"
+        names: "e"
         struct {
           types {
             bool {
@@ -177,12 +31,23 @@ relations {
             }
           }
           types {
-            struct {
-              types {
-                bool {
-                  nullability: NULLABILITY_REQUIRED
-                }
-              }
+            i8 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i16 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i64 {
+              nullability: NULLABILITY_REQUIRED
             }
           }
           nullability: NULLABILITY_REQUIRED
