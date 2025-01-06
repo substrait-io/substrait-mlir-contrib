@@ -44,15 +44,15 @@ substrait.plan version 0 : 42 : 1 {
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si1>
-    %1 = project %0 : tuple<si1> -> tuple<si1, si1, si8, si16, si32, si64> {
+    %1 = project %0 : tuple<si1> -> tuple<si1, si1, si8, si16, si32, !substrait.binary> {
     ^bb0(%arg : tuple<si1>):
       %false = literal 0 : si1
       %2 = literal 2 : si8
       %-1 = literal -1 : si16
       %35 = literal 35 : si32
-      %42 = literal 42 : si64
-      yield %false, %2, %-1, %35, %42 : si1, si8, si16, si32, si64
+      %42 = literal "asdf" : !substrait.binary
+      yield %false, %2, %-1, %35, %42 : si1, si8, si16, si32, !substrait.binary
     }
-    yield %1 : tuple<si1, si1, si8, si16, si32, si64>
+    yield %1 : tuple<si1, si1, si8, si16, si32, !substrait.binary>
   }
 }
