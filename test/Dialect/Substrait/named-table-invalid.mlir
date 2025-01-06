@@ -22,7 +22,6 @@ substrait.plan version 0 : 42 : 1 {
   }
 }
 
-
 // -----
 
 // Test error if providing duplicate field names in the same nesting level.

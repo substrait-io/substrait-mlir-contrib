@@ -16,6 +16,8 @@ substrait.plan version 0 : 42 : 1 {
   }
 }
 
+// -----
+
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
@@ -30,6 +32,8 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : tuple<si32>
   }
 }
+
+// -----
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
@@ -46,6 +50,8 @@ substrait.plan version 0 : 42 : 1 {
   }
 }
 
+// -----
+
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
@@ -60,6 +66,8 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : tuple<si32>
   }
 }
+
+// -----
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation

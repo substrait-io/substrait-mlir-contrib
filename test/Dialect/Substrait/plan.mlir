@@ -4,6 +4,7 @@
 // CHECK:      substrait.plan version 0 : 42 : 1
 // CHECK-SAME:   git_hash "hash" producer "producer" {
 // CHECK-NEXT: }
+
 substrait.plan
   version 0 : 42 : 1
   git_hash "hash"
@@ -18,6 +19,7 @@ substrait.plan
 // CHECK-NEXT:     yield
 // CHECK-NEXT:   }
 // CHECK-NEXT: }
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @foo::@bar as ["a", "b"] : tuple<si32, si32>
@@ -37,6 +39,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:     yield
 // CHECK-NEXT:   }
 // CHECK-NEXT: }
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @foo::@bar as ["a", "b"] : tuple<si32, si32>
@@ -74,6 +77,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   extension_uri @other.extension at "http://other.url/with/more/extensions.yml"
 // CHECK-NEXT:   extension_function @other.function at @other.extension["someotherfunc"]
 // CHECK-NEXT: }
+
 substrait.plan version 0 : 42 : 1 {
   extension_uri @extension at "http://some.url/with/extensions.yml"
   extension_function @function at @extension["somefunc"]

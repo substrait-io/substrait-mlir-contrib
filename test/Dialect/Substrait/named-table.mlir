@@ -5,6 +5,7 @@
 // CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as [] : tuple<>
 // CHECK-NEXT:    yield %[[V0]] :
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as [] : tuple<>
@@ -18,6 +19,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<si32>
 // CHECK-NEXT:    yield %[[V0]] :
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
@@ -31,6 +33,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<si32, si32>
 // CHECK-NEXT:    yield %[[V0]] :
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : tuple<si32, si32>
@@ -45,6 +48,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         %[[V0:.*]] = named_table @t1
 // CHECK-SAME:      as ["outer", "inner"] : tuple<tuple<si32>>
 // CHECK-NEXT:    yield %[[V0]] :
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["outer", "inner"] : tuple<tuple<si32>>
@@ -59,6 +63,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         %[[V0:.*]] = named_table @t1
 // CHECK-SAME:      as ["a", "a"] : tuple<tuple<si32>>
 // CHECK-NEXT:    yield %[[V0]] :
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "a"] : tuple<tuple<si32>>
