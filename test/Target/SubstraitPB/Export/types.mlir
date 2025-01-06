@@ -81,7 +81,12 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      read {
 // CHECK:             base_schema {
 // CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          names: "b"
+// CHECK-NEXT:          names: "c"
+// CHECK-NEXT:          names: "d"
+// CHECK-NEXT:          names: "e"
 // CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              bool {
 // CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
