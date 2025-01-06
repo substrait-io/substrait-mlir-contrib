@@ -89,12 +89,11 @@ private:
   std::unique_ptr<SymbolTable> symbolTable;     // Symbol table cache.
 };
 
-FailureOr<std::unique_ptr<proto::Type>>
-SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
-  MLIRContext *context = mlirType.getContext();
+std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
+                                               MLIRContext *context) {
+  // Function that handles `IntegerType`'s.
 
-  // TODO (daliashaaban): Reorganize, test isa<IntegerType>(...) first, then
-  // handle cases. Handle SI1.
+  // Handle SI1.
   auto si1 = IntegerType::get(context, 1, IntegerType::Signed);
   if (mlirType == si1) {
     // TODO(ingomueller): support other nullability modes.
@@ -157,6 +156,16 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i64(i64Type.release());
     return std::move(type);
+  }
+}
+
+FailureOr<std::unique_ptr<proto::Type>>
+SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
+  MLIRContext *context = mlirType.getContext();
+
+  // Handle `IntegerType`'s.
+  if (mlirType.isa<IntegerType>()) {
+    return exportIntegerType(mlirType, context);
   }
 
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
