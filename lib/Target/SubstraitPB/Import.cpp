@@ -110,6 +110,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return FloatType::getF64(context);
   case proto::Type::kString:
     return StringType::get(context);
+  case proto::Type::kBinary:
+    return BinaryType::get(context);
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -332,6 +334,13 @@ importLiteral(ImplicitLocOpBuilder builder,
   }
   case Expression::Literal::LiteralTypeCase::kString: {
     auto attr = StringAttr::get(message.string(), StringType::get(context));
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kBinary: {
+    auto attr = BinaryAttr::get(
+        context, ArrayRef<uint8_t>(
+                     reinterpret_cast<const uint8_t *>(message.binary().data()),
+                     message.binary().size()));
     return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.
