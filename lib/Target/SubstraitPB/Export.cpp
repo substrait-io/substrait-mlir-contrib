@@ -92,6 +92,7 @@ FailureOr<std::unique_ptr<proto::Type>>
 SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   MLIRContext *context = mlirType.getContext();
 
+  // TODO (daliashaaban): Reorganize, test isa<IntegerType>(...) first, then handle cases.
   // Handle SI1.
   auto si1 = IntegerType::get(context, 1, IntegerType::Signed);
   if (mlirType == si1) {
