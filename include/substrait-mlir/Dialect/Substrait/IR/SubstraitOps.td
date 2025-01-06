@@ -10,6 +10,7 @@
 #define SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITOPS
 
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.td"
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td"
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypes.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
@@ -575,16 +576,6 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
     }
   }];
 }
-
-def SetOpKind : I32EnumAttr<"SetOpKind",
-  "The enum values correspond to those in the SetRel.SetOp message.", [
-    I32EnumAttrCase<"unspecified", 0>,
-    I32EnumAttrCase<"minus_primary", 1>,
-    I32EnumAttrCase<"minus_multiset", 2>,
-    I32EnumAttrCase<"intersection_primary", 3>,
-    I32EnumAttrCase<"intersection_multiset", 4>,
-    I32EnumAttrCase<"union_distinct", 5>,
-    I32EnumAttrCase<"union_all", 6>] >;
 
  //TODO(daliashaaban): Change type inference logic once nullability is supported. 
 def Substrait_SetOp : Substrait_RelOp<"set", [
