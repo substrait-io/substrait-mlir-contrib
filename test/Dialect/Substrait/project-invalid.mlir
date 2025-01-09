@@ -14,6 +14,7 @@ substrait.plan version 0 : 42 : 1 {
 }
 
 // -----
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : tuple<si32, si32>

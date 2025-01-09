@@ -15,6 +15,7 @@
 // CHECK-DAG:     git_hash: "hash"
 // CHECK-DAG:     producer: "producer"
 // CHECK-NEXT:  }
+
 substrait.plan
   version 0 : 42 : 1
   git_hash "hash"
@@ -112,7 +113,6 @@ substrait.plan version 0 : 42 : 1 {
 }
 
 // -----
-
 
 // CHECK:      extension_uris {
 // CHECK-NEXT:   uri: "http://some.url/with/extensions.yml"

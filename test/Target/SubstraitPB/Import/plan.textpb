@@ -13,6 +13,7 @@
 # CHECK-LABEL: substrait.plan version 0 : 42 : 1
 # CHECK-SAME:    git_hash "hash" producer "producer" {
 # CHECK-NEXT:  }
+
 version {
   minor_number: 42
   patch_number: 1
@@ -26,6 +27,7 @@ version {
 # CHECK-NEXT:    relation {
 # CHECK-NEXT:      %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<si32, si32>
 # CHECK-NEXT:      yield %[[V0]] : tuple<si32, si32>
+
 relations {
   rel {
     read {
