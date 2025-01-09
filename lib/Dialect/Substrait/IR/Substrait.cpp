@@ -32,6 +32,10 @@ void SubstraitDialect::initialize() {
 #define GET_TYPEDEF_LIST
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
       >();
+  addAttributes<
+#define GET_ATTRDEF_LIST
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc"
+      >();
 }
 
 //===----------------------------------------------------------------------===//
@@ -480,8 +484,11 @@ LogicalResult ProjectOp::verifyRegions() {
 } // namespace mlir
 
 //===----------------------------------------------------------------------===//
-// Substrait types
+// Substrait types and attributes
 //===----------------------------------------------------------------------===//
 
 #define GET_TYPEDEF_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
+
+#define GET_ATTRDEF_CLASSES
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc"
