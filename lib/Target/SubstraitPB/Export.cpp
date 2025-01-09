@@ -204,6 +204,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return exportFloatType(mlirType, context);
   }
 
+  // Handle String.
+  if (mlirType.isa<StringType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto stringType = std::make_unique<proto::Type::String>();
+    stringType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_string(stringType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -580,6 +592,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     default:
       op->emitOpError("has float value with unsupported width");
     }
+  }
+  // `StringType`.
+  else if (auto stringType = dyn_cast<StringType>(literalType)) {
+    literal->set_string(value.cast<StringAttr>().getValue().str());
   } else
     op->emitOpError("has unsupported value");
 

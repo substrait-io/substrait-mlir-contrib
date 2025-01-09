@@ -12,6 +12,7 @@
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
 include "mlir/IR/CommonTypeConstraints.td"
 include "mlir/IR/OpBase.td"
+include "mlir/IR/CommonAttrConstraints.td"
 
 // Base class for Substrait dialect types.
 class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
@@ -23,6 +24,13 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
 class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
     : AttrDef<Substrait_Dialect, name, traits> {
   let mnemonic = typeMnemonic;
+}
+
+def Substrait_String : Substrait_Type<"String", "string"> {
+  let summary = "Substrait string type";
+  let description = [{
+    This type represents a substrait string type.
+  }];
 }
 
 /// Currently supported atomic types. These correspond directly to the types in
@@ -37,6 +45,7 @@ def Substrait_AtomicTypes {
     SI64, // I64
     F32, // FP32
     F64, // FP64
+    Substrait_String, // String
   ];
 }
 
@@ -50,6 +59,7 @@ def Substrait_AtomicAttributes {
     SI64Attr, // I64
     F32Attr, // FP32
     F64Attr, // FP64
+    StrAttr, // String
   ];
 }
 
