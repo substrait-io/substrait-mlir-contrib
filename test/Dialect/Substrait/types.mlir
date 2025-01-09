@@ -1,5 +1,33 @@
-// RUN: substrait-opt -split-input-file -split-input-file %s \
+// RUN: substrait-opt -split-input-file %s \
 // RUN: | FileCheck %s
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<f32, f64>
+// CHECK-NEXT:    yield %[[V0]] :
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a", "b"] : tuple<f32, f64>
+    yield %0 : tuple<f32, f64>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b", "c"] : tuple<f32, tuple<f32>>
+// CHECK-NEXT:    yield %[[V0]] :
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a", "b", "c"] : tuple<f32, tuple<f32>>
+    yield %0 : tuple<f32, tuple<f32>>
+  }
+}
+
+// -----
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation

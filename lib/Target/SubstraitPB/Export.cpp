@@ -159,6 +159,33 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // TODO (daliashaaban): Reorganize, test isa<FloatType>(...) first, then
+  // handle cases. Handle FP32.
+  auto fp32 = FloatType::getF32(context);
+  if (mlirType == fp32) {
+    // TODO(ingomueller): support other nullability modes.
+    auto fp32Type = std::make_unique<proto::Type::FP32>();
+    fp32Type->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_fp32(fp32Type.release());
+    return std::move(type);
+  }
+
+  // Handle FP64.
+  auto fp64 = FloatType::getF64(context);
+  if (mlirType == fp64) {
+    // TODO(ingomueller): support other nullability modes.
+    auto fp64Type = std::make_unique<proto::Type::FP64>();
+    fp64Type->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_fp64(fp64Type.release());
+    return std::move(type);
+  }
+
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
     for (mlir::Type fieldType : tupleType.getTypes()) {
@@ -519,6 +546,20 @@ SubstraitExporter::exportOperation(LiteralOp op) {
       break;
     default:
       op->emitOpError("has integer value with unsupported width");
+    }
+  }
+  // `FloatType`s.
+  else if (auto floatType = dyn_cast<FloatType>(literalType)) {
+    switch (floatType.getWidth()) {
+    case 32:
+      literal->set_fp32(value.cast<FloatAttr>().getValueAsDouble());
+      break;
+    case 64:
+      // TODO(ingomueller): Add tests when we can express plans that use i32.
+      literal->set_fp64(value.cast<FloatAttr>().getValueAsDouble());
+      break;
+    default:
+      op->emitOpError("has float value with unsupported width");
     }
   } else
     op->emitOpError("has unsupported value");
