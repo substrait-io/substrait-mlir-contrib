@@ -10,8 +10,10 @@ ibis-substrait==3.2.0
 json5
 pyarrow
 pyright
+substrait==0.12.1
 yapf
 
 # Plotting.
 pandas
 matplotlib
+tabulate
