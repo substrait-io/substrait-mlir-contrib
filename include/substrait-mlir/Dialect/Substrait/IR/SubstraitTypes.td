@@ -26,7 +26,7 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
-def Substrait_String : Substrait_Type<"String", "string"> {
+def Substrait_StringType : Substrait_Type<"String", "string"> {
   let summary = "Substrait string type";
   let description = [{
     This type represents a substrait string type.
@@ -45,7 +45,7 @@ def Substrait_AtomicTypes {
     SI64, // I64
     F32, // FP32
     F64, // FP64
-    Substrait_String, // String
+    Substrait_StringType, // String
   ];
 }
 
@@ -59,7 +59,7 @@ def Substrait_AtomicAttributes {
     SI64Attr, // I64
     F32Attr, // FP32
     F64Attr, // FP64
-    TypedStrAttr<Substrait_String>, // String
+    TypedStrAttr<Substrait_StringType>, // String
   ];
 }
 
