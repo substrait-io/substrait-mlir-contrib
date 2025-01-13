@@ -4,6 +4,30 @@
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.string> {
+// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
+// CHECK-NEXT:      %[[V2:.*]] = literal "hi" : !substrait.string
+// CHECK-NEXT:      yield %[[V2]] : !substrait.string
+// CHECK-NEXT:    }
+// CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.string> 
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.string> {
+    ^bb0(%arg : tuple<si1>):
+      %hi = literal "hi" : !substrait.string
+      yield %hi : !substrait.string
+    }
+    yield %1 : tuple<si1, !substrait.string> 
+  }
+}
+
+// -----
+
+// CHECK:      substrait.plan version 0 : 42 : 1 {
+// CHECK-NEXT:   relation
+// CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<f32> -> tuple<f32, f32, f64> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<f32>):
 // CHECK-NEXT:      %[[V2:.*]] = literal 3.535000e+01 : f32

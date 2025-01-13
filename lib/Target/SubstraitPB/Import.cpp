@@ -331,7 +331,7 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kString: {
-    auto attr = StringAttr::get(context, message.string());
+    auto attr = StringAttr::get(message.string(), StringType::get(context));
     return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.
