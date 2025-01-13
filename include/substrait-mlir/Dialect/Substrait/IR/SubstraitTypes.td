@@ -10,6 +10,7 @@
 #define SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES
 
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
+include "mlir/IR/BuiltinAttributeInterfaces.td"
 include "mlir/IR/CommonTypeConstraints.td"
 include "mlir/IR/OpBase.td"
 
@@ -25,6 +26,13 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
+  let summary = "Substrait binary type";
+  let description = [{
+    This type represents a substrait binary type.
+  }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
@@ -37,6 +45,7 @@ def Substrait_AtomicTypes {
     SI64, // I64
     F32, // FP32
     F64, // FP64
+    Substrait_BinaryType, // Binary
   ];
 }
 
@@ -50,6 +59,7 @@ def Substrait_AtomicAttributes {
     SI64Attr, // I64
     F32Attr, // FP32
     F64Attr, // FP64
+    TypedStrAttr<Substrait_BinaryType>,  // Binary
   ];
 }
 
