@@ -159,17 +159,11 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
   }
 }
 
-FailureOr<std::unique_ptr<proto::Type>>
-SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
-  MLIRContext *context = mlirType.getContext();
+std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
+                                             MLIRContext *context) {
+  // Function that handles `FloatType`'s.
 
-  // Handle `IntegerType`'s.
-  if (mlirType.isa<IntegerType>()) {
-    return exportIntegerType(mlirType, context);
-  }
-
-  // TODO (daliashaaban): Reorganize, test isa<FloatType>(...) first, then
-  // handle cases. Handle FP32.
+  // Handle FP32.
   auto fp32 = FloatType::getF32(context);
   if (mlirType == fp32) {
     // TODO(ingomueller): support other nullability modes.
@@ -193,6 +187,21 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fp64(fp64Type.release());
     return std::move(type);
+  }
+}
+
+FailureOr<std::unique_ptr<proto::Type>>
+SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
+  MLIRContext *context = mlirType.getContext();
+
+  // Handle `IntegerType`'s.
+  if (mlirType.isa<IntegerType>()) {
+    return exportIntegerType(mlirType, context);
+  }
+
+  // Handle `FloatType`'s.
+  if (mlirType.isa<FloatType>()) {
+    return exportFloatType(mlirType, context);
   }
 
   // Handle tuple types.
