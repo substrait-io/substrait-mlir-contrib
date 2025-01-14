@@ -26,6 +26,13 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
+def Substrait_StringType : Substrait_Type<"String", "string"> {
+  let summary = "Substrait string type";
+  let description = [{
+    This type represents a substrait string type.
+  }];
+}
+
 def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   let summary = "Substrait binary type";
   let description = [{
