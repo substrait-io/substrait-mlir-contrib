@@ -15,6 +15,20 @@ def AggregationInvocationUnspecified: I32EnumAttrCase<"unspecified", 0>;
 def AggregationInvocationAll: I32EnumAttrCase<"all", 1>;
 def AggregationInvocationDistinct: I32EnumAttrCase<"distinct", 2>;
 
+/// Represents the `JoinType` protobuf enum.
+def JoinTypeKind : I32EnumAttr<"JoinTypeKind",
+  "The enum values correspond to those in the JoinRel.JoinType message.", [
+    I32EnumAttrCase<"unspecified", 0>,
+    I32EnumAttrCase<"inner", 1>,
+    I32EnumAttrCase<"outer", 2>,
+    I32EnumAttrCase<"left", 3>,
+    I32EnumAttrCase<"right", 4>,
+    I32EnumAttrCase<"semi", 5>,
+    I32EnumAttrCase<"anti", 6>,
+    I32EnumAttrCase<"single", 7>] > {
+    let cppNamespace = "::mlir::substrait";
+}
+
 /// Represents the `SetOp` protobuf enum.
 def SetOpKind : I32EnumAttr<"SetOpKind",
   "The enum values correspond to those in the SetRel.SetOp message.", [
