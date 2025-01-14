@@ -3,6 +3,20 @@
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.string>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.string>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.string>
+    yield %0 : tuple<!substrait.string>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<f32, f64>
 // CHECK-NEXT:    yield %[[V0]] :
 
