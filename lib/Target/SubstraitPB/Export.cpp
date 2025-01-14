@@ -59,6 +59,7 @@ public:
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
   DECLARE_EXPORT_FUNC(SetOp, Rel)
 
+  std::unique_ptr<pb::Any> exportAny(StringAttr attr);
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
                                                      mlir::Type mlirType);
@@ -88,6 +89,16 @@ private:
   DenseMap<Operation *, int32_t> anchorsByOp{}; // Maps anchors to ops.
   std::unique_ptr<SymbolTable> symbolTable;     // Symbol table cache.
 };
+
+std::unique_ptr<pb::Any> SubstraitExporter::exportAny(StringAttr attr) {
+  auto any = std::make_unique<pb::Any>();
+  auto anyType = mlir::cast<AnyType>(attr.getType());
+  std::string typeUrl = anyType.getTypeUrl().getValue().str();
+  std::string value = attr.getValue().str();
+  any->set_type_url(typeUrl);
+  any->set_value(value);
+  return any;
+}
 
 std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
                                                MLIRContext *context) {
@@ -814,6 +825,9 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
   using extensions::SimpleExtensionDeclaration;
   using extensions::SimpleExtensionURI;
 
+  // Build `Plan` message.
+  auto plan = std::make_unique<Plan>();
+
   // Build `Version` message.
   auto version = std::make_unique<Version>();
   version->set_major_number(op.getMajorNumber());
@@ -821,10 +835,28 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
   version->set_patch_number(op.getPatchNumber());
   version->set_producer(op.getProducer().str());
   version->set_git_hash(op.getGitHash().str());
-
-  // Build `Plan` message.
-  auto plan = std::make_unique<Plan>();
   plan->set_allocated_version(version.release());
+
+  // Build `AdvancedExtension` message.
+  if (op.getAdvancedExtension()) {
+    AdvancedExtensionAttr extensionAttr = op.getAdvancedExtension().value();
+    auto extension = std::make_unique<extensions::AdvancedExtension>();
+
+    StringAttr optimizationAttr = extensionAttr.getOptimization();
+    StringAttr enhancementAttr = extensionAttr.getEnhancement();
+
+    if (optimizationAttr) {
+      std::unique_ptr<pb::Any> optimization = exportAny(optimizationAttr);
+      extension->set_allocated_optimization(optimization.release());
+    }
+
+    if (enhancementAttr) {
+      std::unique_ptr<pb::Any> enhancement = exportAny(enhancementAttr);
+      extension->set_allocated_enhancement(enhancement.release());
+    }
+
+    plan->set_allocated_advanced_extensions(extension.release());
+  }
 
   // Add `extension_uris` to plan.
   {
