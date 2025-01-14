@@ -608,11 +608,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `StringType`.
   else if (auto stringType = dyn_cast<StringType>(literalType)) {
     literal->set_string(value.cast<StringAttr>().getValue().str());
-  } 
+  }
   // `BinaryType`.
   else if (auto binaryType = dyn_cast<BinaryType>(literalType)) {
-    ArrayRef<uint8_t> ref = value.cast<BinaryAttr>().getValue();
-    literal->set_binary(std::string(ref.begin(), ref.end()));
+    literal->set_binary(value.cast<StringAttr>().getValue().str());
   } else
     op->emitOpError("has unsupported value");
 

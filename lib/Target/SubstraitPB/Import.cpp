@@ -337,10 +337,7 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kBinary: {
-    auto attr = BinaryAttr::get(
-        context, ArrayRef<uint8_t>(
-                     reinterpret_cast<const uint8_t *>(message.binary().data()),
-                     message.binary().size()));
+    auto attr = StringAttr::get(message.binary(), BinaryType::get(context));
     return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.

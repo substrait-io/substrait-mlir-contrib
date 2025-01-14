@@ -40,15 +40,6 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   }];
 }
 
-def Substrait_BinaryAttr : Substrait_Attr<"Binary", "binary"> {
-  let summary = "Substrait binary type";
-  let description = [{
-    This type represents a substrait binary attribute type.
-  }];
-  let parameters = (ins ArrayRefParameter<"uint8_t", "">:$value);
-  let assemblyFormat = [{ `<` $value `>` }];
-}
-
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
@@ -77,7 +68,7 @@ def Substrait_AtomicAttributes {
     F32Attr, // FP32
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
-    Substrait_BinaryAttr, // Binary
+    TypedStrAttr<Substrait_BinaryType>, // Binary
   ];
 }
 
