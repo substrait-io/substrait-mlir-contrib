@@ -86,3 +86,17 @@ substrait.plan version 0 : 42 : 1 {
   extension_uri @other.extension at "http://other.url/with/more/extensions.yml"
   extension_function @other.function at @other.extension["someotherfunc"]
 }
+
+// -----
+
+// CHECK:      substrait.plan
+// CHECK-SAME:   advanced_extension
+// CHECK-SAME:     optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+// CHECK-SAME:     enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+// CHECK-NEXT: }
+
+substrait.plan version 0 : 42 : 1
+    advanced_extension
+      optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+      enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+{}

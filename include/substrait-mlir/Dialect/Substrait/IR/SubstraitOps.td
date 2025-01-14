@@ -164,18 +164,21 @@ def Substrait_PlanOp : Substrait_Op<"plan", [
     UI32Attr:$minor_number,
     UI32Attr:$patch_number,
     DefaultValuedAttr<StrAttr, "\"\"">:$git_hash,
-    DefaultValuedAttr<StrAttr, "\"\"">:$producer
+    DefaultValuedAttr<StrAttr, "\"\"">:$producer,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let regions = (region RegionOf<PlanBodyOp>:$body);
   let assemblyFormat = [{
     `version` $major_number `:` $minor_number `:` $patch_number
     (`git_hash` $git_hash^)? (`producer` $producer^)?
+    (`advanced_extension` `` $advanced_extension^)?
     attr-dict-with-keyword $body
   }];
   let builders = [
       OpBuilder<(ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch), [{
         build($_builder, $_state, major, minor, patch,
-              StringAttr(), StringAttr());
+              /*git_hash=*/StringAttr(), /*producer*/StringAttr(),
+              /*advanced_extension=*/AdvancedExtensionAttr());
       }]>
     ];
   let extraClassDefinition = [{
