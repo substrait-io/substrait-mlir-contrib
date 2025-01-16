@@ -38,12 +38,25 @@ substrait.plan
 // CHECK-NEXT:     names: "z"
 // CHECK-NEXT:   }
 // CHECK-NEXT: }
+// CHECK-NEXT: relations {
+// CHECK-NEXT:   rel {
+// CHECK-NEXT:     read {
+// CHECK:            named_table {
+// CHECK-NEXT:         names
+// CHECK-NEXT:       }
+// CHECK-NEXT:     }
+// CHECK-NEXT:   }
+// CHECK-NEXT: }
 // CHECK-NEXT: version
 
 substrait.plan version 0 : 42 : 1 {
   relation as ["x", "y", "z"] {
     %0 = named_table @t as ["a", "b", "c"] : tuple<si32, tuple<si32>>
     yield %0 : tuple<si32, tuple<si32>>
+  }
+  relation  {
+    %0 = named_table @t as ["a"] : tuple<si32>
+    yield %0 : tuple<si32>
   }
 }
 
