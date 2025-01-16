@@ -47,7 +47,8 @@ def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
   }];
 }
 
-def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp"> {
+def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp", 
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
   let summary = "Substrait timestamp (excluding timezone) type";
   let description = [{
     This type represents a substrait timestamp (excluding timezone) attribute type.
@@ -63,7 +64,8 @@ def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
   }];
 }
 
-def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz"> {
+def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
   let summary = "Substrait timestamp (including timezone) type";
   let description = [{
     This type represents a substrait timestamp (including timezone) attribute type.
