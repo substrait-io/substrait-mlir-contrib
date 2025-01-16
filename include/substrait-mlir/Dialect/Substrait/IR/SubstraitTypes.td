@@ -97,7 +97,7 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz"> {
     This type represents a substrait timestamp (including timezone) attribute type.
   }];  
   let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `>` }];
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
 }
 
 /// Currently supported atomic types. These correspond directly to the types in
