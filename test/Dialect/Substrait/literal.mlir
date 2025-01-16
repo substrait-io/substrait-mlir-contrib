@@ -16,7 +16,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.binary> {
     ^bb0(%arg : tuple<si1>):
-      %bytes = literal "\34\2c\35\2c\36\2c\37" : !substrait.binary
+      %bytes = literal "4,5,6,7" : !substrait.binary
       yield %bytes : !substrait.binary
     }
     yield %1 : tuple<si1, !substrait.binary> 
