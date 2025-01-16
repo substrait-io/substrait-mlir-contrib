@@ -636,7 +636,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `BinaryType`.
   else if (auto binaryType = dyn_cast<BinaryType>(literalType)) {
     literal->set_binary(value.cast<StringAttr>().getValue().str());
-  } 
+  }
   // `TimestampType`s.
   else if (literalType.isa<TimestampType>()) {
     literal->set_timestamp(value.cast<TimestampAttr>().getValue());
