@@ -26,13 +26,6 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
-def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
-  let summary = "Substrait binary type";
-  let description = [{
-    This type represents a substrait binary type.
-  }];
-}
-
 def Substrait_StringType : Substrait_Type<"String", "string"> {
   let summary = "Substrait string type";
   let description = [{
@@ -45,7 +38,7 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   let description = [{
     This type represents a substrait binary type.
   }];
-
+}
 
 def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
   let summary = "Substrait timestamp (excluding timezone) type";
@@ -60,7 +53,7 @@ def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp"> {
     This type represents a substrait timestamp (excluding timezone) attribute type.
   }];  
   let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `>` }];
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
 }
 
 def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
@@ -76,7 +69,7 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz"> {
     This type represents a substrait timestamp (including timezone) attribute type.
   }];  
   let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `>` }];
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
 }
 
 /// Currently supported atomic types. These correspond directly to the types in
