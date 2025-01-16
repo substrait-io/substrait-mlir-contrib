@@ -216,6 +216,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle binary type.
+  if (mlirType.isa<BinaryType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto binaryType = std::make_unique<proto::Type::Binary>();
+    binaryType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_binary(binaryType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -596,6 +608,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `StringType`.
   else if (auto stringType = dyn_cast<StringType>(literalType)) {
     literal->set_string(value.cast<StringAttr>().getValue().str());
+  }
+  // `BinaryType`.
+  else if (auto binaryType = dyn_cast<BinaryType>(literalType)) {
+    literal->set_binary(value.cast<StringAttr>().getValue().str());
   } else
     op->emitOpError("has unsupported value");
 
