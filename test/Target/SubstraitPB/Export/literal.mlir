@@ -20,6 +20,39 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:            timestamp: 10000000000
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            timestamp_tz: 10000000000
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
+    ^bb0(%arg : tuple<si1>):
+      %timestamp = literal #substrait.timestamp<10000000000us> 
+      %timestamp_tz = literal #substrait.timestamp_tz<10000000000us> 
+      yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
+    }
+    yield %1 : tuple<si1, !substrait.timestamp, !substrait.timestamp_tz>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            binary: "4,5,6,7"
 
 substrait.plan version 0 : 42 : 1 {
