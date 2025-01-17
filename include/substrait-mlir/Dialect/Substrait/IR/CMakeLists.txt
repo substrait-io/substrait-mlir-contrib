@@ -16,6 +16,8 @@ add_public_tablegen_target(MLIRSubstraitAttrsIncGen)
 add_dependencies(MLIRSubstraitDialect MLIRSubstraitAttrsIncGen)
 
 set(LLVM_TARGET_DEFINITIONS SubstraitInterfaces.td)
+mlir_tablegen(SubstraitAttrInterfaces.h.inc -gen-attr-interface-decls)
+mlir_tablegen(SubstraitAttrInterfaces.cpp.inc -gen-attr-interface-defs)
 mlir_tablegen(SubstraitOpInterfaces.h.inc -gen-op-interface-decls)
 mlir_tablegen(SubstraitOpInterfaces.cpp.inc -gen-op-interface-defs)
 mlir_tablegen(SubstraitTypeInterfaces.h.inc -gen-type-interface-decls)
