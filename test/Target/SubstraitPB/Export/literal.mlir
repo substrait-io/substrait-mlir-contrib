@@ -20,6 +20,160 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:            uuid: "c48ffa9e-64f4-44cb-ae47-152b4e60e77b"
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.uuid> {
+    ^bb0(%arg : tuple<si1>):
+      %uuid = literal "c48ffa9e-64f4-44cb-ae47-152b4e60e77b" : !substrait.uuid
+      yield %uuid : !substrait.uuid
+    }
+    yield %1 : tuple<si1, !substrait.uuid> 
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            interval_year_to_month {
+// CHECK-NEXT:              years: 2024
+// CHECK-NEXT:              months: 1
+// CHECK-NEXT:            }
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            interval_day_to_second {
+// CHECK-NEXT:              days: 9
+// CHECK-NEXT:              seconds: 8000
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.interval_year_month, !substrait.interval_day_second> {
+    ^bb0(%arg : tuple<si1>):
+      %interval_year_month = literal #substrait.interval_year_month<2024y 1m> 
+      %interval_day_second = literal #substrait.interval_day_second<9d 8000s> 
+      yield %interval_year_month, %interval_day_second : !substrait.interval_year_month, !substrait.interval_day_second
+    }
+    yield %1 : tuple<si1, !substrait.interval_year_month, !substrait.interval_day_second>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            time: 200000000
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.time> {
+    ^bb0(%arg : tuple<si1>):
+      %time = literal #substrait.time<200000000us> : !substrait.time
+      yield %time : !substrait.time
+    }
+    yield %1 : tuple<si1, !substrait.time> 
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            date: 200000000
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.date> {
+    ^bb0(%arg : tuple<si1>):
+      %date = literal #substrait.date<200000000> : !substrait.date
+      yield %date : !substrait.date
+    }
+    yield %1 : tuple<si1, !substrait.date> 
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            timestamp: 10000000000
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        expressions {
+// CHECK-NEXT:          literal {
+// CHECK-NEXT:            timestamp_tz: 10000000000
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
+    ^bb0(%arg : tuple<si1>):
+      %timestamp = literal #substrait.timestamp<10000000000us> : !substrait.timestamp
+      %timestamp_tz = literal #substrait.timestamp_tz<10000000000us> : !substrait.timestamp_tz
+      yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
+    }
+    yield %1 : tuple<si1, !substrait.timestamp, !substrait.timestamp_tz>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            binary: "4,5,6,7"
 
 substrait.plan version 0 : 42 : 1 {

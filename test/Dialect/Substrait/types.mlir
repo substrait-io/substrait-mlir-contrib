@@ -3,6 +3,76 @@
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.uuid>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.uuid>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.uuid>
+    yield %0 : tuple<!substrait.uuid>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a", "b"] : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
+    yield %0 : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.time>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.time>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.time>
+    yield %0 : tuple<!substrait.time>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.date>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.date>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.date>
+    yield %0 : tuple<!substrait.date>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<!substrait.timestamp, !substrait.timestamp_tz>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.timestamp, !substrait.timestamp_tz>
+  
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a", "b"] : tuple<!substrait.timestamp, !substrait.timestamp_tz>
+    yield %0 : tuple<!substrait.timestamp, !substrait.timestamp_tz>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.binary>
 // CHECK-NEXT:    yield %0 : tuple<!substrait.binary>
 

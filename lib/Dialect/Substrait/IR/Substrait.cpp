@@ -81,6 +81,37 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   // Normal integer.
   printer << count.getValue();
 }
+
+//===----------------------------------------------------------------------===//
+// Substrait attributes
+//===----------------------------------------------------------------------===//
+
+/// Implement the getType method for custom type `TimestampAttr`.
+::mlir::Type TimestampAttr::getType() const {
+  return TimestampType::get(getContext());
+}
+
+/// Implement the getType method for custom type `TimestampTzAttr`.
+::mlir::Type TimestampTzAttr::getType() const {
+  return TimestampTzType::get(getContext());
+}
+
+/// Implement the getType method for custom type `DateAttr`.
+::mlir::Type DateAttr::getType() const { return DateType::get(getContext()); }
+
+/// Implement the getType method for custom type `TimeAttr`.
+::mlir::Type TimeAttr::getType() const { return TimeType::get(getContext()); }
+
+/// Implement the getType method for custom type `IntervalYearMonthAttr`.
+::mlir::Type IntervalYearMonthAttr::getType() const {
+  return IntervalYearMonthType::get(getContext());
+}
+
+/// Implement the getType method for custom type `IntervalDaySecondAttr`.
+::mlir::Type IntervalDaySecondAttr::getType() const {
+  return IntervalDaySecondType::get(getContext());
+}
+
 //===----------------------------------------------------------------------===//
 // Substrait operations
 //===----------------------------------------------------------------------===//
