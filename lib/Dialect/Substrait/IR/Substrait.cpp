@@ -81,6 +81,7 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   // Normal integer.
   printer << count.getValue();
 }
+
 //===----------------------------------------------------------------------===//
 // Substrait operations
 //===----------------------------------------------------------------------===//
