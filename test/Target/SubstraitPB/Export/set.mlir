@@ -20,7 +20,7 @@
 // CHECK-NEXT:          read {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
-// CHECK-NOT:             op: 
+// CHECK-NOT:             op:
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -45,7 +45,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
 // CHECK:             op: SET_OP_MINUS_PRIMARY
-  
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
@@ -69,7 +69,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
 // CHECK:             op: SET_OP_MINUS_MULTISET
-  
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
@@ -93,7 +93,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
 // CHECK:             op: SET_OP_INTERSECTION_PRIMARY
-  
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
@@ -117,7 +117,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
 // CHECK:             op: SET_OP_INTERSECTION_MULTISET
-  
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
@@ -141,7 +141,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
 // CHECK:             op: SET_OP_UNION_DISTINCT
-  
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
@@ -165,7 +165,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             inputs {
 // CHECK-NEXT:          read {
 // CHECK:             op: SET_OP_UNION_ALL
-  
+
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>

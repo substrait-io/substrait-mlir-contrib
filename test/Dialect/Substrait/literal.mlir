@@ -9,7 +9,7 @@
 // CHECK-NEXT:      %[[V2:.*]] = literal "4,5,6,7" : !substrait.binary
 // CHECK-NEXT:      yield %[[V2]] : !substrait.binary
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.binary> 
+// CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.binary>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -19,7 +19,7 @@ substrait.plan version 0 : 42 : 1 {
       %bytes = literal "4,5,6,7" : !substrait.binary
       yield %bytes : !substrait.binary
     }
-    yield %1 : tuple<si1, !substrait.binary> 
+    yield %1 : tuple<si1, !substrait.binary>
   }
 }
 
@@ -33,7 +33,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal "hi" : !substrait.string
 // CHECK-NEXT:      yield %[[V2]] : !substrait.string
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.string> 
+// CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.string>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -43,7 +43,7 @@ substrait.plan version 0 : 42 : 1 {
       %hi = literal "hi" : !substrait.string
       yield %hi : !substrait.string
     }
-    yield %1 : tuple<si1, !substrait.string> 
+    yield %1 : tuple<si1, !substrait.string>
   }
 }
 

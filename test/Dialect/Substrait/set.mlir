@@ -26,7 +26,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = set minus_primary %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = set minus_primary %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 
@@ -45,7 +45,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = set minus_multiset %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = set minus_multiset %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 
@@ -64,7 +64,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = set intersection_primary %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = set intersection_primary %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 
@@ -83,7 +83,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = set intersection_multiset %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = set intersection_multiset %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 
@@ -102,7 +102,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = set union_distinct %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = set union_distinct %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 
@@ -121,7 +121,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = set union_all %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = set union_all %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32>
 

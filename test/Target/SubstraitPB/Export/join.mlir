@@ -20,7 +20,7 @@
 // CHECK-NEXT:          read {
 // CHECK:             right {
 // CHECK-NEXT:          read {
-// CHECK-NOT:             op: 
+// CHECK-NOT:             op:
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -68,7 +68,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:          read {
 // CHECK:             right {
 // CHECK-NEXT:          read {
-// CHECK:             type: JOIN_TYPE_OUTER 
+// CHECK:             type: JOIN_TYPE_OUTER
 
 substrait.plan version 0 : 42 : 1 {
   relation {

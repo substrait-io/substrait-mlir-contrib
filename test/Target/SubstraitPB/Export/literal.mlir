@@ -30,7 +30,7 @@ substrait.plan version 0 : 42 : 1 {
       %hi = literal "4,5,6,7" : !substrait.binary
       yield %hi : !substrait.binary
     }
-    yield %1 : tuple<si1, !substrait.binary> 
+    yield %1 : tuple<si1, !substrait.binary>
   }
 }
 
@@ -57,7 +57,7 @@ substrait.plan version 0 : 42 : 1 {
       %hi = literal "hi" : !substrait.string
       yield %hi : !substrait.string
     }
-    yield %1 : tuple<si1, !substrait.string> 
+    yield %1 : tuple<si1, !substrait.string>
   }
 }
 
@@ -117,7 +117,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:        }
 // CHECK-NEXT:        expressions {
 // CHECK-NEXT:          literal {
-// CHECK-NEXT:             i16: -1 
+// CHECK-NEXT:             i16: -1
 // CHECK-NEXT:          }
 // CHECK-NEXT:        }
 // CHECK-NEXT:        expressions {
@@ -127,7 +127,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:        }
 // CHECK-NEXT:        expressions {
 // CHECK-NEXT:          literal {
-// CHECK-NEXT:             i64: 42 
+// CHECK-NEXT:             i64: 42
 
 substrait.plan version 0 : 42 : 1 {
   relation {
