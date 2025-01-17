@@ -6,8 +6,8 @@
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.timestamp<10000000000us> : !substrait.timestamp
-// CHECK-NEXT:      %[[V3:.*]] = literal #substrait.timestamp_tz<10000000000us> : !substrait.timestamp_tz
+// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.timestamp<10000000000us>{{$}}
+// CHECK-NEXT:      %[[V3:.*]] = literal #substrait.timestamp_tz<10000000000us>{{$}}
 // CHECK-NEXT:      yield %[[V2]], %[[V3]] : !substrait.timestamp, !substrait.timestamp_tz
 // CHECK-NEXT:    }
 // CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.timestamp, !substrait.timestamp_tz>
@@ -17,7 +17,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
     ^bb0(%arg : tuple<si1>):
-      %timestamp = literal #substrait.timestamp<10000000000us> 
+      %timestamp = literal #substrait.timestamp<10000000000us>
       %timestamp_tz = literal #substrait.timestamp_tz<10000000000us>
       yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
     }

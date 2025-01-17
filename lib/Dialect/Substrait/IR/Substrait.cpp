@@ -48,6 +48,7 @@ void SubstraitDialect::initialize() {
 // Substrait interfaces
 //===----------------------------------------------------------------------===//
 
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc"
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc"
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc"
 
@@ -80,20 +81,6 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   }
   // Normal integer.
   printer << count.getValue();
-}
-
-//===----------------------------------------------------------------------===//
-// Substrait attributes
-//===----------------------------------------------------------------------===//
-
-/// Implement the getType method for custom type `TimestampAttr`.
-::mlir::Type TimestampAttr::getType() const {
-  return TimestampType::get(getContext());
-}
-
-/// Implement the getType method for custom type `TimestampTzAttr`.
-::mlir::Type TimestampTzAttr::getType() const {
-  return TimestampTzType::get(getContext());
 }
 
 //===----------------------------------------------------------------------===//
@@ -297,15 +284,19 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                             OpaqueProperties properties, RegionRange regions,
                             llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   auto *typedProperties = properties.as<Properties *>();
+  Attribute valueAttr = typedProperties->getValue();
 
-  auto attr = llvm::dyn_cast<TypedAttr>(typedProperties->getValue());
-  if (!attr)
-    return emitOptionalError(loc, "unsuited attribute for literal value: ",
-                             typedProperties->getValue());
+  Type resultType;
+  if (auto attr = llvm::dyn_cast<TypedAttr>(valueAttr))
+    resultType = attr.getType();
+  if (auto attr = llvm::dyn_cast<TypeInferableAttrInterface>(valueAttr))
+    resultType = attr.getType();
 
-  Type resultType = attr.getType();
+  if (!resultType)
+    emitOptionalError(loc, "unsuited attribute for literal value: ",
+                      typedProperties->getValue());
+
   inferredReturnTypes.emplace_back(resultType);
-
   return success();
 }
 
