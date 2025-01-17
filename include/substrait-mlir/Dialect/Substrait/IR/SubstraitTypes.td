@@ -40,6 +40,108 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   }];
 }
 
+def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) type. 
+  }];
+}
+
+def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp", 
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait timestamp (excluding timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (excluding timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
+}
+
+def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) type. 
+  }];
+}
+
+def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait timestamp (including timezone) type";
+  let description = [{
+    This type represents a substrait timestamp (including timezone) attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
+}
+
+def Substrait_DateType : Substrait_Type<"Date", "date"> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date type. 
+  }];
+}
+
+def Substrait_DateAttr : Substrait_Attr<"Date", "date",
+  [DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date attribute type.
+  }];  
+  let parameters = (ins "int32_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
+def Substrait_TimeType : Substrait_Type<"Time", "time"> {
+  let summary = "Substrait time type";
+  let description = [{
+    This type represents a substrait time type. 
+  }];
+}
+
+def Substrait_TimeAttr : Substrait_Attr<"Time", "time", 
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait time type";
+  let description = [{
+    This type represents a substrait time attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
+}
+
+def Substrait_IntervalYearMonthType : Substrait_Type<"IntervalYearMonth", "interval_year_month"> {
+  let summary = "Substrait interval year to month type";
+  let description = [{
+    This type represents a substrait interval year to month type. 
+  }];
+}
+
+def Substrait_IntervalYearMonthAttr : Substrait_Attr<"IntervalYearMonth", "interval_year_month", 
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait interval year to month type";
+  let description = [{
+    This type represents a substrait interval year to month attribute type.
+  }];  
+  let parameters = (ins "int32_t":$years_value, "int32_t":$months_value);
+  let assemblyFormat = [{ `<` $years_value `` `y` $months_value `` `m` `>` }];
+}
+
+def Substrait_IntervalDaySecondType : Substrait_Type<"IntervalDaySecond", "interval_day_second"> {
+  let summary = "Substrait interval day to second type";
+  let description = [{
+    This type represents a substrait interval day to second type. 
+  }];
+}
+
+def Substrait_IntervalDaySecondAttr : Substrait_Attr<"IntervalDaySecond", "interval_day_second", 
+[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
+  let summary = "Substrait interval day to second type";
+  let description = [{
+    This type represents a substrait interval day to second attribute type.
+  }];  
+  let parameters = (ins "int32_t":$days_value, "int32_t":$seconds_value);
+  let assemblyFormat = [{ `<` $days_value `` `d` $seconds_value `` `s` `>` }];
+}
+
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
@@ -54,6 +156,12 @@ def Substrait_AtomicTypes {
     F64, // FP64
     Substrait_StringType, // String
     Substrait_BinaryType, // Binary
+    Substrait_TimestampType, // Timestamp
+    Substrait_TimestampTzType, // TimestampTZ
+    Substrait_DateType, // Date
+    Substrait_TimeType, // Time
+    Substrait_IntervalYearMonthType, // IntervalYear
+    Substrait_IntervalDaySecondType, // IntervalDay
   ];
 }
 
@@ -69,6 +177,12 @@ def Substrait_AtomicAttributes {
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
     TypedStrAttr<Substrait_BinaryType>, // Binary
+    Substrait_TimestampAttr, // Timestamp
+    Substrait_TimestampTzAttr, // TimestampTZ
+    Substrait_DateAttr, // Date
+    Substrait_TimeAttr, // Time
+    Substrait_IntervalYearMonthAttr, // IntervalYear
+    Substrait_IntervalDaySecondAttr, // IntervalDay
   ];
 }
 

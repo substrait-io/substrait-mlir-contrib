@@ -228,6 +228,77 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle timestamp.
+  if (mlirType.isa<TimestampType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto timestampType = std::make_unique<proto::Type::Timestamp>();
+    timestampType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_timestamp(timestampType.release());
+    return std::move(type);
+  }
+
+  // Handle timestampe_tz.
+  if (mlirType.isa<TimestampTzType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto timestampTzType = std::make_unique<proto::Type::TimestampTZ>();
+    timestampTzType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_timestamp_tz(timestampTzType.release());
+    return std::move(type);
+  }
+
+  // Handle date.
+  if (mlirType.isa<DateType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto dateType = std::make_unique<proto::Type::Date>();
+    dateType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_date(dateType.release());
+    return std::move(type);
+  }
+
+  // Handle time.
+  if (mlirType.isa<TimeType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto timeType = std::make_unique<proto::Type::Time>();
+    timeType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_time(timeType.release());
+    return std::move(type);
+  }
+
+  // Handle interval_year.
+  if (mlirType.isa<IntervalYearMonthType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto intervalYearType = std::make_unique<proto::Type::IntervalYear>();
+    intervalYearType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_interval_year(intervalYearType.release());
+    return std::move(type);
+  }
+  // Handle interval_day.
+  if (mlirType.isa<IntervalDaySecondType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto intervalDayType = std::make_unique<proto::Type::IntervalDay>();
+    intervalDayType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_interval_day(intervalDayType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -612,6 +683,40 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `BinaryType`.
   else if (auto binaryType = dyn_cast<BinaryType>(literalType)) {
     literal->set_binary(value.cast<StringAttr>().getValue().str());
+  }
+  // `TimestampType`s.
+  else if (literalType.isa<TimestampType>()) {
+    literal->set_timestamp(value.cast<TimestampAttr>().getValue());
+  } else if (literalType.isa<TimestampTzType>()) {
+    literal->set_timestamp_tz(value.cast<TimestampTzAttr>().getValue());
+  }
+  // `DateType`.
+  else if (auto binaryType = dyn_cast<DateType>(literalType)) {
+    literal->set_date(value.cast<DateAttr>().getValue());
+  }
+  // `TimeType`.
+  else if (literalType.isa<TimeType>()) {
+    literal->set_time(value.cast<TimeAttr>().getValue());
+  }
+  // `IntervalType`'s.
+  else if (literalType.isa<IntervalYearMonthType>()) {
+    auto intervalYearToMonth = std::make_unique<
+        ::substrait::proto::Expression_Literal_IntervalYearToMonth>();
+    auto intervalYear = value.cast<IntervalYearMonthAttr>().getYearsValue();
+    auto intervalMonth = value.cast<IntervalYearMonthAttr>().getMonthsValue();
+    intervalYearToMonth->set_years(intervalYear);
+    intervalYearToMonth->set_months(intervalMonth);
+    literal->set_allocated_interval_year_to_month(
+        intervalYearToMonth.release());
+  } else if (literalType.isa<IntervalDaySecondType>()) {
+    auto intervalDaytoSecond = std::make_unique<
+        ::substrait::proto::Expression_Literal_IntervalDayToSecond>();
+    auto intervalDay = value.cast<IntervalDaySecondAttr>().getDaysValue();
+    auto intervalSecond = value.cast<IntervalDaySecondAttr>().getSecondsValue();
+    intervalDaytoSecond->set_days(intervalDay);
+    intervalDaytoSecond->set_seconds(intervalSecond);
+    literal->set_allocated_interval_day_to_second(
+        intervalDaytoSecond.release());
   } else
     op->emitOpError("has unsupported value");
 
