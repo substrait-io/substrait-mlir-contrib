@@ -41,37 +41,47 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
 }
 
 def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
-  let summary = "Substrait timestamp (excluding timezone) type";
+  let summary = "Substrait timezone-unaware timestamp type";
   let description = [{
-    This type represents a substrait timestamp (excluding timezone) type. 
+    This type represents a substrait timezone-unaware timestamp type. 
   }];
 }
 
-def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp", 
-[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
-  let summary = "Substrait timestamp (excluding timezone) type";
+def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp",
+  [TypedAttrInterface]> {
+  let summary = "Substrait timezone-unaware timestamp type";
   let description = [{
-    This type represents a substrait timestamp (excluding timezone) attribute type.
+    This type represents a substrait timezone-unaware timestamp attribute type.
   }];  
   let parameters = (ins "int64_t":$value);
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
+  let extraClassDeclaration = [{ 
+    ::mlir::Type getType() const {
+      return TimestampType::get(getContext());
+    }
+  }];
 }
 
 def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
-  let summary = "Substrait timestamp (including timezone) type";
+  let summary = "Substrait timezone-aware timestamp type";
   let description = [{
-    This type represents a substrait timestamp (including timezone) type. 
+    This type represents a substrait timezone-aware timestamp type. 
   }];
 }
 
 def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
-[DeclareAttrInterfaceMethods<TypedAttrInterface>]> {
-  let summary = "Substrait timestamp (including timezone) type";
+  [TypedAttrInterface]> {
+  let summary = "Substrait timezone-aware timestamp type";
   let description = [{
-    This type represents a substrait timestamp (including timezone) attribute type.
+    This type represents a substrait timezone-aware timestamp attribute type.
   }];  
   let parameters = (ins "int64_t":$value);
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
+  let extraClassDeclaration = [{ 
+    ::mlir::Type getType() const {
+      return TimestampTzType::get(getContext());
+    }
+  }];
 }
 
 /// Currently supported atomic types. These correspond directly to the types in

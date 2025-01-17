@@ -32,8 +32,8 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
     ^bb0(%arg : tuple<si1>):
-      %timestamp = literal #substrait.timestamp<10000000000us> : !substrait.timestamp
-      %timestamp_tz = literal #substrait.timestamp_tz<10000000000us> : !substrait.timestamp_tz
+      %timestamp = literal #substrait.timestamp<10000000000us> 
+      %timestamp_tz = literal #substrait.timestamp_tz<10000000000us> 
       yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
     }
     yield %1 : tuple<si1, !substrait.timestamp, !substrait.timestamp_tz>
