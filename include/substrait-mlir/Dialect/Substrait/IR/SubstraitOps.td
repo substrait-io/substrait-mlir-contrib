@@ -369,7 +369,7 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
     ```mlir
     %0 = ...
     %1 = ...
-    %2 = cross %0 x %1 : tuple<si32> x tuple<si32> 
+    %2 = cross %0 x %1 : tuple<si32> x tuple<si32>
     ```
   }];
   let arguments = (ins
@@ -423,7 +423,7 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   let summary = "Fetch operation";
   let description = [{
     Represents a `FetchOp` message together with the `RelCommon` and input
-    `Rel` message it contains. 
+    `Rel` message it contains.
   }];
   let arguments = (ins
     Substrait_Relation:$input,
@@ -480,8 +480,8 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferT
   let summary = "join operation";
   let description = [{
     Represents a `JoinRel` message together with the `RelCommon`, left and
-    right `Rel` messages and `JoinType` enumeration it contains. The current 
-    implementation assumes the join expression to be True. 
+    right `Rel` messages and `JoinType` enumeration it contains. The current
+    implementation assumes the join expression to be True.
   }];
   //TODO(daliashaaban): Add support for join expressions.
   let arguments = (ins
@@ -566,18 +566,18 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   }];
 }
 
- //TODO(daliashaaban): Change type inference logic once nullability is supported. 
+ //TODO(daliashaaban): Change type inference logic once nullability is supported.
 def Substrait_SetOp : Substrait_RelOp<"set", [
     SameOperandsAndResultType
   ]> {
   let summary = "set operation";
   let description = [{
     Represents the `SetRel` message together with the `RelCommon`, input
-    `Rel`, and `SetOp` enumeration it contains. This operation performs 
+    `Rel`, and `SetOp` enumeration it contains. This operation performs
     relational set operations such as intersection, union, and difference.
     There must be at least two inputs.
   }];
-  
+
   let arguments = (ins
     Variadic<Substrait_Relation>:$inputs,
     SetOpKind:$kind
@@ -585,7 +585,7 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind $inputs attr-dict `:` type($result) 
+    $kind $inputs attr-dict `:` type($result)
   }];
 }
 

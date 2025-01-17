@@ -10,7 +10,7 @@
 # RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | FileCheck %s
 
-# CHECK-LABEL:  substrait.plan 
+# CHECK-LABEL:  substrait.plan
 # CHECK-NEXT:     relation {
 # CHECK-NEXT:       %[[V0:.*]] = named_table
 # CHECK-NEXT:       %[[V1:.*]] = named_table

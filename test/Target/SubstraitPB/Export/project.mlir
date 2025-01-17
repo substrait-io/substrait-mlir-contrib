@@ -22,7 +22,7 @@
 // CHECK-NEXT:        }
 // CHECK-NEXT:        expressions {
 // CHECK-NEXT:          literal {
-// CHECK-NEXT:             i32: 42 
+// CHECK-NEXT:             i32: 42
 
 substrait.plan version 0 : 42 : 1 {
   relation {

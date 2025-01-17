@@ -10,7 +10,7 @@
 # CHECK:         relation
 # CHECK:           %[[V0:.*]] = named_table
 # CHECK-NEXT:      %[[V1:.*]] = fetch 5 offset 3 from %[[V0]]
-# CHECK-SAME:        : tuple<si32> 
+# CHECK-SAME:        : tuple<si32>
 # CHECK-NEXT:      yield %[[V1]] : tuple<si32>
 
 relations {

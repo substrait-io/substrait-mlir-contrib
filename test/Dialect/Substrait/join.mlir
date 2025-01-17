@@ -5,7 +5,7 @@
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join unspecified %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join unspecified %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>, tuple<si32> -> tuple<si32, si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
 
@@ -24,7 +24,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join inner %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join inner %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>, tuple<si32> -> tuple<si32, si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
 
@@ -43,7 +43,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join outer %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join outer %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>, tuple<si32> -> tuple<si32, si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
 
@@ -62,7 +62,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join left %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join left %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>, tuple<si32> -> tuple<si32, si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
 
@@ -81,7 +81,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join right %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join right %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>, tuple<si32> -> tuple<si32, si32>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
 
@@ -100,7 +100,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join semi %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join semi %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si1>, tuple<si32> -> tuple<si1>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si1>
 
@@ -119,7 +119,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join anti %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join anti %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si1>, tuple<si32> -> tuple<si1>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si1>
 
@@ -138,7 +138,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK:           %[[V1:.*]] = named_table
-// CHECK-NEXT:      %[[V2:.*]] = join single %[[V0]], %[[V1]] 
+// CHECK-NEXT:      %[[V2:.*]] = join single %[[V0]], %[[V1]]
 // CHECK-SAME:        : tuple<si32>, tuple<si1> -> tuple<si1>
 // CHECK-NEXT:      yield %[[V2]] : tuple<si1>
 
