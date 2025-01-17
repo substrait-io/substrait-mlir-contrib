@@ -138,3 +138,47 @@ substrait.plan version 0 : 42 : 1 {
   // If not handled carefully, parsing this symbol into an anchor may clash.
   extension_uri @extension_uri.0 at "http://other.url/with/more/extensions.yml"
 }
+
+// -----
+
+// CHECK:       advanced_extensions {
+// CHECK-NEXT:    optimization {
+// CHECK-NEXT:      type_url: "http://some.url/with/type.proto"
+// CHECK-NEXT:      value: "protobuf message"
+// CHECK-NEXT:    }
+// CHECK-NEXT:    enhancement {
+// CHECK-NEXT:      type_url: "http://other.url/with/type.proto"
+// CHECK-NEXT:      value: "other protobuf message"
+// CHECK-NEXT:    }
+// CHECK-NEXT:  }
+// CHECK-NEXT:  version
+
+substrait.plan version 0 : 42 : 1
+    advanced_extension
+      optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+      enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+{}
+
+// -----
+
+// CHECK:       advanced_extensions {
+// CHECK-NEXT:    optimization {
+// CHECK-NOT:     enhancement {
+// CHECK-:      version
+
+substrait.plan version 0 : 42 : 1
+    advanced_extension
+      optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+{}
+
+// -----
+
+// CHECK:       advanced_extensions {
+// CHECK-NEXT:    enhancement {
+// CHECK-NOT:     optimization {
+// CHECK-:      version
+
+substrait.plan version 0 : 42 : 1
+    advanced_extension
+      enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+{}

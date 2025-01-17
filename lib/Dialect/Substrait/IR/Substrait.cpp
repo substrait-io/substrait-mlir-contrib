@@ -39,6 +39,20 @@ void SubstraitDialect::initialize() {
 }
 
 //===----------------------------------------------------------------------===//
+// Substrait attributes
+//===----------------------------------------------------------------------===//
+
+LogicalResult AdvancedExtensionAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
+    mlir::StringAttr optimization, mlir::StringAttr enhancement) {
+  if (optimization && !mlir::isa<AnyType>(optimization.getType()))
+    return emitError() << "has 'optimization' attribute of wrong type";
+  if (enhancement && !mlir::isa<AnyType>(enhancement.getType()))
+    return emitError() << "has 'enhancement' attribute of wrong type";
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
 // Substrait enums
 //===----------------------------------------------------------------------===//
 
