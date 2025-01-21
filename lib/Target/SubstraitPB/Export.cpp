@@ -253,7 +253,7 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   }
 
   // Handle date.
-  if (mlirType.isa<DateType>()) {
+  if (mlir::isa<DateType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
     auto dateType = std::make_unique<proto::Type::Date>();
     dateType->set_nullability(
@@ -657,7 +657,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   }
   // `DateType`.
   else if (auto dateType = dyn_cast<DateType>(literalType)) {
-    literal->set_date(value.cast<DateAttr>().getValue());
+    literal->set_date(mlir::cast<DateAttr>(value).getValue());
   } else
     op->emitOpError("has unsupported value");
 
