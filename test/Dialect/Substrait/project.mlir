@@ -27,7 +27,7 @@ substrait.plan version 0 : 42 : 1 {
 
 // -----
 
-// CHECK:      substrait.plan version 0 : 42 : 1 {
+// CHECK:      substrait.plan
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si32> -> tuple<si32> {
@@ -38,6 +38,28 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = project %0 : tuple<si32> -> tuple<si32> {
+    ^bb0(%arg0: tuple<si32>):
+      yield
+    }
+    yield %1 : tuple<si32>
+  }
+}
+
+// -----
+
+// CHECK:      substrait.plan version
+// CHECK-NEXT:   relation
+// CHECK:         %[[V0:.*]] = named_table
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]]
+// CHECK-SAME:      advanced_extension optimization = "foo" : !substrait.any<"bar">
+// CHECK-SAME:      tuple<si32> -> tuple<si32> {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si32>
+    %1 = project %0
+            advanced_extension optimization = "foo" : !substrait.any<"bar">
+            : tuple<si32> -> tuple<si32> {
     ^bb0(%arg0: tuple<si32>):
       yield
     }

@@ -25,6 +25,7 @@
 
 using namespace mlir;
 using namespace mlir::substrait;
+using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
@@ -63,6 +64,46 @@ DECLARE_IMPORT_FUNC(ProjectRel, Rel, ProjectOp)
 DECLARE_IMPORT_FUNC(ReadRel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(Rel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(ScalarFunction, Expression::ScalarFunction, CallOp)
+
+/// If present, imports the `advanced_extension` or `advanced_extensions` field
+/// from the given message and sets the obtained attribute on the given op.
+template <typename MessageType>
+void importAdvancedExtension(ImplicitLocOpBuilder builder,
+                             ExtensibleOpInterface op,
+                             const MessageType &message);
+
+template <typename MessageType>
+void importAdvancedExtension(ImplicitLocOpBuilder builder,
+                             ExtensibleOpInterface op,
+                             const MessageType &message) {
+  using Trait = advanced_extension_trait<MessageType>;
+  if (!Trait::has_advanced_extension(message))
+    return;
+
+  // Get the `advanced_extension(s)` field.
+  const extensions::AdvancedExtension &advancedExtension =
+      Trait::advanced_extension(message);
+
+  // Import `optimization` field if present.
+  StringAttr optimizationAttr;
+  if (advancedExtension.has_optimization()) {
+    const pb::Any &optimization = advancedExtension.optimization();
+    optimizationAttr = importAny(builder, optimization).value();
+  }
+
+  // Import `enhancement` field if present.
+  StringAttr enhancementAttr;
+  if (advancedExtension.has_enhancement()) {
+    const pb::Any &enhancement = advancedExtension.enhancement();
+    enhancementAttr = importAny(builder, enhancement).value();
+  }
+
+  // Build attribute and set it on the op.
+  MLIRContext *context = builder.getContext();
+  auto advancedExtensionAttr =
+      AdvancedExtensionAttr::get(context, optimizationAttr, enhancementAttr);
+  op.setAdvancedExtensionAttr(advancedExtensionAttr);
+}
 
 FailureOr<StringAttr> importAny(ImplicitLocOpBuilder builder,
                                 const pb::Any &message) {
@@ -494,32 +535,10 @@ static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
   // Import version.
   const Version &version = message.version();
 
-  // Import advanced extension.
-  AdvancedExtensionAttr advancedExtensionAttr;
-  if (message.has_advanced_extensions()) {
-    const extensions::AdvancedExtension &advancedExtension =
-        message.advanced_extensions();
-
-    StringAttr optimizationAttr;
-    if (advancedExtension.has_optimization()) {
-      const pb::Any &optimization = advancedExtension.optimization();
-      optimizationAttr = importAny(builder, optimization).value();
-    }
-
-    StringAttr enhancementAttr;
-    if (advancedExtension.has_enhancement()) {
-      const pb::Any &enhancement = advancedExtension.enhancement();
-      enhancementAttr = importAny(builder, enhancement).value();
-    }
-
-    advancedExtensionAttr =
-        AdvancedExtensionAttr::get(context, optimizationAttr, enhancementAttr);
-  }
-
   // Build `PlanOp`.
   auto planOp = builder.create<PlanOp>(
       version.major_number(), version.minor_number(), version.patch_number(),
-      version.git_hash(), version.producer(), advancedExtensionAttr);
+      version.git_hash(), version.producer());
   planOp.getBody().push_back(new Block());
 
   // Import `expected_type_urls` if present.
@@ -530,6 +549,9 @@ static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
   if (!expected_type_urls.empty()) {
     planOp.setExpectedTypeUrlsAttr(ArrayAttr::get(context, expected_type_urls));
   }
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, planOp, message);
 
   OpBuilder::InsertionGuard insertGuard(builder);
   builder.setInsertionPointToEnd(&planOp.getBody().front());
@@ -690,6 +712,9 @@ static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
   auto projectOp =
       builder.create<ProjectOp>(resultType, inputOp.value()->getResult(0));
   projectOp.getExpressions().push_back(conditionBlock.release());
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, projectOp, projectRel);
 
   return projectOp;
 }
