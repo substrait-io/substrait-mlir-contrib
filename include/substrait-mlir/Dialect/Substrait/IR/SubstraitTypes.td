@@ -33,12 +33,34 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   }];
 }
 
+def Substrait_DateType : Substrait_Type<"Date", "date"> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date type. 
+  }];
+}
+
+def Substrait_DateAttr : Substrait_Attr<"Date", "date",
+  [TypedAttrInterface]> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date attribute type.
+  }];  
+  let parameters = (ins "int32_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+  let extraClassDeclaration = [{ 
+    ::mlir::Type getType() const {
+      return DateType::get(getContext());
+    }
+  }];
+}
+
 def Substrait_StringType : Substrait_Type<"String", "string"> {
   let summary = "Substrait string type";
   let description = [{
     This type represents a substrait string type.
   }];
-}}
+}
 
 def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
   let summary = "Substrait timezone-unaware timestamp type";
@@ -84,22 +106,6 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
   }];
 }
 
-def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
-  let summary = "Substrait timestamp (including timezone) type";
-  let description = [{
-    This type represents a substrait timestamp (including timezone) type. 
-  }];
-}
-
-def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz"> {
-  let summary = "Substrait timestamp (including timezone) type";
-  let description = [{
-    This type represents a substrait timestamp (including timezone) attribute type.
-  }];  
-  let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `` `us` `>` }];
-}
-
 /// Currently supported atomic types. These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
@@ -116,6 +122,7 @@ def Substrait_AtomicTypes {
     Substrait_BinaryType, // Binary
     Substrait_TimestampType, // Timestamp
     Substrait_TimestampTzType, // TimestampTZ
+    Substrait_DateType, // Date
   ];
 }
 
@@ -133,6 +140,7 @@ def Substrait_AtomicAttributes {
     TypedStrAttr<Substrait_BinaryType>, // Binary
     Substrait_TimestampAttr, // Timestamp
     Substrait_TimestampTzAttr, // TimestampTZ
+    Substrait_DateAttr, // Date
   ];
 }
 

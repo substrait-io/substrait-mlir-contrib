@@ -252,6 +252,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle date.
+  if (mlirType.isa<DateType>()) {
+    // TODO(ingomueller): support other nullability modes.
+    auto dateType = std::make_unique<proto::Type::Date>();
+    dateType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_date(dateType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -642,6 +654,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     literal->set_timestamp(value.cast<TimestampAttr>().getValue());
   } else if (literalType.isa<TimestampTzType>()) {
     literal->set_timestamp_tz(value.cast<TimestampTzAttr>().getValue());
+  }
+  // `DateType`.
+  else if (auto binaryType = dyn_cast<DateType>(literalType)) {
+    literal->set_date(value.cast<DateAttr>().getValue());
   } else
     op->emitOpError("has unsupported value");
 
