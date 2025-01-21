@@ -43,7 +43,7 @@ substrait.plan version 0 : 42 : 1 {
 
 // -----
 
-// Test error if no symbol refers to an op of the wrong type.
+// Test error if the `enhancement` attribute has the wrong/no type.
 substrait.plan version 0 : 42 : 1
   // expected-error@+1 {{custom op 'substrait.plan' has 'enhancement' attribute of wrong type}}
   advanced_extension enhancement = "blup"
@@ -51,7 +51,7 @@ substrait.plan version 0 : 42 : 1
 
 // -----
 
-// Test error if no symbol refers to an op of the wrong type.
+// Test error if the `optimization` attribute has the wrong/no type.
 substrait.plan version 0 : 42 : 1
   // expected-error@+1 {{custom op 'substrait.plan' has 'optimization' attribute of wrong type}}
   advanced_extension optimization = "blup"
