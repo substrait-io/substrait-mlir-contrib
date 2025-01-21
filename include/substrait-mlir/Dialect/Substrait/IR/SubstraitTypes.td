@@ -120,6 +120,32 @@ def Substrait_AtomicAttributes {
   ];
 }
 
+def Substrait_AnyType : Substrait_Type<"Any", "any"> {
+  let summary = "Represents the `type_url` of a `google.protobuf.Any` message";
+  let description = [{
+    This type represents the `type_url` fields of a `google.protobuf.Any`
+    message. These messages consist of an opaque byte array and a string holding
+    the URL identifying the type of what is contained in the byte array.
+  }];
+  let parameters = (ins "StringAttr":$type_url);
+  let assemblyFormat = "`<` $type_url `>`";
+
+}
+
+def Substrait_AdvancedExtensionAttr
+    : Substrait_Attr<"AdvancedExtension", "advanced_extension"> {
+  let summary = "Represents the `AdvancedExtenssion` message of Substrait";
+  let parameters = (ins
+    OptionalParameter<"StringAttr">:$optimization,  // XXX: verify type
+    OptionalParameter<"StringAttr">:$enhancement
+  );
+  let assemblyFormat = [{
+    ( `optimization` `=` $optimization^ )?
+    ( `enhancement`  `=` $enhancement^  )?
+  }];
+  let genVerifyDecl = 1;
+}
+
 /// Attribute of one of the currently supported atomic types.
 def Substrait_AtomicAttribute : AnyAttrOf<Substrait_AtomicAttributes.attrs>;
 

@@ -187,3 +187,62 @@ version {
   minor_number: 42
   patch_number: 1
 }
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK-SAME:   advanced_extension
+# CHECK-SAME:     optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+# CHECK-SAME:     enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+# CHECK-NEXT: }
+
+advanced_extensions {
+  optimization {
+    type_url: "http://some.url/with/type.proto"
+    value: "protobuf message"
+  }
+  enhancement {
+    type_url: "http://other.url/with/type.proto"
+    value: "other protobuf message"
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK-SAME:   advanced_extension
+# CHECK-SAME:     optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+# CHECK-NEXT: }
+
+advanced_extensions {
+  optimization {
+    type_url: "http://some.url/with/type.proto"
+    value: "protobuf message"
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK-SAME:   advanced_extension
+# CHECK-SAME:     enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+# CHECK-NEXT: }
+
+advanced_extensions {
+  enhancement {
+    type_url: "http://other.url/with/type.proto"
+    value: "other protobuf message"
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}

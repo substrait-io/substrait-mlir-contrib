@@ -40,3 +40,19 @@ substrait.plan version 0 : 42 : 1 {
   // expected-error@+1 {{'substrait.extension_function' op refers to @function.1, which is not a valid 'uri' op}}
   extension_function @function.2 at @function.1["somefunc"]
 }
+
+// -----
+
+// Test error if the `enhancement` attribute has the wrong/no type.
+substrait.plan version 0 : 42 : 1
+  // expected-error@+1 {{custom op 'substrait.plan' has 'enhancement' attribute of wrong type}}
+  advanced_extension enhancement = "blup"
+{}
+
+// -----
+
+// Test error if the `optimization` attribute has the wrong/no type.
+substrait.plan version 0 : 42 : 1
+  // expected-error@+1 {{custom op 'substrait.plan' has 'optimization' attribute of wrong type}}
+  advanced_extension optimization = "blup"
+{}

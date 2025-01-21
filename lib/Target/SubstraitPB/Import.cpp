@@ -46,6 +46,7 @@ namespace {
   static FailureOr<OP_TYPE> import##MESSAGE_TYPE(ImplicitLocOpBuilder builder, \
                                                  const ARG_TYPE &message);
 
+DECLARE_IMPORT_FUNC(Any, pb::Any, StringAttr)
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
@@ -62,6 +63,14 @@ DECLARE_IMPORT_FUNC(ProjectRel, Rel, ProjectOp)
 DECLARE_IMPORT_FUNC(ReadRel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(Rel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(ScalarFunction, Expression::ScalarFunction, CallOp)
+
+FailureOr<StringAttr> importAny(ImplicitLocOpBuilder builder,
+                                const pb::Any &message) {
+  MLIRContext *context = builder.getContext();
+  auto typeUrlAttr = StringAttr::get(context, message.type_url());
+  auto anyType = AnyType::get(context, typeUrlAttr);
+  return StringAttr::get(message.value(), anyType);
+}
 
 // Helpers to build symbol names from anchors deterministically. This allows
 // to reate symbol references from anchors without look-up structure. Also,
@@ -468,10 +477,35 @@ static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
   MLIRContext *context = builder.getContext();
   Location loc = UnknownLoc::get(context);
 
+  // Import version.
   const Version &version = message.version();
+
+  // Import advanced extension.
+  AdvancedExtensionAttr advancedExtensionAttr;
+  if (message.has_advanced_extensions()) {
+    const extensions::AdvancedExtension &advancedExtension =
+        message.advanced_extensions();
+
+    StringAttr optimizationAttr;
+    if (advancedExtension.has_optimization()) {
+      const pb::Any &optimization = advancedExtension.optimization();
+      optimizationAttr = importAny(builder, optimization).value();
+    }
+
+    StringAttr enhancementAttr;
+    if (advancedExtension.has_enhancement()) {
+      const pb::Any &enhancement = advancedExtension.enhancement();
+      enhancementAttr = importAny(builder, enhancement).value();
+    }
+
+    advancedExtensionAttr =
+        AdvancedExtensionAttr::get(context, optimizationAttr, enhancementAttr);
+  }
+
+  // Build `PlanOp`.
   auto planOp = builder.create<PlanOp>(
       version.major_number(), version.minor_number(), version.patch_number(),
-      version.git_hash(), version.producer());
+      version.git_hash(), version.producer(), advancedExtensionAttr);
   planOp.getBody().push_back(new Block());
 
   OpBuilder::InsertionGuard insertGuard(builder);
