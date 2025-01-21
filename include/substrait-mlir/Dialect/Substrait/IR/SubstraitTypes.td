@@ -62,6 +62,28 @@ def Substrait_StringType : Substrait_Type<"String", "string"> {
   }];
 }
 
+def Substrait_TimeType : Substrait_Type<"Time", "time"> {
+  let summary = "Substrait time type";
+  let description = [{
+    This type represents a substrait time type. 
+  }];
+}
+
+def Substrait_TimeAttr : Substrait_Attr<"Time", "time", 
+[TypedAttrInterface]> {
+  let summary = "Substrait time type";
+  let description = [{
+    This type represents a substrait time attribute type.
+  }];  
+  let parameters = (ins "int64_t":$value);
+  let assemblyFormat = [{ `<` $value `` `us` `>` }];
+  let extraClassDeclaration = [{ 
+    ::mlir::Type getType() const {
+      return TimeType::get(getContext());
+    }
+  }];
+}
+
 def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
   let summary = "Substrait timezone-unaware timestamp type";
   let description = [{
@@ -107,7 +129,6 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
 }
 
 /// Currently supported atomic types, listed in order of substrait specification. 
-/// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
@@ -124,6 +145,7 @@ def Substrait_AtomicTypes {
     Substrait_TimestampType, // Timestamp
     Substrait_TimestampTzType, // TimestampTZ
     Substrait_DateType, // Date
+    Substrait_TimeType, // Time
   ];
 }
 
@@ -143,6 +165,7 @@ def Substrait_AtomicAttributes {
     Substrait_TimestampAttr, // Timestamp
     Substrait_TimestampTzAttr, // TimestampTZ
     Substrait_DateAttr, // Date
+    Substrait_TimeAttr, // Time
   ];
 }
 
