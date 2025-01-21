@@ -106,7 +106,8 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
   }];
 }
 
-/// Currently supported atomic types. These correspond directly to the types in
+/// Currently supported atomic types, listed in order of substrait specification. 
+/// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
@@ -126,7 +127,8 @@ def Substrait_AtomicTypes {
   ];
 }
 
-/// Attributes of currently supported atomic types.
+/// Attributes of currently supported atomic types, listed in order of substrait 
+/// specification. 
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
