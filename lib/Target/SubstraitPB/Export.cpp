@@ -690,7 +690,7 @@ SubstraitExporter::exportOperation(ModuleOp op) {
     op->emitOpError("has attributes");
     return failure();
   }
-  
+
   Region &body = op.getBodyRegion();
   if (llvm::range_size(body.getOps()) != 1) {
     op->emitOpError("has more than one op in its body");
