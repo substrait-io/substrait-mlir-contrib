@@ -26,17 +26,39 @@ class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
-def Substrait_StringType : Substrait_Type<"String", "string"> {
-  let summary = "Substrait string type";
-  let description = [{
-    This type represents a substrait string type.
-  }];
-}
-
 def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   let summary = "Substrait binary type";
   let description = [{
     This type represents a substrait binary type.
+  }];
+}
+
+def Substrait_DateType : Substrait_Type<"Date", "date"> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date type. 
+  }];
+}
+
+def Substrait_DateAttr : Substrait_Attr<"Date", "date",
+  [TypedAttrInterface]> {
+  let summary = "Substrait date type";
+  let description = [{
+    This type represents a substrait date attribute type.
+  }];  
+  let parameters = (ins "int32_t":$value);
+  let assemblyFormat = [{ `<` $value `>` }];
+  let extraClassDeclaration = [{ 
+    ::mlir::Type getType() const {
+      return DateType::get(getContext());
+    }
+  }];
+}
+
+def Substrait_StringType : Substrait_Type<"String", "string"> {
+  let summary = "Substrait string type";
+  let description = [{
+    This type represents a substrait string type.
   }];
 }
 
@@ -84,7 +106,8 @@ def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
   }];
 }
 
-/// Currently supported atomic types. These correspond directly to the types in
+/// Currently supported atomic types, listed in order of substrait specification. 
+/// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 // TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
@@ -100,10 +123,12 @@ def Substrait_AtomicTypes {
     Substrait_BinaryType, // Binary
     Substrait_TimestampType, // Timestamp
     Substrait_TimestampTzType, // TimestampTZ
+    Substrait_DateType, // Date
   ];
 }
 
-/// Attributes of currently supported atomic types.
+/// Attributes of currently supported atomic types, listed in order of substrait 
+/// specification. 
 def Substrait_AtomicAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
@@ -117,6 +142,7 @@ def Substrait_AtomicAttributes {
     TypedStrAttr<Substrait_BinaryType>, // Binary
     Substrait_TimestampAttr, // Timestamp
     Substrait_TimestampTzAttr, // TimestampTZ
+    Substrait_DateAttr, // Date
   ];
 }
 
