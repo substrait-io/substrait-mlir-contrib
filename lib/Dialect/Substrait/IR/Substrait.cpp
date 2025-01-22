@@ -189,7 +189,7 @@ EmitOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 
   ArrayAttr mapping = typedProperties->getMapping();
   Type inputType = operands[0].getType();
-  ArrayRef<Type> inputTypes = inputType.cast<TupleType>().getTypes();
+  ArrayRef<Type> inputTypes = mlir::cast<TupleType>(inputType).getTypes();
 
   // Map input types to output types.
   SmallVector<Type> outputTypes;
@@ -342,8 +342,6 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   case JoinTypeKind::single:
     llvm::append_range(fieldTypes, rightFieldTypes);
     break;
-  default:
-    return failure();
   }
 
   auto resultType = TupleType::get(context, fieldTypes);
