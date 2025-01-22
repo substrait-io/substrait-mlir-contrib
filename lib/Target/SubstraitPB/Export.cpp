@@ -13,6 +13,7 @@
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/ADT/TypeSwitch.h"
+#include "llvm/Support/ErrorHandling.h"
 
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
@@ -114,7 +115,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_bool_(i1Type.release());
-    return std::move(type);
+    return type;
   }
 
   // Handle SI8.
@@ -127,7 +128,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i8(i8Type.release());
-    return std::move(type);
+    return type;
   }
 
   // Handle SI6.
@@ -140,7 +141,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i16(i16Type.release());
-    return std::move(type);
+    return type;
   }
 
   // Handle SI32.
@@ -153,7 +154,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i32(i32Type.release());
-    return std::move(type);
+    return type;
   }
 
   // Handle SI64.
@@ -166,8 +167,10 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i64(i64Type.release());
-    return std::move(type);
+    return type;
   }
+
+  llvm_unreachable("We should have handled all integer types.");
 }
 
 std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
@@ -184,7 +187,7 @@ std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fp32(fp32Type.release());
-    return std::move(type);
+    return type;
   }
 
   // Handle FP64.
@@ -197,8 +200,10 @@ std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fp64(fp64Type.release());
-    return std::move(type);
+    return type;
   }
+
+  llvm_unreachable("We should have handled all float types.");
 }
 
 FailureOr<std::unique_ptr<proto::Type>>
@@ -206,17 +211,17 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   MLIRContext *context = mlirType.getContext();
 
   // Handle `IntegerType`'s.
-  if (mlirType.isa<IntegerType>()) {
+  if (mlir::isa<IntegerType>(mlirType)) {
     return exportIntegerType(mlirType, context);
   }
 
   // Handle `FloatType`'s.
-  if (mlirType.isa<FloatType>()) {
+  if (mlir::isa<FloatType>(mlirType)) {
     return exportFloatType(mlirType, context);
   }
 
   // Handle String.
-  if (mlirType.isa<StringType>()) {
+  if (mlir::isa<StringType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
     auto stringType = std::make_unique<proto::Type::String>();
     stringType->set_nullability(
@@ -228,7 +233,7 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   }
 
   // Handle binary type.
-  if (mlirType.isa<BinaryType>()) {
+  if (mlir::isa<BinaryType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
     auto binaryType = std::make_unique<proto::Type::Binary>();
     binaryType->set_nullability(
@@ -240,7 +245,7 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   }
 
   // Handle timestamp.
-  if (mlirType.isa<TimestampType>()) {
+  if (mlir::isa<TimestampType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
     auto timestampType = std::make_unique<proto::Type::Timestamp>();
     timestampType->set_nullability(
@@ -252,7 +257,7 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   }
 
   // Handle timestampe_tz.
-  if (mlirType.isa<TimestampTzType>()) {
+  if (mlir::isa<TimestampTzType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
     auto timestampTzType = std::make_unique<proto::Type::TimestampTZ>();
     timestampTzType->set_nullability(
@@ -619,20 +624,20 @@ SubstraitExporter::exportOperation(LiteralOp op) {
       op->emitOpError("has integer value with unsupported signedness");
     switch (intType.getWidth()) {
     case 1:
-      literal->set_boolean(value.cast<IntegerAttr>().getSInt());
+      literal->set_boolean(mlir::cast<IntegerAttr>(value).getSInt());
       break;
     case 8:
-      literal->set_i8(value.cast<IntegerAttr>().getSInt());
+      literal->set_i8(mlir::cast<IntegerAttr>(value).getSInt());
       break;
     case 16:
-      literal->set_i16(value.cast<IntegerAttr>().getSInt());
+      literal->set_i16(mlir::cast<IntegerAttr>(value).getSInt());
       break;
     case 32:
       // TODO(ingomueller): Add tests when we can express plans that use i32.
-      literal->set_i32(value.cast<IntegerAttr>().getSInt());
+      literal->set_i32(mlir::cast<IntegerAttr>(value).getSInt());
       break;
     case 64:
-      literal->set_i64(value.cast<IntegerAttr>().getSInt());
+      literal->set_i64(mlir::cast<IntegerAttr>(value).getSInt());
       break;
     default:
       op->emitOpError("has integer value with unsupported width");
@@ -642,11 +647,11 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   else if (auto floatType = dyn_cast<FloatType>(literalType)) {
     switch (floatType.getWidth()) {
     case 32:
-      literal->set_fp32(value.cast<FloatAttr>().getValueAsDouble());
+      literal->set_fp32(mlir::cast<FloatAttr>(value).getValueAsDouble());
       break;
     case 64:
       // TODO(ingomueller): Add tests when we can express plans that use i32.
-      literal->set_fp64(value.cast<FloatAttr>().getValueAsDouble());
+      literal->set_fp64(mlir::cast<FloatAttr>(value).getValueAsDouble());
       break;
     default:
       op->emitOpError("has float value with unsupported width");
@@ -654,17 +659,17 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   }
   // `StringType`.
   else if (auto stringType = dyn_cast<StringType>(literalType)) {
-    literal->set_string(value.cast<StringAttr>().getValue().str());
+    literal->set_string(mlir::cast<StringAttr>(value).getValue().str());
   }
   // `BinaryType`.
   else if (auto binaryType = dyn_cast<BinaryType>(literalType)) {
-    literal->set_binary(value.cast<StringAttr>().getValue().str());
+    literal->set_binary(mlir::cast<StringAttr>(value).getValue().str());
   }
   // `TimestampType`s.
-  else if (literalType.isa<TimestampType>()) {
-    literal->set_timestamp(value.cast<TimestampAttr>().getValue());
-  } else if (literalType.isa<TimestampTzType>()) {
-    literal->set_timestamp_tz(value.cast<TimestampTzAttr>().getValue());
+  else if (auto timestampType = dyn_cast<TimestampType>(literalType)) {
+    literal->set_timestamp(mlir::cast<TimestampAttr>(value).getValue());
+  } else if (auto timestampTzType = dyn_cast<TimestampTzType>(literalType)) {
+    literal->set_timestamp_tz(mlir::cast<TimestampTzAttr>(value).getValue());
   }
   // `DateType`.
   else if (auto dateType = dyn_cast<DateType>(literalType)) {
@@ -731,7 +736,7 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   auto namedStruct = std::make_unique<NamedStruct>();
   namedStruct->set_allocated_struct_(struct_.release());
   for (Attribute attr : op.getFieldNames()) {
-    namedStruct->add_names(attr.cast<StringAttr>().getValue().str());
+    namedStruct->add_names(mlir::cast<StringAttr>(attr).getValue().str());
   }
 
   // Build `ReadRel` message.
