@@ -20,6 +20,35 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:            time: 200000000
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.time> {
+    ^bb0(%arg : tuple<si1>):
+      %time = literal #substrait.time<200000000us> : !substrait.time
+      yield %time : !substrait.time
+    }
+    yield %1 : tuple<si1, !substrait.time> 
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            date: 200000000
 
 substrait.plan version 0 : 42 : 1 {
