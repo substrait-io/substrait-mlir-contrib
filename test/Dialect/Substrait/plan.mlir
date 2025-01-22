@@ -100,3 +100,15 @@ substrait.plan version 0 : 42 : 1
       optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
       enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
 {}
+
+// -----
+
+// CHECK:      substrait.plan
+// CHECK-SAME:   expected_type_urls
+// CHECK-SAME:     ["http://some.url/with/type.proto", "http://other.url/with/type.proto"]
+// CHECK-NEXT: }
+
+substrait.plan version 0 : 42 : 1
+    expected_type_urls
+      ["http://some.url/with/type.proto", "http://other.url/with/type.proto"]
+{}
