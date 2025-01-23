@@ -1,0 +1,55 @@
+# RUN: substrait-translate -protobuf-to-substrait-plan-version %s \
+# RUN:   --split-input-file="# ""-----" \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait-plan-version %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
+# RUN: | substrait-translate -protobuf-to-substrait-plan-version \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | FileCheck %s
+
+# CHECK-LABEL: substrait.plan_version 0:42:1
+# CHECK-SAME:    git_hash "hash" producer "producer"
+
+version {
+  minor_number: 42
+  patch_number: 1
+  git_hash: "hash"
+  producer: "producer"
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan_version 1:2:3
+# CHECK-SAME:    producer "other producer"{{$}}
+
+version {
+  major_number: 1
+  minor_number: 2
+  patch_number: 3
+  producer: "other producer"
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan_version 1:33:7
+# CHECK-SAME:    git_hash "other hash"{{$}}
+
+version {
+  major_number: 1
+  minor_number: 33
+  patch_number: 7
+  git_hash: "other hash"
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan_version 3:2:1{{$}}
+
+version {
+  major_number: 3
+  minor_number: 2
+  patch_number: 1
+}

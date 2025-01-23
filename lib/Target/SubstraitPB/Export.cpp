@@ -58,9 +58,10 @@ public:
   DECLARE_EXPORT_FUNC(FilterOp, Rel)
   DECLARE_EXPORT_FUNC(JoinOp, Rel)
   DECLARE_EXPORT_FUNC(LiteralOp, Expression)
-  DECLARE_EXPORT_FUNC(ModuleOp, Plan)
+  DECLARE_EXPORT_FUNC(ModuleOp, pb::Message)
   DECLARE_EXPORT_FUNC(NamedTableOp, Rel)
   DECLARE_EXPORT_FUNC(PlanOp, Plan)
+  DECLARE_EXPORT_FUNC(PlanVersionOp, PlanVersion)
   DECLARE_EXPORT_FUNC(ProjectOp, Rel)
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
   DECLARE_EXPORT_FUNC(SetOp, Rel)
@@ -842,7 +843,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   return expression;
 }
 
-FailureOr<std::unique_ptr<Plan>>
+FailureOr<std::unique_ptr<pb::Message>>
 SubstraitExporter::exportOperation(ModuleOp op) {
   if (!op->getAttrs().empty()) {
     op->emitOpError("has attributes");
@@ -855,8 +856,9 @@ SubstraitExporter::exportOperation(ModuleOp op) {
     return failure();
   }
 
-  if (auto plan = llvm::dyn_cast<PlanOp>(&*body.op_begin()))
-    return exportOperation(plan);
+  Operation *innerOp = &*body.op_begin();
+  if (llvm::isa<PlanOp, PlanVersionOp>(innerOp))
+    return exportOperation(innerOp);
 
   op->emitOpError("contains an op that is not a 'substrait.plan'");
   return failure();
@@ -1111,6 +1113,27 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
   return std::move(plan);
 }
 
+FailureOr<std::unique_ptr<PlanVersion>>
+SubstraitExporter::exportOperation(PlanVersionOp op) {
+  VersionAttr versionAttr = op.getVersion();
+
+  // Build `Version` message.
+  auto version = std::make_unique<Version>();
+  version->set_major_number(versionAttr.getMajorNumber());
+  version->set_minor_number(versionAttr.getMinorNumber());
+  version->set_patch_number(versionAttr.getPatchNumber());
+  if (versionAttr.getProducer())
+    version->set_producer(versionAttr.getProducer().str());
+  if (versionAttr.getGitHash())
+    version->set_git_hash(versionAttr.getGitHash().str());
+
+  // Build `PlanVersion` message.
+  auto planVersion = std::make_unique<PlanVersion>();
+  planVersion->set_allocated_version(version.release());
+
+  return planVersion;
+}
+
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(ProjectOp op) {
   // Build `RelCommon` message.
@@ -1309,7 +1332,7 @@ FailureOr<std::unique_ptr<pb::Message>>
 SubstraitExporter::exportOperation(Operation *op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::unique_ptr<pb::Message>>>(
              op)
-      .Case<ModuleOp, PlanOp>(
+      .Case<ModuleOp, PlanOp, PlanVersionOp>(
           [&](auto op) -> FailureOr<std::unique_ptr<pb::Message>> {
             auto typedMessage = exportOperation(op);
             if (failed(typedMessage))

@@ -22,8 +22,12 @@ class OwningOpRef;
 namespace substrait {
 
 OwningOpRef<ModuleOp>
-translateProtobufToSubstrait(llvm::StringRef input, MLIRContext *context,
-                             substrait::ImportExportOptions options = {});
+translateProtobufToSubstraitPlan(llvm::StringRef input, MLIRContext *context,
+                                 substrait::ImportExportOptions options = {});
+
+OwningOpRef<ModuleOp> translateProtobufToSubstraitPlanVersion(
+    llvm::StringRef input, MLIRContext *context,
+    substrait::ImportExportOptions options = {});
 
 } // namespace substrait
 } // namespace mlir

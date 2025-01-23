@@ -8,17 +8,15 @@
 // `mlir-stranslate` with translations to and from Substrait MLIR dialects.
 //===----------------------------------------------------------------------===//
 
-#include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/BuiltinOps.h" // IWYU: keep
 #include "mlir/IR/Operation.h"
 #include "mlir/InitAllTranslations.h"
-#include "mlir/Support/LogicalResult.h"
 #include "mlir/Tools/mlir-translate/MlirTranslateMain.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "substrait-mlir/Target/SubstraitPB/Export.h"
 #include "substrait-mlir/Target/SubstraitPB/Import.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
-#include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/raw_ostream.h"
 
 namespace mlir {
@@ -51,13 +49,30 @@ void registerSubstraitToProtobufTranslation() {
       registerSubstraitDialects);
 }
 
-void registerProtobufToSubstraitTranslation() {
+void registerProtobufToSubstraitPlanTranslation() {
+  // Two aliases: `-protobuf-to-substrait` for conciseness and
+  // `-protobuf-to-substrait-plan` for symmetry with the other translations.
+  for (StringRef suffix : {"", "-plan"}) {
+    TranslateToMLIRRegistration registration(
+        ("protobuf-to-substrait" + suffix).str(),
+        "translate a protobuf 'Plan' to Substrait MLIR",
+        [&](llvm::StringRef input, mlir::MLIRContext *context) {
+          ImportExportOptions options;
+          options.serdeFormat = substraitProtobufFormat.getValue();
+          return translateProtobufToSubstraitPlan(input, context, options);
+        },
+        registerSubstraitDialects);
+  }
+}
+
+void registerProtobufToSubstraitPlanVersionTranslation() {
   TranslateToMLIRRegistration registration(
-      "protobuf-to-substrait", "translate from protobuf to Substrait MLIR",
+      "protobuf-to-substrait-plan-version",
+      "translate a protobuf 'PlanVersion' to Substrait MLIR",
       [&](llvm::StringRef input, mlir::MLIRContext *context) {
         ImportExportOptions options;
         options.serdeFormat = substraitProtobufFormat.getValue();
-        return translateProtobufToSubstrait(input, context, options);
+        return translateProtobufToSubstraitPlanVersion(input, context, options);
       },
       registerSubstraitDialects);
 }
@@ -68,7 +83,8 @@ void registerProtobufToSubstraitTranslation() {
 int main(int argc, char **argv) {
   mlir::registerAllTranslations();
   mlir::substrait::registerSubstraitToProtobufTranslation();
-  mlir::substrait::registerProtobufToSubstraitTranslation();
+  mlir::substrait::registerProtobufToSubstraitPlanTranslation();
+  mlir::substrait::registerProtobufToSubstraitPlanVersionTranslation();
 
   return failed(
       mlir::mlirTranslateMain(argc, argv, "MLIR Translation Testing Tool"));
