@@ -11,18 +11,10 @@
 
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
 include "mlir/IR/CommonTypeConstraints.td"
-include "mlir/IR/OpBase.td"
-include "mlir/IR/BuiltinAttributeInterfaces.td"
 
 // Base class for Substrait dialect types.
 class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
     : TypeDef<Substrait_Dialect, name, traits> {
-  let mnemonic = typeMnemonic;
-}
-
-// Base class for Substrait dialect attribute types.
-class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
-    : AttrDef<Substrait_Dialect, name, traits> {
   let mnemonic = typeMnemonic;
 }
 
@@ -36,22 +28,7 @@ def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
 def Substrait_DateType : Substrait_Type<"Date", "date"> {
   let summary = "Substrait date type";
   let description = [{
-    This type represents a substrait date type. 
-  }];
-}
-
-def Substrait_DateAttr : Substrait_Attr<"Date", "date",
-  [TypedAttrInterface]> {
-  let summary = "Substrait date type";
-  let description = [{
-    This type represents a substrait date attribute type.
-  }];  
-  let parameters = (ins "int32_t":$value);
-  let assemblyFormat = [{ `<` $value `>` }];
-  let extraClassDeclaration = [{ 
-    ::mlir::Type getType() const {
-      return DateType::get(getContext());
-    }
+    This type represents a substrait date type.
   }];
 }
 
@@ -65,73 +42,27 @@ def Substrait_StringType : Substrait_Type<"String", "string"> {
 def Substrait_TimeType : Substrait_Type<"Time", "time"> {
   let summary = "Substrait time type";
   let description = [{
-    This type represents a substrait time type. 
-  }];
-}
-
-def Substrait_TimeAttr : Substrait_Attr<"Time", "time", 
-[TypedAttrInterface]> {
-  let summary = "Substrait time type";
-  let description = [{
-    This type represents a substrait time attribute type.
-  }];  
-  let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `` `us` `>` }];
-  let extraClassDeclaration = [{ 
-    ::mlir::Type getType() const {
-      return TimeType::get(getContext());
-    }
+    This type represents a substrait time type.
   }];
 }
 
 def Substrait_TimestampType : Substrait_Type<"Timestamp", "timestamp"> {
   let summary = "Substrait timezone-unaware timestamp type";
   let description = [{
-    This type represents a substrait timezone-unaware timestamp type. 
-  }];
-}
-
-def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp",
-  [TypedAttrInterface]> {
-  let summary = "Substrait timezone-unaware timestamp type";
-  let description = [{
-    This type represents a substrait timezone-unaware timestamp attribute type.
-  }];  
-  let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `` `us` `>` }];
-  let extraClassDeclaration = [{ 
-    ::mlir::Type getType() const {
-      return TimestampType::get(getContext());
-    }
+    This type represents a substrait timezone-unaware timestamp type.
   }];
 }
 
 def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
   let summary = "Substrait timezone-aware timestamp type";
   let description = [{
-    This type represents a substrait timezone-aware timestamp type. 
+    This type represents a substrait timezone-aware timestamp type.
   }];
 }
 
-def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
-  [TypedAttrInterface]> {
-  let summary = "Substrait timezone-aware timestamp type";
-  let description = [{
-    This type represents a substrait timezone-aware timestamp attribute type.
-  }];  
-  let parameters = (ins "int64_t":$value);
-  let assemblyFormat = [{ `<` $value `` `us` `>` }];
-  let extraClassDeclaration = [{ 
-    ::mlir::Type getType() const {
-      return TimestampTzType::get(getContext());
-    }
-  }];
-}
-
-/// Currently supported atomic types, listed in order of substrait specification. 
+/// Currently supported atomic types, listed in order of substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
-// TODO(ingomueller): Add the other low-hanging fruits here.
 def Substrait_AtomicTypes {
   list<Type> types = [
     SI1, // Boolean
@@ -150,26 +81,6 @@ def Substrait_AtomicTypes {
   ];
 }
 
-/// Attributes of currently supported atomic types, listed in order of substrait 
-/// specification. 
-def Substrait_AtomicAttributes {
-  list<Attr> attrs = [
-    SI1Attr, // Boolean
-    SI8Attr, // I8
-    SI16Attr, // I16
-    SI32Attr, // I32
-    SI64Attr, // I64
-    F32Attr, // FP32
-    F64Attr, // FP64
-    TypedStrAttr<Substrait_StringType>, // String
-    TypedStrAttr<Substrait_BinaryType>, // Binary
-    Substrait_TimestampAttr, // Timestamp
-    Substrait_TimestampTzAttr, // TimestampTZ
-    Substrait_DateAttr, // Date
-    Substrait_TimeAttr, // Time
-  ];
-}
-
 def Substrait_AnyType : Substrait_Type<"Any", "any"> {
   let summary = "Represents the `type_url` of a `google.protobuf.Any` message";
   let description = [{
@@ -181,23 +92,6 @@ def Substrait_AnyType : Substrait_Type<"Any", "any"> {
   let assemblyFormat = "`<` $type_url `>`";
 
 }
-
-def Substrait_AdvancedExtensionAttr
-    : Substrait_Attr<"AdvancedExtension", "advanced_extension"> {
-  let summary = "Represents the `AdvancedExtenssion` message of Substrait";
-  let parameters = (ins
-    OptionalParameter<"StringAttr">:$optimization,  // XXX: verify type
-    OptionalParameter<"StringAttr">:$enhancement
-  );
-  let assemblyFormat = [{
-    ( `optimization` `=` $optimization^ )?
-    ( `enhancement`  `=` $enhancement^  )?
-  }];
-  let genVerifyDecl = 1;
-}
-
-/// Attribute of one of the currently supported atomic types.
-def Substrait_AtomicAttribute : AnyAttrOf<Substrait_AtomicAttributes.attrs>;
 
 /// One of the currently supported atomic types.
 def Substrait_AtomicType : AnyTypeOf<Substrait_AtomicTypes.types>;
