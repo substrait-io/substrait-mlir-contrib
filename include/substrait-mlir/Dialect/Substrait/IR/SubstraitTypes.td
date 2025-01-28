@@ -83,7 +83,7 @@ def Substrait_AtomicTypes {
 }
 
 def Substrait_AnyType : Substrait_Type<"Any", "any"> {
-  let summary = "Represents the `type_url` of a `google.protobuf.Any` message";
+  let summary = "type of a 'google.protobuf.Any' protobuf message";
   let description = [{
     This type represents the `type_url` fields of a `google.protobuf.Any`
     message. These messages consist of an opaque byte array and a string holding

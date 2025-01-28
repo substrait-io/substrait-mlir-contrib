@@ -623,6 +623,12 @@ EmitOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
+LogicalResult ExtensionTableOp::verify() {
+  llvm::ArrayRef<Attribute> fieldNames = getFieldNames().getValue();
+  auto tupleType = llvm::cast<TupleType>(getResult().getType());
+  return verifyNamedStruct(getOperation(), fieldNames, tupleType);
+}
+
 LogicalResult FieldReferenceOp::inferReturnTypes(
     MLIRContext *context, std::optional<Location> loc, ValueRange operands,
     DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,

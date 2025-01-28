@@ -43,6 +43,9 @@ def Substrait_DefaultEmptyStringParameter
 // Substrait attributes
 //===----------------------------------------------------------------------===//
 
+/// Attribute used for `google.protobuf.Any` messages.
+def Substrait_AnyAttr : TypedStrAttr<Substrait_AnyType>;
+
 def Substrait_AdvancedExtensionAttr
     : Substrait_Attr<"AdvancedExtension", "advanced_extension"> {
   let summary = "Represents the `AdvancedExtenssion` message of Substrait";

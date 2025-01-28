@@ -34,6 +34,8 @@ namespace pb = google::protobuf;
 
 namespace {
 
+using ImportedNamedStruct = std::tuple<ArrayAttr, TupleType>;
+
 // Copied from
 // https://github.com/llvm/llvm-project/blob/dea33c/mlir/lib/Transforms/CSE.cpp.
 struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
@@ -80,10 +82,12 @@ DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
 DECLARE_IMPORT_FUNC(SetRel, Rel, SetOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
+DECLARE_IMPORT_FUNC(ExtensionTable, Rel, ExtensionTableOp)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
                     FieldReferenceOp)
 DECLARE_IMPORT_FUNC(JoinRel, Rel, JoinOp)
 DECLARE_IMPORT_FUNC(Literal, Expression::Literal, LiteralOp)
+DECLARE_IMPORT_FUNC(NamedStruct, NamedStruct, ImportedNamedStruct)
 DECLARE_IMPORT_FUNC(NamedTable, Rel, NamedTableOp)
 DECLARE_IMPORT_FUNC(PlanRel, PlanRel, PlanRelOp)
 DECLARE_IMPORT_FUNC(ProjectRel, Rel, ProjectOp)
@@ -442,6 +446,31 @@ importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
   }
 }
 
+static mlir::FailureOr<ExtensionTableOp>
+importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
+  const ReadRel &readRel = message.read();
+  const ReadRel::ExtensionTable &extensionTable = readRel.extension_table();
+
+  // TODO(ingomueller): factor out common logic of `ReadRel`.
+  // Import base schema and extract result names and types.
+  const NamedStruct &baseSchema = readRel.base_schema();
+  FailureOr<ImportedNamedStruct> importedNamedStruct =
+      importNamedStruct(builder, baseSchema);
+  if (failed(importedNamedStruct))
+    return failure();
+  auto [fieldNamesAttr, resultType] = importedNamedStruct.value();
+
+  // Import `detail` attribute.
+  const pb::Any &detail = extensionTable.detail();
+  auto detailAttr = importAny(builder, detail).value();
+
+  // Assemble final op.
+  auto extensionTableOp =
+      builder.create<ExtensionTableOp>(resultType, fieldNamesAttr, detailAttr);
+
+  return extensionTableOp;
+}
+
 static mlir::FailureOr<FieldReferenceOp>
 importFieldReference(ImplicitLocOpBuilder builder,
                      const Expression::FieldReference &message) {
@@ -648,6 +677,34 @@ static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
   return filterOp;
 }
 
+static mlir::FailureOr<ImportedNamedStruct>
+importNamedStruct(ImplicitLocOpBuilder builder, const NamedStruct &message) {
+  MLIRContext *context = builder.getContext();
+
+  // Assemble field names from schema.
+  llvm::SmallVector<Attribute> fieldNames;
+  fieldNames.reserve(message.names_size());
+  for (const std::string &name : message.names()) {
+    auto attr = StringAttr::get(context, name);
+    fieldNames.push_back(attr);
+  }
+  auto fieldNamesAttr = ArrayAttr::get(context, fieldNames);
+
+  // Assemble field types from schema.
+  const proto::Type::Struct &struct_ = message.struct_();
+  llvm::SmallVector<mlir::Type> resultTypes;
+  resultTypes.reserve(struct_.types_size());
+  for (const proto::Type &type : struct_.types()) {
+    FailureOr<mlir::Type> mlirType = importType(context, type);
+    if (failed(mlirType))
+      return failure();
+    resultTypes.push_back(mlirType.value());
+  }
+  auto resultType = TupleType::get(context, resultTypes);
+
+  return ImportedNamedStruct{fieldNamesAttr, resultType};
+}
+
 static mlir::FailureOr<NamedTableOp>
 importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
   const ReadRel &readRel = message.read();
@@ -667,27 +724,14 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
   auto tableName =
       SymbolRefAttr::get(context, tableNameRootRef, tableNameNestedRefs);
 
-  // Assemble field names from schema.
+  // TODO(ingomueller): factor out common logic of `ReadRel`.
+  // Import base schema and extract result names and types.
   const NamedStruct &baseSchema = readRel.base_schema();
-  llvm::SmallVector<Attribute> fieldNames;
-  fieldNames.reserve(baseSchema.names_size());
-  for (const std::string &name : baseSchema.names()) {
-    auto attr = StringAttr::get(context, name);
-    fieldNames.push_back(attr);
-  }
-  auto fieldNamesAttr = ArrayAttr::get(context, fieldNames);
-
-  // Assemble field names from schema.
-  const proto::Type::Struct &struct_ = baseSchema.struct_();
-  llvm::SmallVector<mlir::Type> resultTypes;
-  resultTypes.reserve(struct_.types_size());
-  for (const proto::Type &type : struct_.types()) {
-    FailureOr<mlir::Type> mlirType = importType(context, type);
-    if (failed(mlirType))
-      return failure();
-    resultTypes.push_back(mlirType.value());
-  }
-  auto resultType = TupleType::get(context, resultTypes);
+  FailureOr<ImportedNamedStruct> importedNamedStruct =
+      importNamedStruct(builder, baseSchema);
+  if (failed(importedNamedStruct))
+    return failure();
+  auto [fieldNamesAttr, resultType] = importedNamedStruct.value();
 
   // Assemble final op.
   auto namedTableOp =
@@ -910,6 +954,9 @@ importReadRel(ImplicitLocOpBuilder builder, const Rel &message) {
   const ReadRel &readRel = message.read();
   ReadRel::ReadTypeCase readType = readRel.read_type_case();
   switch (readType) {
+  case ReadRel::ReadTypeCase::kExtensionTable: {
+    return importExtensionTable(builder, message);
+  }
   case ReadRel::ReadTypeCase::kNamedTable: {
     return importNamedTable(builder, message);
   }
