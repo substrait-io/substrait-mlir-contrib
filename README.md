@@ -1,5 +1,11 @@
 # Substrait Dialect for MLIR
 
+[![CI Status of "Build and Test"](https://github.com/substrait-io/substrait-mlir-contrib/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/substrait-io/substrait-mlir-contrib/actions/workflows/build_and_test.yml)
+[![CI Status of "clang-format"](https://github.com/substrait-io/substrait-mlir-contrib/actions/workflows/clang_format.yml/badge.svg)](https://github.com/substrait-io/substrait-mlir-contrib/actions/workflows/clang_format.yml)
+[![CI Status of "yapf"](https://github.com/substrait-io/substrait-mlir-contrib/actions/workflows/yapf.yml/badge.svg)](https://github.com/substrait-io/substrait-mlir-contrib/actions/workflows/yapf.yml)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+[![Substrait v0.42.1](https://img.shields.io/badge/substrait-v0.42.1-e92063)](https://github.com/substrait-io/substrait/tree/v0.42.1)
+
 This project consist of building an input/output dialect in
 [MLIR](https://mlir.llvm.org/) for [Substrait](https://substrait.io/), the
 cross-language serialization format of database query plans (akin to an
