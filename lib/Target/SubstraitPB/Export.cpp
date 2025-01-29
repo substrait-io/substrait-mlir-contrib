@@ -689,7 +689,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   }
   // `TimeType`.
   else if (auto timeType = dyn_cast<TimeType>(literalType)) {
-    literal->set_time(value.cast<TimeAttr>().getValue());
+    literal->set_time(mlir::cast<TimeAttr>(value).getValue());
   } else
     op->emitOpError("has unsupported value");
 
