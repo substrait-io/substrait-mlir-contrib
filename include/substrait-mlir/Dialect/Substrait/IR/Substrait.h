@@ -19,6 +19,7 @@
 
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc" // IWYU: export
 
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.h.inc" // IWYU: export
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc" // IWYU: export
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc" // IWYU: export
 
@@ -30,5 +31,14 @@
 
 #define GET_OP_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc" // IWYU: export
+
+namespace mlir::substrait {
+
+/// Returns the `Type` of the attribute through the `TypedAttrInterface` or the
+/// `TypeInferableAttrInterface`. Returns an empty `Type` if the given attribute
+/// does not implement one of the two interfaces.
+Type getAttrType(Attribute attr);
+
+} // namespace mlir::substrait
 
 #endif // SUBSTRAIT_MLIR_DIALECT_SUBSTRAIT_IR_SUBSTRAIT_H

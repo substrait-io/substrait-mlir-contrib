@@ -15,9 +15,24 @@ include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/BuiltinAttributeInterfaces.td"
 
 // Base class for Substrait dialect attribute types.
-class Substrait_Attr<string name, string typeMnemonic, list<Trait> traits = []>
+class Substrait_Attr<string name, string attrMnemonic, list<Trait> traits = []>
     : AttrDef<Substrait_Dialect, name, traits> {
-  let mnemonic = typeMnemonic;
+  let mnemonic = attrMnemonic;
+}
+
+// Base class for Substrait dialect attribute types that have a statically known
+// value type.
+class Substrait_StaticallyTypedAttr<
+      string name, string attrMnemonic, string typeName, list<Trait> traits = []>
+    : Substrait_Attr<name, attrMnemonic, traits # [
+      DeclareAttrInterfaceMethods<TypeInferableAttrInterface>
+    ]> {
+  let extraClassDeclaration = [{
+    /// Implement TypeInferableAttrInterface.
+    ::mlir::Type getType() {
+      return ::mlir::substrait::}] # typeName # [{::get(getContext());
+    }
+  }];
 }
 
 def Substrait_AdvancedExtensionAttr
@@ -34,64 +49,44 @@ def Substrait_AdvancedExtensionAttr
   let genVerifyDecl = 1;
 }
 
-def Substrait_DateAttr : Substrait_Attr<"Date", "date",
-    [TypedAttrInterface]> {
+def Substrait_DateAttr
+  : Substrait_StaticallyTypedAttr<"Date", "date", "DateType"> {
   let summary = "Substrait date type";
   let description = [{
     This type represents a substrait date attribute type.
   }];
   let parameters = (ins "int32_t":$value);
   let assemblyFormat = [{ `<` $value `>` }];
-  let extraClassDeclaration = [{
-    ::mlir::Type getType() const {
-      return DateType::get(getContext());
-    }
-  }];
 }
 
-def Substrait_TimeAttr : Substrait_Attr<"Time", "time",
-    [TypedAttrInterface]> {
+def Substrait_TimeAttr :
+  Substrait_StaticallyTypedAttr<"Time", "time", "TimeType"> {
   let summary = "Substrait time type";
   let description = [{
     This type represents a substrait time attribute type.
   }];
   let parameters = (ins "int64_t":$value);
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
-  let extraClassDeclaration = [{
-    ::mlir::Type getType() const {
-      return TimeType::get(getContext());
-    }
-  }];
 }
 
-def Substrait_TimestampAttr : Substrait_Attr<"Timestamp", "timestamp",
-    [TypedAttrInterface]> {
+def Substrait_TimestampAttr
+  : Substrait_StaticallyTypedAttr<"Timestamp", "timestamp", "TimestampType"> {
   let summary = "Substrait timezone-unaware timestamp type";
   let description = [{
     This type represents a substrait timezone-unaware timestamp attribute type.
   }];
   let parameters = (ins "int64_t":$value);
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
-  let extraClassDeclaration = [{
-    ::mlir::Type getType() const {
-      return TimestampType::get(getContext());
-    }
-  }];
 }
 
-def Substrait_TimestampTzAttr : Substrait_Attr<"TimestampTz", "timestamp_tz",
-    [TypedAttrInterface]> {
+def Substrait_TimestampTzAttr : Substrait_StaticallyTypedAttr<
+    "TimestampTz", "timestamp_tz", "TimestampTzType"> {
   let summary = "Substrait timezone-aware timestamp type";
   let description = [{
     This type represents a substrait timezone-aware timestamp attribute type.
   }];
   let parameters = (ins "int64_t":$value);
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
-  let extraClassDeclaration = [{
-    ::mlir::Type getType() const {
-      return TimestampTzType::get(getContext());
-    }
-  }];
 }
 
 /// Attributes of currently supported atomic types, listed in order of substrait

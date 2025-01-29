@@ -626,8 +626,8 @@ SubstraitExporter::exportOperation(FilterOp op) {
 FailureOr<std::unique_ptr<Expression>>
 SubstraitExporter::exportOperation(LiteralOp op) {
   // Build `Literal` message depending on type.
-  auto value = llvm::cast<TypedAttr>(op.getValue());
-  mlir::Type literalType = value.getType();
+  Attribute value = op.getValue();
+  mlir::Type literalType = getAttrType(value);
   auto literal = std::make_unique<Expression::Literal>();
 
   // `IntegerType`s.
