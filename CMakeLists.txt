@@ -6,6 +6,14 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 ################################################################################
+# CMake options specific to this sub-project
+################################################################################
+
+option(SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR
+       "value for 'CMAKE_COMPILE_WARNING_AS_ERROR' for Substrait MLIR targets"
+       OFF)
+
+################################################################################
 # Set up dependencies
 ################################################################################
 
@@ -68,6 +76,9 @@ add_subdirectory(third_party)
 # Subdirs to recurse into
 ################################################################################
 add_custom_target(substrait-mlir-all)
+
+# Set default value for COMPILE_WARNING_AS_ERROR for our targets.
+set(CMAKE_COMPILE_WARNING_AS_ERROR ${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
 
 add_subdirectory(lib)
 add_subdirectory(include)
