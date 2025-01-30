@@ -186,9 +186,9 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
   case proto::Type::kI64:
     return IntegerType::get(context, 64, IntegerType::Signed);
   case proto::Type::kFp32:
-    return FloatType::getF32(context);
+    return Float32Type::get(context);
   case proto::Type::kFp64:
-    return FloatType::getF64(context);
+    return Float64Type::get(context);
   case proto::Type::kString:
     return StringType::get(context);
   case proto::Type::kBinary:
@@ -560,11 +560,11 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kFp32: {
-    auto attr = FloatAttr::get(FloatType::getF32(context), message.fp32());
+    auto attr = FloatAttr::get(Float32Type::get(context), message.fp32());
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kFp64: {
-    auto attr = FloatAttr::get(FloatType::getF64(context), message.fp64());
+    auto attr = FloatAttr::get(Float64Type::get(context), message.fp64());
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kString: {
