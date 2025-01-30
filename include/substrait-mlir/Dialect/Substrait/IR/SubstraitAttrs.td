@@ -22,15 +22,15 @@ class Substrait_Attr<string name, string attrMnemonic, list<Trait> traits = []>
 
 // Base class for Substrait dialect attribute types that have a statically known
 // value type.
-class Substrait_StaticallyTypedAttr<
-      string name, string attrMnemonic, string typeName, list<Trait> traits = []>
-    : Substrait_Attr<name, attrMnemonic, traits # [
-      DeclareAttrInterfaceMethods<TypeInferableAttrInterface>
-    ]> {
+class Substrait_StaticallyTypedAttr<string name, string attrMnemonic,
+                                    string typeName, list<Trait> traits = []>
+    : Substrait_Attr<
+          name, attrMnemonic,
+          traits#[DeclareAttrInterfaceMethods<TypeInferableAttrInterface>]> {
   let extraClassDeclaration = [{
     /// Implement TypeInferableAttrInterface.
     ::mlir::Type getType() {
-      return ::mlir::substrait::}] # typeName # [{::get(getContext());
+      return ::mlir::substrait::}]#typeName#[{::get(getContext());
     }
   }];
 }
@@ -50,7 +50,7 @@ def Substrait_AdvancedExtensionAttr
 }
 
 def Substrait_DateAttr
-  : Substrait_StaticallyTypedAttr<"Date", "date", "DateType"> {
+    : Substrait_StaticallyTypedAttr<"Date", "date", "DateType"> {
   let summary = "Substrait date type";
   let description = [{
     This type represents a substrait date attribute type.
@@ -59,8 +59,8 @@ def Substrait_DateAttr
   let assemblyFormat = [{ `<` $value `>` }];
 }
 
-def Substrait_TimeAttr :
-  Substrait_StaticallyTypedAttr<"Time", "time", "TimeType"> {
+def Substrait_TimeAttr
+    : Substrait_StaticallyTypedAttr<"Time", "time", "TimeType"> {
   let summary = "Substrait time type";
   let description = [{
     This type represents a substrait time attribute type.
@@ -70,7 +70,7 @@ def Substrait_TimeAttr :
 }
 
 def Substrait_TimestampAttr
-  : Substrait_StaticallyTypedAttr<"Timestamp", "timestamp", "TimestampType"> {
+    : Substrait_StaticallyTypedAttr<"Timestamp", "timestamp", "TimestampType"> {
   let summary = "Substrait timezone-unaware timestamp type";
   let description = [{
     This type represents a substrait timezone-unaware timestamp attribute type.
@@ -79,8 +79,9 @@ def Substrait_TimestampAttr
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
 }
 
-def Substrait_TimestampTzAttr : Substrait_StaticallyTypedAttr<
-    "TimestampTz", "timestamp_tz", "TimestampTzType"> {
+def Substrait_TimestampTzAttr
+    : Substrait_StaticallyTypedAttr<"TimestampTz", "timestamp_tz",
+                                    "TimestampTzType"> {
   let summary = "Substrait timezone-aware timestamp type";
   let description = [{
     This type represents a substrait timezone-aware timestamp attribute type.
