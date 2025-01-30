@@ -10,6 +10,7 @@
 #define SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES
 
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
+include "substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td"
 include "mlir/IR/CommonTypeConstraints.td"
 
 // Base class for Substrait dialect types.

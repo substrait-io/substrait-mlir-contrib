@@ -15,7 +15,7 @@
 # CHECK:         %[[V0:.*]] = named_table
 # CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.time> {
 # CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.time<200000000us> : !substrait.time
+# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.time<200000000us>
 # CHECK-NEXT:      yield %[[V2]] : !substrait.time
 # CHECK-NEXT:    }
 # CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.time>
@@ -69,7 +69,7 @@ version {
 # CHECK:         %[[V0:.*]] = named_table
 # CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.date> {
 # CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.date<200000000> : !substrait.date
+# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.date<200000000>
 # CHECK-NEXT:      yield %[[V2]] : !substrait.date
 # CHECK-NEXT:    }
 # CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.date>
@@ -123,8 +123,8 @@ version {
 # CHECK:         %[[V0:.*]] = named_table
 # CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
 # CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.timestamp<10000000000us> 
-# CHECK-NEXT:      %[[V3:.*]] = literal #substrait.timestamp_tz<10000000000us> 
+# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.timestamp<10000000000us>
+# CHECK-NEXT:      %[[V3:.*]] = literal #substrait.timestamp_tz<10000000000us>
 # CHECK-NEXT:      yield %[[V2]], %[[V3]] : !substrait.timestamp, !substrait.timestamp_tz
 # CHECK-NEXT:    }
 # CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.timestamp, !substrait.timestamp_tz>

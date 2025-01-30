@@ -8,11 +8,10 @@
 
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 
-#include "mlir/Dialect/LLVMIR/LLVMTypes.h"
-#include "mlir/IR/DialectImplementation.h"
+#include "mlir/IR/DialectImplementation.h" // IWYU pragma: keep
 #include "mlir/Support/LogicalResult.h"
 #include "llvm/ADT/SmallSet.h"
-#include "llvm/ADT/TypeSwitch.h"
+#include "llvm/ADT/TypeSwitch.h" // IWYU pragma: keep
 
 using namespace mlir;
 using namespace mlir::substrait;
@@ -39,6 +38,22 @@ void SubstraitDialect::initialize() {
 }
 
 //===----------------------------------------------------------------------===//
+// Free functions
+//===----------------------------------------------------------------------===//
+
+namespace mlir::substrait {
+
+Type getAttrType(Attribute attr) {
+  if (auto typedAttr = mlir::dyn_cast<TypedAttr>(attr))
+    return typedAttr.getType();
+  if (auto typedAttr = mlir::dyn_cast<TypeInferableAttrInterface>(attr))
+    return typedAttr.getType();
+  return Type();
+}
+
+} // namespace mlir::substrait
+
+//===----------------------------------------------------------------------===//
 // Substrait attributes
 //===----------------------------------------------------------------------===//
 
@@ -62,6 +77,7 @@ LogicalResult AdvancedExtensionAttr::verify(
 // Substrait interfaces
 //===----------------------------------------------------------------------===//
 
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc"
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc"
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc"
 
@@ -297,15 +313,14 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                             OpaqueProperties properties, RegionRange regions,
                             llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   auto *typedProperties = properties.as<Properties *>();
+  Attribute valueAttr = typedProperties->getValue();
 
-  auto attr = llvm::dyn_cast<TypedAttr>(typedProperties->getValue());
-  if (!attr)
+  Type resultType = getAttrType(valueAttr);
+  if (!resultType)
     return emitOptionalError(loc, "unsuited attribute for literal value: ",
                              typedProperties->getValue());
 
-  Type resultType = attr.getType();
   inferredReturnTypes.emplace_back(resultType);
-
   return success();
 }
 

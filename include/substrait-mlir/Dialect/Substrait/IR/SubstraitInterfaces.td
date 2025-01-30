@@ -11,6 +11,26 @@
 
 include "mlir/IR/OpBase.td"
 
+def TypeInferableAttrInterface : AttrInterface<"TypeInferableAttrInterface"> {
+  let cppNamespace = "::mlir::substrait";
+  let description = [{
+    This interface is used for attributes that have a type that can be inferred
+    from the instance of the attribute. It is similar to the built-in
+    `TypedAttrInterface` in that that type is understood to represent the type
+    of the data contained in the attribute. However, it is different in that
+    `TypedAttrInterface` is typically used for cases where the type is a
+    parameter of the attribute such that there can be attribute instances with
+    the same value but different types. With this interface, the type must be
+    inferable from the value such that two instances with the same value always
+    have the same type. Crucially, this allows to elide the type in the assembly
+    format of the attribute.
+  }];
+  let methods = [InterfaceMethod<
+    "Get the attribute's type",
+    "::mlir::Type", "getType"
+  >];
+}
+
 def Substrait_ExpressionOpInterface : OpInterface<"ExpressionOpInterface"> {
   let description = [{
     Interface for any expression in a Substrait plan. This corresponds to an
