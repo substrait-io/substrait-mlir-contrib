@@ -369,6 +369,12 @@ def Substrait_LiteralOp : Substrait_ExpressionOp<"literal", [
 
 def Substrait_CallOp : Substrait_ExpressionOp<"call", [
     DeclareOpInterfaceMethods<SymbolUserOpInterface>,
+    PredOpTrait<"'aggregation_phase' and 'aggregation_invocation' must either "
+                "both be set or both not be set",
+                CPred<[{ ::llvm::all_equal(
+                              {$aggregation_phase.has_value(),
+                               $aggregation_invocation.has_value()}) }]>
+    >,
   ]> {
   let summary = "Function call expression";
   let description = [{
@@ -376,9 +382,14 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
     future, a `WindowFunction` message) together with all messages it contains
     and, where applicable, the `Expression` message it is contained in. Which of
     the message types this op corresponds to depends on the presence of the
-    (otherwise optional) aggregate or window-related attributes. For aggregate
-    functions, the invocation type is omitted from the custom assembly if it is
-    set to `all`.
+    (otherwise optional) aggregate or window-related attributes.
+
+    For aggregate functions, the aggregation phase is ommitted if it is set to
+    `initial_to_result`; the invocation type is omitted from the custom assembly
+    if it is set to `all`. If only `unspecified` is provided, the aggregation
+    phase will be set to that value and the invocation type to `all`. The
+    printer avoids that case by always printing the attribute value of the other
+    one of these two is `unspecified`.
 
     Currently, the specification of the function, which is in an external YAML
     file, is not taken into account, for example, to verify whether a matching
@@ -401,12 +412,14 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
   let arguments = (ins
     FlatSymbolRefAttr:$callee,
     Variadic<Substrait_FieldType>:$args,
+    OptionalAttr<AggregationPhase>:$aggregation_phase,
     OptionalAttr<AggregationInvocation>:$aggregation_invocation
   );
   let results = (outs Substrait_FieldType:$result);
   let assemblyFormat = [{
     $callee `(` $args `)`
-    (`aggregate` `` custom<AggregationInvocation>($aggregation_invocation)^)?
+    (`aggregate` ``
+      custom<AggregationDetails>($aggregation_phase, $aggregation_invocation)^)?
     attr-dict `:` `(` type($args) `)` `->` type($result)
   }];
   let builders = [
@@ -414,11 +427,13 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
                      "::mlir::FlatSymbolRefAttr":$callee,
                      "::mlir::ValueRange":$args), [{
         build($_builder, $_state, result, callee, args,
+              AggregationPhaseAttr(),
               AggregationInvocationAttr());
       }]>,
       OpBuilder<(ins "::mlir::Type":$result, "::llvm::StringRef":$callee,
                      "::mlir::ValueRange":$args), [{
         build($_builder, $_state, result, callee, args,
+              AggregationPhaseAttr(),
               AggregationInvocationAttr());
       }]>
     ];
