@@ -13,6 +13,7 @@
 #include "mlir/IR/Dialect.h"                      // IWYU: keep
 #include "mlir/IR/OpImplementation.h"             // IWYU: keep
 #include "mlir/IR/SymbolTable.h"                  // IWYU: keep
+#include "mlir/Interfaces/CastInterfaces.h"       // IWYU: keep
 #include "mlir/Interfaces/InferTypeOpInterface.h" // IWYU: keep
 
 //===----------------------------------------------------------------------===//
