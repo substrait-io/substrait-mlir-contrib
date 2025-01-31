@@ -336,11 +336,13 @@ namespace mlir {
 namespace substrait {
 
 static ParseResult
-parseAggregationInvocation(OpAsmParser &parser,
-                           AggregationInvocationAttr &aggregationInvocation);
+parseAggregationDetails(OpAsmParser &parser,
+                        AggregationPhaseAttr &aggregationPhase,
+                        AggregationInvocationAttr &aggregationInvocation);
 static void
-printAggregationInvocation(OpAsmPrinter &printer, CallOp op,
-                           AggregationInvocationAttr aggregationInvocation);
+printAggregationDetails(OpAsmPrinter &printer, CallOp op,
+                        AggregationPhaseAttr aggregationPhase,
+                        AggregationInvocationAttr aggregationInvocation);
 static ParseResult parseAggregateRegions(OpAsmParser &parser,
                                          Region &groupingsRegion,
                                          Region &measuresRegion,
@@ -457,21 +459,45 @@ namespace mlir {
 namespace substrait {
 
 ParseResult
-parseAggregationInvocation(OpAsmParser &parser,
-                           AggregationInvocationAttr &aggregationInvocation) {
+parseAggregationDetails(OpAsmParser &parser,
+                        AggregationPhaseAttr &aggregationPhase,
+                        AggregationInvocationAttr &aggregationInvocation) {
   // This is essentially copied from `FieldParser<AggregationInvocation>` but
   // sets the default `all` case if no invocation type is present.
 
   MLIRContext *context = parser.getContext();
   std::string keyword;
   if (failed(parser.parseOptionalKeywordOrString(&keyword))) {
-    // No keyword parse --> use default value.
+    // No keyword parsed --> use default value for both attributes.
+    aggregationPhase =
+        AggregationPhaseAttr::get(context, AggregationPhase::initial_to_result);
     aggregationInvocation =
         AggregationInvocationAttr::get(context, AggregationInvocation::all);
     return success();
   }
 
-  // Symbolize the keyword.
+  // Try to symbolize the first keyword as aggregation phase.
+  if (std::optional<AggregationPhase> attr =
+          symbolizeAggregationPhase(keyword)) {
+    // Success: use the symbolized value and read the next keyword.
+    aggregationPhase = AggregationPhaseAttr::get(context, attr.value());
+    if (failed(parser.parseOptionalKeywordOrString(&keyword))) {
+      // If there is no other keyword, then we use the default value for the
+      // invocation type and are done.
+      aggregationInvocation =
+          AggregationInvocationAttr::get(context, AggregationInvocation::all);
+      return success();
+    }
+  } else {
+    // If the symbolization as aggregation phase failed, set the default value.
+    aggregationPhase =
+        AggregationPhaseAttr::get(context, AggregationPhase::initial_to_result);
+  }
+
+  // If we arrive here, we have a parsed but not symbolized keyword that must be
+  // the invocation type; otherwise it is invalid.
+
+  // Try to symbolize the keyword as aggregation invocation.
   if (std::optional<AggregationInvocation> attr =
           symbolizeAggregationInvocation(keyword)) {
     aggregationInvocation =
@@ -485,13 +511,30 @@ parseAggregationInvocation(OpAsmParser &parser,
          << "has invalid aggregate invocation type specification: " << keyword;
 }
 
-void printAggregationInvocation(
-    OpAsmPrinter &printer, CallOp op,
-    AggregationInvocationAttr aggregationInvocation) {
-  if (aggregationInvocation &&
-      aggregationInvocation.getValue() != AggregationInvocation::all) {
-    // The whitespace printed here compensates the trimming of whitespace in
-    // the declarative assembly format.
+void printAggregationDetails(OpAsmPrinter &printer, CallOp op,
+                             AggregationPhaseAttr aggregationPhase,
+                             AggregationInvocationAttr aggregationInvocation) {
+  if (!op.isAggregate())
+    return;
+  assert(aggregationPhase && aggregationInvocation &&
+         "expected aggregate function to have 'aggregation_phase' and "
+         "'aggregation_invocation' attributes");
+
+  // Print each of the two keywords if they do not have their corresponding
+  // default value. Also print the keyword if the other one has its
+  // `unspecified` value: this avoids having only one keyword `unspecified`,
+  // which would be ambiguous. Always start printing a white space because the
+  // assembly format suppresses the whitespace before the aggregation details.
+
+  // Print aggregation phase.
+  if (aggregationPhase.getValue() != AggregationPhase::initial_to_result ||
+      aggregationInvocation.getValue() == AggregationInvocation::unspecified) {
+    printer << " " << aggregationPhase.getValue();
+  }
+
+  // Print aggregation invocation.
+  if (aggregationInvocation.getValue() != AggregationInvocation::all ||
+      aggregationPhase.getValue() == AggregationPhase::unspecified) {
     printer << " " << aggregationInvocation.getValue();
   }
 }

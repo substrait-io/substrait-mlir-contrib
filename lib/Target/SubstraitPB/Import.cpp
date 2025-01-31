@@ -251,12 +251,21 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
 mlir::FailureOr<CallOp>
 importAggregateFunction(ImplicitLocOpBuilder builder,
                         const AggregateFunction &message) {
+  using AggregationPhase = ::mlir::substrait::AggregationPhase;
+
   Location loc = builder.getLoc();
 
   FailureOr<CallOp> maybeCallOp = importFunctionCommon(builder, message);
   if (failed(maybeCallOp))
     return failure();
   CallOp callOp = maybeCallOp.value();
+
+  // Import `phase` field.
+  proto::AggregationPhase phase = message.phase();
+  std::optional<AggregationPhase> phaseEnum = symbolizeAggregationPhase(phase);
+  if (!phaseEnum.has_value())
+    return emitError(loc) << "unsupported enum value for aggregate phase";
+  callOp.setAggregationPhase(phaseEnum);
 
   // Import `invocation` field.
   AggregateFunction::AggregationInvocation invocation = message.invocation();

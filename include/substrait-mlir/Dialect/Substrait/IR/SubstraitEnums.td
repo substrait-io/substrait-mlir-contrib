@@ -26,6 +26,23 @@ def AggregationInvocation
   let cppNamespace = "::mlir::substrait";
 }
 
+/// Represents the `AggregationPhase` protobuf enum.
+//
+/// The enum values correspond exactly to those in the `JoinRel.JoinType` enum,
+/// i.e., conversion through integers is possible.
+def AggregationPhase
+    : I32EnumAttr<"AggregationPhase", "aggregate invocation phase", [
+        // clang-format off
+        I32EnumAttrCase<"unspecified", 0>,
+        I32EnumAttrCase<"initial_to_intermediate", 1>,
+        I32EnumAttrCase<"intermediate_to_intermediate", 2>,
+        I32EnumAttrCase<"initial_to_result", 3>,
+        I32EnumAttrCase<"intermediate_to_result", 4>,
+        // clang-format on
+      ]> {
+  let cppNamespace = "::mlir::substrait";
+}
+
 /// Represents the `FailureBehavior` enum.
 ///
 /// The enum values correspond exactly to those in the `Cast.FailureBehavior`
