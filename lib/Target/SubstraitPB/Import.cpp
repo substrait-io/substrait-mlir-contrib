@@ -516,8 +516,7 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  std::optional<JoinTypeKind> join_type =
-      static_cast<::JoinTypeKind>(joinRel.type());
+  std::optional<JoinType> join_type = static_cast<JoinType>(joinRel.type());
 
   // Check for unsupported set operations.
   if (!join_type)

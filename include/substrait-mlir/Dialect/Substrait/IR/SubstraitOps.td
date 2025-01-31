@@ -617,7 +617,7 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferT
   let arguments = (ins
     Substrait_Relation:$left,
     Substrait_Relation:$right,
-    JoinTypeKind:$join_type
+    JoinType:$join_type
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
