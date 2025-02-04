@@ -10,9 +10,8 @@
 # CHECK-NEXT:    relation {
 # CHECK-NEXT:      %[[V0:.*]] = named_table
 # CHECK-NEXT:      %[[V1:.*]] = named_table
-# CHECK-NEXT:      %[[V2:.*]] = cross %[[V0]] x %[[V1]]
-# CHECK-SAME:        : tuple<si32> x tuple<si32>
-# CHECK-NEXT:      yield %[[V2]] : tuple<si32, si32>
+# CHECK-NEXT:      %[[V2:.*]] = cross %[[V0]] x %[[V1]] : <si32> x <si32>
+# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
 
 relations {
   rel {

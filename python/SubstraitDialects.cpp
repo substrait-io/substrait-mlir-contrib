@@ -46,6 +46,22 @@ PYBIND11_MODULE(_substraitDialects, mainModule) {
       py::arg("context") = py::none(), py::arg("load") = true);
 
   //
+  // Types
+  //
+
+  mlir_type_subclass(substraitModule, "RelationType",
+                     mlirTypeIsASubstraitRelationType)
+      .def_classmethod(
+          "get",
+          [](const py::object &cls, std::vector<MlirType> fieldTypes,
+             MlirContext context) {
+            return cls(mlirSubstraitRelationTypeGet(context, fieldTypes.size(),
+                                                    fieldTypes.data()));
+          },
+          py::arg("cls"), py::arg("element_type"),
+          py::arg("context") = py::none());
+
+  //
   // Import
   //
 

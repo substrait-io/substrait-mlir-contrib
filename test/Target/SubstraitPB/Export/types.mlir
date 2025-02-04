@@ -27,8 +27,8 @@
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<!substrait.time>
-    yield %0 : tuple<!substrait.time>
+    %0 = named_table @t1 as ["a"] : <!substrait.time>
+    yield %0 : !substrait.relation<!substrait.time>
   }
 }
 
@@ -52,8 +52,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<!substrait.date>
-    yield %0 : tuple<!substrait.date>
+    %0 = named_table @t1 as ["a"] : <!substrait.date>
+    yield %0 : !substrait.relation<!substrait.date>
   }
 }
 
@@ -83,8 +83,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b"] : tuple<!substrait.timestamp, !substrait.timestamp_tz>
-    yield %0 : tuple<!substrait.timestamp, !substrait.timestamp_tz>
+    %0 = named_table @t1 as ["a", "b"] : <!substrait.timestamp, !substrait.timestamp_tz>
+    yield %0 : !substrait.relation<!substrait.timestamp, !substrait.timestamp_tz>
   }
 }
 
@@ -108,8 +108,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<!substrait.binary>
-    yield %0 : tuple<!substrait.binary>
+    %0 = named_table @t1 as ["a"] : <!substrait.binary>
+    yield %0 : !substrait.relation<!substrait.binary>
   }
 }
 
@@ -133,8 +133,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<!substrait.string>
-    yield %0 : tuple<!substrait.string>
+    %0 = named_table @t1 as ["a"] : <!substrait.string>
+    yield %0 : !substrait.relation<!substrait.string>
   }
 }
 
@@ -164,8 +164,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b"] : tuple<f32, f64>
-    yield %0 : tuple<f32, f64>
+    %0 = named_table @t1 as ["a", "b"] : <f32, f64>
+    yield %0 : !substrait.relation<f32, f64>
   }
 }
 
@@ -200,8 +200,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c"] : tuple<f32, tuple<f32>>
-    yield %0 : tuple<f32, tuple<f32>>
+    %0 = named_table @t1 as ["a", "b", "c"] : <f32, tuple<f32>>
+    yield %0 : !substrait.relation<f32, tuple<f32>>
   }
 }
 
@@ -249,8 +249,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c", "d", "e"] : tuple<si1, si8, si16, si32, si64>
-    yield %0 : tuple<si1, si8, si16, si32, si64>
+    %0 = named_table @t1 as ["a", "b", "c", "d", "e"] : <si1, si8, si16, si32, si64>
+    yield %0 : !substrait.relation<si1, si8, si16, si32, si64>
   }
 }
 
@@ -285,7 +285,7 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c"] : tuple<si1, tuple<si1>>
-    yield %0 : tuple<si1, tuple<si1>>
+    %0 = named_table @t1 as ["a", "b", "c"] : <si1, tuple<si1>>
+    yield %0 : !substrait.relation<si1, tuple<si1>>
   }
 }

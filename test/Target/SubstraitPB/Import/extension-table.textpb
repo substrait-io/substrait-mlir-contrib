@@ -10,8 +10,8 @@
 # CHECK-NEXT:    relation {
 # CHECK-NEXT:      %[[V0:.*]] = extension_table
 # CHECK-SAME:        "some detail" : !substrait.any<"some url">
-# CHECK-SAME:        as ["a"] : tuple<si32>
-# CHECK-NEXT:      yield %[[V0]] : tuple<si32>
+# CHECK-SAME:        as ["a"] : <si32>
+# CHECK-NEXT:      yield %[[V0]] : !substrait.relation<si32>
 
 relations {
   rel {
