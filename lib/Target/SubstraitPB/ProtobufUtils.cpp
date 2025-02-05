@@ -27,6 +27,8 @@ static const RelCommon *getCommon(const RelType &rel) {
 FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
   Rel::RelTypeCase relType = rel.rel_type_case();
   switch (relType) {
+  case Rel::RelTypeCase::kAggregate:
+    return getCommon(rel.aggregate());
   case Rel::RelTypeCase::kCross:
     return getCommon(rel.cross());
   case Rel::RelTypeCase::kFetch:
@@ -56,6 +58,8 @@ static RelCommon *getMutableCommon(RelType *rel) {
 FailureOr<RelCommon *> getMutableCommon(Rel *rel, Location loc) {
   Rel::RelTypeCase relType = rel->rel_type_case();
   switch (relType) {
+  case Rel::RelTypeCase::kAggregate:
+    return getMutableCommon(rel->mutable_aggregate());
   case Rel::RelTypeCase::kCross:
     return getMutableCommon(rel->mutable_cross());
   case Rel::RelTypeCase::kFetch:

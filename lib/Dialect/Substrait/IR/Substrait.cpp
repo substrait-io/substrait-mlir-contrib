@@ -9,6 +9,7 @@
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 
 #include "mlir/IR/DialectImplementation.h" // IWYU pragma: keep
+#include "mlir/IR/PatternMatch.h"
 #include "mlir/Support/LogicalResult.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/TypeSwitch.h" // IWYU pragma: keep
@@ -116,11 +117,310 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
 // Substrait operations
 //===----------------------------------------------------------------------===//
 
+namespace mlir {
+namespace substrait {
+
+static ParseResult
+parseAggregationInvocation(OpAsmParser &parser,
+                           AggregationInvocationAttr &aggregationInvocation);
+static void
+printAggregationInvocation(OpAsmPrinter &printer, CallOp op,
+                           AggregationInvocationAttr aggregationInvocation);
+static ParseResult parseAggregateRegions(OpAsmParser &parser,
+                                         Region &groupingsRegion,
+                                         Region &measuresRegion,
+                                         ArrayAttr &groupingSetsAttr);
+static void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
+                                  Region &groupingsRegion,
+                                  Region &measuresRegion,
+                                  ArrayAttr groupingSetsAttr);
+
+} // namespace substrait
+} // namespace mlir
+
 #define GET_OP_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
 
 namespace mlir {
 namespace substrait {
+
+ParseResult
+parseAggregationInvocation(OpAsmParser &parser,
+                           AggregationInvocationAttr &aggregationInvocation) {
+  // This is essentially copied from `FieldParser<AggregationInvocation>` but
+  // sets the default `all` case if no invocation type is present.
+
+  MLIRContext *context = parser.getContext();
+  std::string keyword;
+  if (failed(parser.parseOptionalKeywordOrString(&keyword))) {
+    // No keyword parse --> use default value.
+    aggregationInvocation =
+        AggregationInvocationAttr::get(context, AggregationInvocation::all);
+    return success();
+  }
+
+  // Symbolize the keyword.
+  if (std::optional<AggregationInvocation> attr =
+          symbolizeAggregationInvocation(keyword)) {
+    aggregationInvocation =
+        AggregationInvocationAttr::get(parser.getContext(), attr.value());
+    return success();
+  }
+
+  // Symbolization failed.
+  auto loc = parser.getCurrentLocation();
+  return parser.emitError(loc)
+         << "has invalid aggregate invocation type specification: " << keyword;
+}
+
+void printAggregationInvocation(
+    OpAsmPrinter &printer, CallOp op,
+    AggregationInvocationAttr aggregationInvocation) {
+  if (aggregationInvocation &&
+      aggregationInvocation.getValue() != AggregationInvocation::all) {
+    // The whitespace printed here compensates the trimming of whitespace in
+    // the declarative assembly format.
+    printer << " " << aggregationInvocation.getValue();
+  }
+}
+
+ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
+                                  Region &measuresRegion,
+                                  ArrayAttr &groupingSetsAttr) {
+  MLIRContext *context = parser.getContext();
+
+  // Parse `measures` and `groupings` regions as well as `grouping_sets` attr.
+  bool hasMeasures = false;
+  bool hasGroupings = false;
+  bool hasGroupingSets = false;
+  {
+    auto ensureOneOccurrance = [&](bool &hasParsed,
+                                   StringRef name) -> LogicalResult {
+      if (hasParsed) {
+        SMLoc loc = parser.getCurrentLocation();
+        return parser.emitError(loc, llvm::Twine("can only have one ") + name);
+      }
+      hasParsed = true;
+      return success();
+    };
+
+    StringRef keyword;
+    while (succeeded(parser.parseOptionalKeyword(
+        &keyword, {"measures", "groupings", "grouping_sets"}))) {
+      if (keyword == "measures") {
+        if (failed(ensureOneOccurrance(hasMeasures, "'measures' region")) ||
+            failed(parser.parseRegion(measuresRegion)))
+          return failure();
+      } else if (keyword == "groupings") {
+        if (failed(ensureOneOccurrance(hasGroupings, "'groupings' region")) ||
+            failed(parser.parseRegion(groupingsRegion)))
+          return failure();
+      } else if (keyword == "grouping_sets") {
+        if (failed(ensureOneOccurrance(hasGroupingSets,
+                                       "'grouping_sets' attribute")) ||
+            failed(parser.parseAttribute(groupingSetsAttr)))
+          return failure();
+      }
+    }
+  }
+
+  // Create default value of `grouping_sets` attr if not provided.
+  if (!hasGroupingSets) {
+    // If there is no `groupings` region, create only the empty grouping set.
+    if (!hasGroupings)
+      groupingSetsAttr = ArrayAttr::get(context, ArrayAttr::get(context, {}));
+    // Otherwise, create the grouping set with all grouping columns.
+    else if (!groupingsRegion.empty()) {
+      auto yieldOp =
+          llvm::dyn_cast<YieldOp>(groupingsRegion.front().getTerminator());
+      if (yieldOp) {
+        unsigned numColumns = yieldOp->getNumOperands();
+        SmallVector<int64_t> allColumns;
+        llvm::append_range(allColumns, llvm::seq(0u, numColumns));
+        IRRewriter rewriter(context);
+        ArrayAttr allColumnsAttr = rewriter.getI64ArrayAttr(allColumns);
+        groupingSetsAttr = rewriter.getArrayAttr({allColumnsAttr});
+      }
+    }
+  }
+
+  return success();
+}
+
+void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
+                           Region &groupingsRegion, Region &measuresRegion,
+                           ArrayAttr groupingSetsAttr) {
+  printer.increaseIndent();
+
+  // `groupings` region.
+  if (!groupingsRegion.empty()) {
+    printer.printNewline();
+    printer.printKeywordOrString("groupings");
+    printer << " ";
+    printer.printRegion(groupingsRegion);
+  }
+
+  // `grouping_sets` attribute.
+  if (groupingSetsAttr.size() != 1) {
+    // Note: A single grouping set is always of the form `seq(0, size)`.
+    printer.printNewline();
+    printer.printKeywordOrString("grouping_sets");
+    printer << " ";
+    printer.printAttribute(groupingSetsAttr);
+  }
+
+  // `measures` regions.
+  if (!measuresRegion.empty()) {
+    printer.printNewline();
+    printer.printKeywordOrString("measures");
+    printer << " ";
+    printer.printRegion(measuresRegion);
+  }
+
+  printer.decreaseIndent();
+}
+
+void AggregateOp::build(OpBuilder &builder, OperationState &result, Value input,
+                        ArrayAttr groupingSets, Region *groupings,
+                        Region *measures) {
+
+  MLIRContext *context = builder.getContext();
+  auto loc = UnknownLoc::get(context);
+  AggregateOp::Properties properties;
+  properties.grouping_sets = groupingSets;
+  SmallVector<Region *> regions = {groupings, measures};
+
+  // Infer `returnTypes` from provided arguments. If that fails, then
+  // `returnType` will be empty. The rest of this function will continue to
+  // work, but the op that is built in the end will not verify and the
+  // diagnostics of `inferReturnType` will have been emitted.
+  SmallVector<mlir::Type> returnTypes;
+  (void)AggregateOp::inferReturnTypes(context, loc, input, {},
+                                      OpaqueProperties(&properties), regions,
+                                      returnTypes);
+
+  // Call existing `build` function and move bodies into the new regions.
+  AggregateOp::build(builder, result, returnTypes, input, groupingSets);
+  result.regions[0]->takeBody(*groupings);
+  result.regions[1]->takeBody(*measures);
+}
+
+LogicalResult AggregateOp::inferReturnTypes(
+    MLIRContext *context, std::optional<Location> loc, ValueRange operands,
+    DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
+    llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
+  auto *typedProperties = properties.as<Properties *>();
+  assert(typedProperties && "could not get typed properties");
+  Region *groupings = regions[0];
+  Region *measures = regions[1];
+  SmallVector<Type> fieldTypes;
+  if (!loc)
+    loc = UnknownLoc::get(context);
+
+  // The left-most output columns are the `groupings` columns, then the
+  // `measures` columns.
+  for (Region *region : {groupings, measures}) {
+    if (region->empty())
+      continue;
+    auto yieldOp = llvm::cast<YieldOp>(region->front().getTerminator());
+    llvm::append_range(fieldTypes, yieldOp.getOperandTypes());
+  }
+
+  // If there is more than one `grouping_set`, then we also have an additional
+  // `si32` column for the grouping set ID.
+  if (typedProperties->grouping_sets.size() > 1) {
+    auto si32 = IntegerType::get(context, /*width=*/32, IntegerType::Signed);
+    fieldTypes.push_back(si32);
+  }
+
+  // Build tuple type from field types.
+  auto resultType = TupleType::get(context, fieldTypes);
+  inferredReturnTypes.push_back(resultType);
+
+  return success();
+}
+
+LogicalResult AggregateOp::verifyRegions() {
+  // Verify properties that need to hold for both regions.
+  auto inputTupleType = getInput().getType();
+  for (auto [idx, region] : llvm::enumerate(getRegions())) {
+    if (region->empty()) // Regions are allowed to be empty.
+      continue;
+
+    // Verify that the regions have the input tuple as argument.
+    if (region->getArgumentTypes() != TypeRange{inputTupleType})
+      return emitOpError() << "has region #" << idx
+                           << " with invalid argument types (expected: "
+                           << inputTupleType
+                           << ", got: " << region->getArgumentTypes() << ")";
+
+    // Verify that at least one value is yielded.
+    auto yieldOp = llvm::cast<YieldOp>(region->front().getTerminator());
+    if (yieldOp->getNumOperands() == 0)
+      return emitOpError()
+             << "has region #" << idx
+             << " that yields no values (use empty region instead)";
+  }
+
+  // Verify that the grouping sets refer to values yielded from `groupings`,
+  // that all yielded values are referred to, and that the references are in the
+  // correct order.
+  {
+    int64_t numGroupingColumns = 0;
+    if (!getGroupings().empty()) {
+      auto yieldOp =
+          llvm::cast<YieldOp>(getGroupings().front().getTerminator());
+      numGroupingColumns = yieldOp->getNumOperands();
+    }
+
+    // Check bounds, collect grouping columns.
+    llvm::SmallSet<int64_t, 16> allGroupingRefs;
+    for (auto [groupingSetIdx, groupingSet] :
+         llvm::enumerate(getGroupingSets())) {
+      for (auto [refIdx, refAttr] :
+           llvm::enumerate(cast<ArrayAttr>(groupingSet))) {
+        auto ref = cast<IntegerAttr>(refAttr).getInt();
+        if (ref < 0 || ref >= numGroupingColumns)
+          return emitOpError() << "has invalid grouping set #" << groupingSetIdx
+                               << ": column reference " << ref << " (column #"
+                               << refIdx << ") is out of bounds";
+        auto [_, hasInserted] = allGroupingRefs.insert(ref);
+        if (hasInserted &&
+            ref != static_cast<int64_t>(allGroupingRefs.size() - 1))
+          return emitOpError()
+                 << "has invalid grouping sets: the first occerrences of the "
+                    "column references must be densely increasing";
+      }
+    }
+
+    // Check that all grouping columns are used.
+    if (static_cast<int64_t>(allGroupingRefs.size()) != numGroupingColumns) {
+      for (int64_t i : llvm::seq<int64_t>(0, numGroupingColumns)) {
+        if (!allGroupingRefs.contains(i))
+          return emitOpError() << "has 'groupings' region whose operand #" << i
+                               << " is not contained in any 'grouping_set'";
+      }
+    }
+  }
+
+  // Verify that `measures` region yields only values produced by
+  // `AggregateFunction`s.
+  if (!getMeasures().empty()) {
+    for (Value value : getMeasures().front().getTerminator()->getOperands()) {
+      auto callOp = llvm::dyn_cast_or_null<CallOp>(value.getDefiningOp());
+      if (!callOp || !callOp.isAggregate())
+        return emitOpError() << "yields value from 'measures' region that was "
+                                "not produced by an aggregate function: "
+                             << value;
+    }
+  }
+
+  if (getGroupings().empty() && getMeasures().empty())
+    return emitOpError()
+           << "one of 'groupings' or 'measures' must be specified";
+
+  return success();
+}
 
 /// Implement `SymbolOpInterface`.
 ::mlir::LogicalResult
