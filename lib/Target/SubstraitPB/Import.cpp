@@ -228,8 +228,7 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
 mlir::FailureOr<CallOp>
 importAggregateFunction(ImplicitLocOpBuilder builder,
                         const AggregateFunction &message) {
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   FailureOr<CallOp> maybeCallOp = importFunctionCommon(builder, message);
   if (failed(maybeCallOp))
@@ -254,8 +253,7 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   using Grouping = AggregateRel::Grouping;
   using Measure = AggregateRel::Measure;
 
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   const AggregateRel &aggregateRel = message.aggregate();
 
@@ -422,8 +420,7 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
 
 static mlir::FailureOr<ExpressionOpInterface>
 importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   Expression::RexTypeCase rex_type = message.rex_type_case();
   switch (rex_type) {
@@ -449,8 +446,7 @@ importFieldReference(ImplicitLocOpBuilder builder,
                      const Expression::FieldReference &message) {
   using ReferenceSegment = Expression::ReferenceSegment;
 
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   // Emit error on unsupported cases.
   // TODO(ingomueller): support more cases.
@@ -533,7 +529,7 @@ static mlir::FailureOr<LiteralOp>
 importLiteral(ImplicitLocOpBuilder builder,
               const Expression::Literal &message) {
   MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   Expression::Literal::LiteralTypeCase literalType =
       message.literal_type_case();
@@ -709,7 +705,7 @@ static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
       SimpleExtensionDeclaration::ExtensionTypeVariation;
 
   MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   // Import version.
   const Version &version = message.version();
@@ -800,8 +796,7 @@ static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
 
 static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
                                           const PlanRel &message) {
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   if (!message.has_rel() && !message.has_root()) {
     PlanRel::RelTypeCase relType = message.rel_type_case();
@@ -900,8 +895,7 @@ static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
 
 static mlir::FailureOr<RelOpInterface>
 importReadRel(ImplicitLocOpBuilder builder, const Rel &message) {
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   const ReadRel &readRel = message.read();
   ReadRel::ReadTypeCase readType = readRel.read_type_case();
@@ -918,8 +912,7 @@ importReadRel(ImplicitLocOpBuilder builder, const Rel &message) {
 
 static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
                                                  const Rel &message) {
-  MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   // Import rel depending on its type.
   Rel::RelTypeCase relType = message.rel_type_case();
@@ -995,7 +988,7 @@ template <typename MessageType>
 FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
                                        const MessageType &message) {
   MLIRContext *context = builder.getContext();
-  Location loc = UnknownLoc::get(context);
+  Location loc = builder.getLoc();
 
   // Import `output_type`.
   const proto::Type &outputType = message.output_type();
