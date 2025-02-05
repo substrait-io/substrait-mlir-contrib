@@ -522,6 +522,15 @@ static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
       version.git_hash(), version.producer(), advancedExtensionAttr);
   planOp.getBody().push_back(new Block());
 
+  // Import `expected_type_urls` if present.
+  SmallVector<Attribute> expected_type_urls;
+  for (const std::string &expected_type_url : message.expected_type_urls()) {
+    expected_type_urls.push_back(StringAttr::get(context, expected_type_url));
+  }
+  if (!expected_type_urls.empty()) {
+    planOp.setExpectedTypeUrlsAttr(ArrayAttr::get(context, expected_type_urls));
+  }
+
   OpBuilder::InsertionGuard insertGuard(builder);
   builder.setInsertionPointToEnd(&planOp.getBody().front());
 

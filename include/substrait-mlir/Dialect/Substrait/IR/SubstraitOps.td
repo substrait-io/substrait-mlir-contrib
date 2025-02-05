@@ -166,21 +166,31 @@ def Substrait_PlanOp : Substrait_Op<"plan", [
     UI32Attr:$patch_number,
     DefaultValuedAttr<StrAttr, "\"\"">:$git_hash,
     DefaultValuedAttr<StrAttr, "\"\"">:$producer,
-    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension,
+    OptionalAttr<StringArrayAttr>:$expected_type_urls
   );
   let regions = (region RegionOf<PlanBodyOp>:$body);
   let assemblyFormat = [{
     `version` $major_number `:` $minor_number `:` $patch_number
     (`git_hash` $git_hash^)? (`producer` $producer^)?
     (`advanced_extension` `` $advanced_extension^)?
+    (`expected_type_urls` `` $expected_type_urls^)?
     attr-dict-with-keyword $body
   }];
   let builders = [
       OpBuilder<(ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch), [{
         build($_builder, $_state, major, minor, patch,
               /*git_hash=*/StringAttr(), /*producer*/StringAttr(),
-              /*advanced_extension=*/AdvancedExtensionAttr());
-      }]>
+              /*advanced_extension=*/AdvancedExtensionAttr(),
+              /*expected_type_urls=*/ArrayAttr());
+      }]>,
+      OpBuilder<
+        (ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch,
+             "::llvm::StringRef":$git_hash, "::llvm::StringRef":$producer,
+             "::mlir::substrait::AdvancedExtensionAttr":$advanced_extension), [{
+        build($_builder, $_state, major, minor, patch, git_hash, producer,
+              advanced_extension, /*expected_type_urls=*/ArrayAttr());
+      }]>,
     ];
   let extraClassDefinition = [{
     /// Implement OpAsmOpInterface.

@@ -182,3 +182,15 @@ substrait.plan version 0 : 42 : 1
     advanced_extension
       enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
 {}
+
+// -----
+
+// CHECK:       expected_type_urls: "http://some.url/with/type.proto"
+// CHECK-NEXT:  expected_type_urls: "http://other.url/with/type.proto"
+// CHECK-NEXT:  version
+
+
+substrait.plan version 0 : 42 : 1
+    expected_type_urls
+      ["http://some.url/with/type.proto", "http://other.url/with/type.proto"]
+{}

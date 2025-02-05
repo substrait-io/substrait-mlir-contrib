@@ -246,3 +246,18 @@ version {
   minor_number: 42
   patch_number: 1
 }
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK-SAME:   expected_type_urls
+# CHECK-SAME:     ["http://some.url/with/type.proto",
+# CHECK-SAME:      "http://other.url/with/type.proto"]
+# CHECK-NEXT: }
+
+expected_type_urls: "http://some.url/with/type.proto"
+expected_type_urls: "http://other.url/with/type.proto"
+version {
+  minor_number: 42
+  patch_number: 1
+}
