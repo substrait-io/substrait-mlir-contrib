@@ -139,6 +139,12 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
     using iterator = ArrayRef<Type>::iterator;
     iterator begin() const { return getFieldTypes().begin(); }
     iterator end() const { return getFieldTypes().end(); }
+
+    // /// Return the element type at index 'index'.
+    // Type getType(size_t index) const {
+    //   assert(index < size() && "invalid index for tuple type");
+    //   return getFieldTypes()[index];
+    // }
   }];
   let extraClassDefinition = [{
     ArrayRef<Type> $cppClass::getFieldTypes() const {
