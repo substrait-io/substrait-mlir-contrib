@@ -151,6 +151,7 @@ def PlanBodyOp : AnyOf<[
 
 def Substrait_PlanOp : Substrait_Op<"plan", [
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     NoTerminator, NoRegionArguments, SingleBlock, SymbolTable
   ]> {
   let summary = "Represents a Substrait plan";
@@ -180,9 +181,13 @@ def Substrait_PlanOp : Substrait_Op<"plan", [
   let builders = [
       OpBuilder<(ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch), [{
         build($_builder, $_state, major, minor, patch,
-              /*git_hash=*/StringAttr(), /*producer*/StringAttr(),
-              /*advanced_extension=*/AdvancedExtensionAttr(),
-              /*expected_type_urls=*/ArrayAttr());
+              /*git_hash=*/StringAttr(), /*producer*/StringAttr());
+      }]>,
+      OpBuilder<
+        (ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch,
+             "::llvm::StringRef":$git_hash, "::llvm::StringRef":$producer), [{
+        build($_builder, $_state, major, minor, patch, git_hash, producer,
+              /*advanced_extension=*/AdvancedExtensionAttr());
       }]>,
       OpBuilder<
         (ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch,
@@ -537,6 +542,7 @@ def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
 
 def Substrait_ProjectOp : Substrait_RelOp<"project", [
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>
   ]> {
   let summary = "Project operation";
@@ -561,14 +567,18 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
     }
     ```
   }];
-  let arguments = (ins Substrait_Relation:$input);
+  let arguments = (ins
+    Substrait_Relation:$input,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+  );
   let regions = (region AnyRegion:$expressions);
   let results = (outs Substrait_Relation:$result);
   // TODO(ingomueller): We could elide/shorten the block argument from the
   //                    assembly by writing custom printers/parsers similar to
   //                    `scf.for` etc.
   let assemblyFormat = [{
-    $input attr-dict `:` type($input) `->` type($result) $expressions
+    $input (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($input) `->` type($result) $expressions
   }];
   let hasRegionVerifier = 1;
   let hasFolder = 1;

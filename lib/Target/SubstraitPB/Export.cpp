@@ -24,6 +24,7 @@
 
 using namespace mlir;
 using namespace mlir::substrait;
+using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
@@ -60,6 +61,8 @@ public:
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
   DECLARE_EXPORT_FUNC(SetOp, Rel)
 
+  template <typename MessageType>
+  void exportAdvancedExtension(ExtensibleOpInterface op, MessageType &message);
   std::unique_ptr<pb::Any> exportAny(StringAttr attr);
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
@@ -90,6 +93,36 @@ private:
   DenseMap<Operation *, int32_t> anchorsByOp{}; // Maps anchors to ops.
   std::unique_ptr<SymbolTable> symbolTable;     // Symbol table cache.
 };
+
+template <typename MessageType>
+void SubstraitExporter::exportAdvancedExtension(ExtensibleOpInterface op,
+                                                MessageType &message) {
+  if (!op.getAdvancedExtension())
+    return;
+
+  // Build the base `AdvancedExtension` message.
+  AdvancedExtensionAttr extensionAttr = op.getAdvancedExtension().value();
+  auto extension = std::make_unique<extensions::AdvancedExtension>();
+
+  StringAttr optimizationAttr = extensionAttr.getOptimization();
+  StringAttr enhancementAttr = extensionAttr.getEnhancement();
+
+  // Set `optimization` field if present.
+  if (optimizationAttr) {
+    std::unique_ptr<pb::Any> optimization = exportAny(optimizationAttr);
+    extension->set_allocated_optimization(optimization.release());
+  }
+
+  // Set `enhancement` field if present.
+  if (enhancementAttr) {
+    std::unique_ptr<pb::Any> enhancement = exportAny(enhancementAttr);
+    extension->set_allocated_enhancement(enhancement.release());
+  }
+
+  // Set the `advanced_extension` field in the provided message.
+  using Trait = advanced_extension_trait<MessageType>;
+  Trait::set_allocated_advanced_extension(message, extension.release());
+}
 
 std::unique_ptr<pb::Any> SubstraitExporter::exportAny(StringAttr attr) {
   auto any = std::make_unique<pb::Any>();
@@ -874,26 +907,8 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
   version->set_git_hash(op.getGitHash().str());
   plan->set_allocated_version(version.release());
 
-  // Build `AdvancedExtension` message.
-  if (op.getAdvancedExtension()) {
-    AdvancedExtensionAttr extensionAttr = op.getAdvancedExtension().value();
-    auto extension = std::make_unique<extensions::AdvancedExtension>();
-
-    StringAttr optimizationAttr = extensionAttr.getOptimization();
-    StringAttr enhancementAttr = extensionAttr.getEnhancement();
-
-    if (optimizationAttr) {
-      std::unique_ptr<pb::Any> optimization = exportAny(optimizationAttr);
-      extension->set_allocated_optimization(optimization.release());
-    }
-
-    if (enhancementAttr) {
-      std::unique_ptr<pb::Any> enhancement = exportAny(enhancementAttr);
-      extension->set_allocated_enhancement(enhancement.release());
-    }
-
-    plan->set_allocated_advanced_extensions(extension.release());
-  }
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *plan);
 
   // Add `expected_type_urls` to plan if present.
   if (op.getExpectedTypeUrls()) {
@@ -1030,6 +1045,9 @@ SubstraitExporter::exportOperation(ProjectOp op) {
     // Add the expression to the `ProjectRel` message.
     *projectRel->add_expressions() = *expression.value();
   }
+
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *projectRel);
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();

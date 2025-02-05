@@ -15,20 +15,39 @@
 #include "mlir/IR/SymbolTable.h"                  // IWYU: keep
 #include "mlir/Interfaces/InferTypeOpInterface.h" // IWYU: keep
 
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.h.inc" // IWYU: export
+//===----------------------------------------------------------------------===//
+// Substrait dialect
+//===----------------------------------------------------------------------===//
 
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc" // IWYU: export
 
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.h.inc" // IWYU: export
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc" // IWYU: export
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc" // IWYU: export
+//===----------------------------------------------------------------------===//
+// Substrait enums
+//===----------------------------------------------------------------------===//
 
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.h.inc" // IWYU: export
+
+//===----------------------------------------------------------------------===//
+// Substrait types
+//===----------------------------------------------------------------------===//
+
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc" // IWYU: export
 #define GET_TYPEDEF_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc" // IWYU: export
 
+//===----------------------------------------------------------------------===//
+// Substrait attributes
+//===----------------------------------------------------------------------===//
+
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.h.inc" // IWYU: export
 #define GET_ATTRDEF_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.h.inc" // IWYU: export
 
+//===----------------------------------------------------------------------===//
+// Substrait ops
+//===----------------------------------------------------------------------===//
+
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc" // IWYU: export
 #define GET_OP_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc" // IWYU: export
 

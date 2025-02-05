@@ -41,6 +41,26 @@ def Substrait_ExpressionOpInterface : OpInterface<"ExpressionOpInterface"> {
   let cppNamespace = "::mlir::substrait";
 }
 
+def Substrait_ExtensibleOpInterface : OpInterface<"ExtensibleOpInterface"> {
+  let description = [{
+    Interface for ops with the `advanced_extension` attribute. Several relations
+    and other message types of the Substrait specification have a field with the
+    same name (or the variant `advanced_extensions`, which has the same meaning)
+    and the interface enables handling all of them transparently.
+  }];
+  let cppNamespace = "::mlir::substrait";
+  let methods = [
+    InterfaceMethod<
+      "Get the `advanced_extension` attribute",
+      "std::optional<::mlir::substrait::AdvancedExtensionAttr>",
+      "getAdvancedExtension">,
+    InterfaceMethod<
+      "Get the `advanced_extension` attribute",
+      "void", "setAdvancedExtensionAttr",
+      (ins "::mlir::substrait::AdvancedExtensionAttr":$attr)>,
+    ];
+}
+
 def Substrait_RelOpInterface : OpInterface<"RelOpInterface"> {
   let description = [{
     Interface for any relational operation in a Substrait plan. This corresponds

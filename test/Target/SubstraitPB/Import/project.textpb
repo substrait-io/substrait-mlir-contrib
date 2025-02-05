@@ -1,9 +1,13 @@
 # RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
 # RUN: | FileCheck %s
 
 # RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
 # RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | FileCheck %s
 
 # CHECK:      substrait.plan version 0 : 42 : 1 {
@@ -54,6 +58,57 @@ relations {
       expressions {
         literal {
           i32: 42
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan version
+# CHECK-NEXT:   relation
+# CHECK:         %[[V0:.*]] = named_table
+# CHECK-NEXT:    %[[V1:.*]] = project %[[V0]]
+# CHECK-SAME:      advanced_extension optimization = "foo" : !substrait.any<"bar">
+
+relations {
+  rel {
+    project {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      advanced_extension {
+        optimization {
+          type_url: "bar"
+          value: "foo"
         }
       }
     }
