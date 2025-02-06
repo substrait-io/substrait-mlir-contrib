@@ -711,24 +711,24 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 
   // Get accessor to `join_type`.
   Adaptor adaptor(operands, attributes, properties, regions);
-  JoinTypeKind join_type = adaptor.getJoinType();
+  JoinType join_type = adaptor.getJoinType();
 
   SmallVector<mlir::Type> fieldTypes;
 
   switch (join_type) {
-  case JoinTypeKind::unspecified:
-  case JoinTypeKind::inner:
-  case JoinTypeKind::outer:
-  case JoinTypeKind::right:
-  case JoinTypeKind::left:
+  case JoinType::unspecified:
+  case JoinType::inner:
+  case JoinType::outer:
+  case JoinType::right:
+  case JoinType::left:
     llvm::append_range(fieldTypes, leftFieldTypes);
     llvm::append_range(fieldTypes, rightFieldTypes);
     break;
-  case JoinTypeKind::semi:
-  case JoinTypeKind::anti:
+  case JoinType::semi:
+  case JoinType::anti:
     llvm::append_range(fieldTypes, leftFieldTypes);
     break;
-  case JoinTypeKind::single:
+  case JoinType::single:
     llvm::append_range(fieldTypes, rightFieldTypes);
     break;
   }
