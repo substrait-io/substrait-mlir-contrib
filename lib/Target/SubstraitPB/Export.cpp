@@ -365,6 +365,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle uuid.
+  if (mlir::isa<UUIDType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto uuidType = std::make_unique<proto::Type::UUID>();
+    uuidType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_uuid(uuidType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -879,6 +891,9 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     intervalDaytoSecond->set_seconds(intervalSecond);
     literal->set_allocated_interval_day_to_second(
         intervalDaytoSecond.release());
+  } // `UUIDType`.
+  else if (auto uuidType = dyn_cast<UUIDType>(literalType)) {
+    literal->set_uuid(mlir::cast<StringAttr>(value).getValue().str());
   } else
     op->emitOpError("has unsupported value");
 

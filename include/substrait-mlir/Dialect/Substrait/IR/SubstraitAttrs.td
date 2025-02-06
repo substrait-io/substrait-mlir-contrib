@@ -177,6 +177,7 @@ def Substrait_AtomicAttributes {
     Substrait_TimeAttr, // Time
     Substrait_IntervalYearMonthAttr, // IntervalYear
     Substrait_IntervalDaySecondAttr, // IntervalDay
+    TypedStrAttr<Substrait_UUIDType>, // UUID
   ];
 }
 

@@ -20,6 +20,33 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:            uuid: "c48ffa9e-64f4-44cb-ae47-152b4e60e77b"
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.uuid> {
+    ^bb0(%arg : tuple<si1>):
+      %uuid = literal "c48ffa9e-64f4-44cb-ae47-152b4e60e77b" : !substrait.uuid
+      yield %uuid : !substrait.uuid
+    }
+    yield %1 : tuple<si1, !substrait.uuid> 
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            interval_year_to_month {
 // CHECK-NEXT:              years: 2024
 // CHECK-NEXT:              months: 1
