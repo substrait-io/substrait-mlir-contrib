@@ -14,6 +14,37 @@
 // CHECK-NEXT:      read {
 // CHECK:             base_schema {
 // CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          names: "b"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
+// CHECK-NEXT:              interval_year {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            types {
+// CHECK-NEXT:              interval_day {
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a", "b"] : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
+    yield %0 : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
 // CHECK-NEXT:              time {
