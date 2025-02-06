@@ -881,10 +881,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     varChar->set_length(mlir::cast<StringAttr>(value).size());
     varChar->set_value(mlir::cast<StringAttr>(value).getValue().str());
     literal->set_allocated_var_char(varChar.release());
-  // `FixedBinaryType`.
+    // `FixedBinaryType`.
   } else if (auto fixedBinaryType = dyn_cast<FixedBinaryType>(literalType)) {
     literal->set_allocated_fixed_binary(
-    new std::string(mlir::cast<StringAttr>(value).getValue().str()));
+        new std::string(mlir::cast<StringAttr>(value).getValue().str()));
   } else
     op->emitOpError("has unsupported value");
 
