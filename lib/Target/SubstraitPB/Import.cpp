@@ -85,12 +85,13 @@ DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
 DECLARE_IMPORT_FUNC(JoinRel, Rel, JoinOp)
 DECLARE_IMPORT_FUNC(Literal, Expression::Literal, LiteralOp)
 DECLARE_IMPORT_FUNC(NamedTable, Rel, NamedTableOp)
-DECLARE_IMPORT_FUNC(Plan, Plan, PlanOp)
 DECLARE_IMPORT_FUNC(PlanRel, PlanRel, PlanRelOp)
 DECLARE_IMPORT_FUNC(ProjectRel, Rel, ProjectOp)
 DECLARE_IMPORT_FUNC(ReadRel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(Rel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(ScalarFunction, Expression::ScalarFunction, CallOp)
+DECLARE_IMPORT_FUNC(TopLevel, Plan, PlanOp)
+DECLARE_IMPORT_FUNC(TopLevel, PlanVersion, PlanVersionOp)
 
 /// If present, imports the `advanced_extension` or `advanced_extensions` field
 /// from the given message and sets the obtained attribute on the given op.
@@ -695,8 +696,8 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
   return namedTableOp;
 }
 
-static FailureOr<PlanOp> importPlan(ImplicitLocOpBuilder builder,
-                                    const Plan &message) {
+static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
+                                        const Plan &message) {
   using extensions::SimpleExtensionDeclaration;
   using extensions::SimpleExtensionURI;
   using ExtensionFunction = SimpleExtensionDeclaration::ExtensionFunction;
@@ -836,6 +837,15 @@ static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
   builder.create<YieldOp>(rootRel.value()->getResult(0));
 
   return planRelOp;
+}
+
+static FailureOr<PlanVersionOp> importTopLevel(ImplicitLocOpBuilder builder,
+                                               const PlanVersion &message) {
+  const Version &version = message.version();
+  auto versionAttr = VersionAttr::get(
+      builder.getContext(), version.major_number(), version.minor_number(),
+      version.patch_number(), version.git_hash(), version.producer());
+  return builder.create<PlanVersionOp>(versionAttr);
 }
 
 static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
@@ -1028,41 +1038,42 @@ FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
   return {callOp};
 }
 
-} // namespace
-
-namespace mlir {
-namespace substrait {
-
-OwningOpRef<ModuleOp>
-translateProtobufToSubstrait(llvm::StringRef input, MLIRContext *context,
-                             ImportExportOptions options) {
+template <typename MessageType>
+OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
+    llvm::StringRef input, MLIRContext *context, ImportExportOptions options,
+    MessageType &message) {
   Location loc = UnknownLoc::get(context);
-  auto plan = std::make_unique<Plan>();
+
+  // Parse from serialized form into desired protobuf `MessageType`.
   switch (options.serdeFormat) {
-  case substrait::SerdeFormat::kText:
-    if (!pb::TextFormat::ParseFromString(input.str(), plan.get())) {
-      emitError(loc) << "could not parse string as 'Plan' message.";
+  case SerdeFormat::kText:
+    if (!pb::TextFormat::ParseFromString(input.str(), &message)) {
+      emitError(loc) << "could not parse string as '" << message.GetTypeName()
+                     << "' message.";
       return {};
     }
     break;
-  case substrait::SerdeFormat::kBinary:
-    if (!plan->ParseFromString(input.str())) {
-      emitError(loc) << "could not deserialize input as 'Plan' message.";
+  case SerdeFormat::kBinary:
+    if (!message.ParseFromString(input.str())) {
+      emitError(loc) << "could not deserialize input as '"
+                     << message.GetTypeName() << "' message.";
       return {};
     }
     break;
-  case substrait::SerdeFormat::kJson:
-  case substrait::SerdeFormat::kPrettyJson: {
+  case SerdeFormat::kJson:
+  case SerdeFormat::kPrettyJson: {
     pb::util::Status status =
-        pb::util::JsonStringToMessage(input.str(), plan.get());
+        pb::util::JsonStringToMessage(input.str(), &message);
     if (!status.ok()) {
-      emitError(loc) << "could not deserialize JSON as 'Plan' message:\n"
+      emitError(loc) << "could not deserialize JSON as '"
+                     << message.GetTypeName() << "' message:\n"
                      << status.message().as_string();
       return {};
     }
   }
   }
 
+  // Set up infra for importing.
   context->loadDialect<SubstraitDialect>();
 
   ImplicitLocOpBuilder builder(loc, context);
@@ -1070,10 +1081,31 @@ translateProtobufToSubstrait(llvm::StringRef input, MLIRContext *context,
   auto moduleRef = OwningOpRef<ModuleOp>(module);
   builder.setInsertionPointToEnd(&module.getBodyRegion().back());
 
-  if (failed(importPlan(builder, *plan)))
+  // Import protobuf message into corresponding MLIR op.
+  if (failed(importTopLevel(builder, message)))
     return {};
 
   return moduleRef;
+}
+
+} // namespace
+
+namespace mlir {
+namespace substrait {
+
+OwningOpRef<ModuleOp>
+translateProtobufToSubstraitPlan(llvm::StringRef input, MLIRContext *context,
+                                 ImportExportOptions options) {
+
+  Plan plan;
+  return translateProtobufToSubstraitTopLevel(input, context, options, plan);
+}
+
+OwningOpRef<ModuleOp> translateProtobufToSubstraitPlanVersion(
+    llvm::StringRef input, MLIRContext *context, ImportExportOptions options) {
+  PlanVersion planVersion;
+  return translateProtobufToSubstraitTopLevel(input, context, options,
+                                              planVersion);
 }
 
 } // namespace substrait

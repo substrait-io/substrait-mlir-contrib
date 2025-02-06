@@ -48,7 +48,7 @@ MlirModule mlirSubstraitImportPlan(MlirContext context, MlirStringRef input,
   ImportExportOptions options;
   options.serdeFormat = convertSerdeFormat(format);
   OwningOpRef<ModuleOp> owning =
-      translateProtobufToSubstrait(unwrap(input), unwrap(context), options);
+      translateProtobufToSubstraitPlan(unwrap(input), unwrap(context), options);
   if (!owning)
     return MlirModule{nullptr};
   return MlirModule{owning.release().getOperation()};

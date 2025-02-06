@@ -134,9 +134,9 @@ def Substrait_ExtensionTypeVariationOp :
 }
 
 //===----------------------------------------------------------------------===//
-// Plan
+// Top-level ops
 //===----------------------------------------------------------------------===//
-// The definitions in this section are related to the top-level `Plan` message.
+// The definitions in this section are related to the top-level messages.
 // See https://substrait.io/serialization/binary_serialization/ and
 // https://github.com/substrait-io/substrait/blob/main/proto/substrait/plan.proto.
 //===----------------------------------------------------------------------===//
@@ -148,6 +148,19 @@ def PlanBodyOp : AnyOf<[
     IsOp<"::mlir::substrait::ExtensionTypeOp">,
     IsOp<"::mlir::substrait::ExtensionTypeVariationOp">,
   ]>;
+
+def Substrait_PlanVersionOp : Substrait_Op<"plan_version"> {
+  let summary = "Represents a stand-alone plan version";
+  let description = [{
+    This op represents the `PlanVersion` message type of Substrait. It carries
+    the version information as an attribute, so it also subsumes the `Version`
+    message type.
+  }];
+  let arguments = (ins
+    Substrait_VersionAttr:$version
+  );
+  let assemblyFormat = "$version attr-dict";
+}
 
 def Substrait_PlanOp : Substrait_Op<"plan", [
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,

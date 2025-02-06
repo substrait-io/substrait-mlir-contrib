@@ -101,7 +101,7 @@ def testBinPB():
 def testInvalid():
   try:
     ss.from_json('this is not json')
-    # CHECK-NEXT: error: could not deserialize JSON as 'Plan' message:
+    # CHECK-NEXT: error: could not deserialize JSON as 'substrait.proto.Plan' message:
     # CHECK-NEXT: Unexpected token.
     # CHECK-NEXT: this is not json
   except ValueError as ex:

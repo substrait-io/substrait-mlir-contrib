@@ -35,6 +35,10 @@ class Substrait_StaticallyTypedAttr<string name, string attrMnemonic,
   }];
 }
 
+/// `StringAttr` parameter that is the empty string by default.
+def Substrait_DefaultEmptyStringParameter
+    : DefaultValuedParameter<"StringAttr", [{mlir::StringAttr::get($_ctxt, "")}]>;
+
 //===----------------------------------------------------------------------===//
 // Substrait attributes
 //===----------------------------------------------------------------------===//
@@ -92,6 +96,40 @@ def Substrait_TimestampTzAttr
   }];
   let parameters = (ins "int64_t":$value);
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
+}
+
+def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
+  let summary = "Substrait version";
+  let description = [{
+    Represents the `Version` message type.
+  }];
+  let parameters = (ins
+    "uint32_t":$major_number,
+    "uint32_t":$minor_number,
+    "uint32_t":$patch_number,
+    Substrait_DefaultEmptyStringParameter:$git_hash,
+    Substrait_DefaultEmptyStringParameter:$producer
+
+  );
+  // TODO(ingomueller): make this even nicer with custom printer/parser
+  let assemblyFormat = [{
+    `` $major_number `` `:` `` $minor_number `` `:` `` $patch_number
+    (`git_hash` $git_hash^)? (`producer` $producer^)?
+  }];
+  let builders = [
+    AttrBuilder<(ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch), [{
+      return $_get($_ctxt, major, minor, patch,
+                   /*git_hash=*/StringAttr(),
+                   /*producer=*/StringAttr());
+    }]>,
+    AttrBuilder<(ins "uint32_t":$major, "uint32_t":$minor, "uint32_t":$patch,
+                    "::llvm::StringRef":$git_hash,
+                    "::llvm::StringRef":$producer), [{
+      auto gitHashAttr = ::mlir::StringAttr::get($_ctxt, git_hash);
+      auto producerAttr = ::mlir::StringAttr::get($_ctxt, producer);
+      return $_get($_ctxt, major, minor, patch, gitHashAttr, producerAttr);
+    }]>,
+  ];
 }
 
 //===----------------------------------------------------------------------===//
