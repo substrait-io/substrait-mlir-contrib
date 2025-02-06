@@ -342,6 +342,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle fixed char.
+  if (mlir::isa<FixedCharType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto fixedCharType = std::make_unique<proto::Type::FixedChar>();
+    fixedCharType->set_length(mlir::cast<FixedCharType>(mlirType).getLength());
+    fixedCharType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_fixed_char(fixedCharType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -833,6 +845,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `TimeType`.
   else if (auto timeType = dyn_cast<TimeType>(literalType)) {
     literal->set_time(mlir::cast<TimeAttr>(value).getValue());
+  }
+  // `FixedCharType`.
+  else if (auto fixedCharType = dyn_cast<FixedCharType>(literalType)) {
+    literal->set_fixed_char(mlir::cast<StringAttr>(value).getValue().str());
   } else
     op->emitOpError("has unsupported value");
 
