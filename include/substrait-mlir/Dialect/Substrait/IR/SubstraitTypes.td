@@ -70,6 +70,15 @@ def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
   }];
 }
 
+def Substrait_VarCharType : Substrait_Type<"VarChar", "var_char"> {
+  let summary = "Substrait variable-length char type";
+  let description = [{
+    This type represents a substrait variable-length unicode string of at most L characters.
+  }];
+  let parameters = (ins "int32_t":$length);
+  let assemblyFormat = [{ `<` $length `>` }];
+}
+
 /// Currently supported atomic types, listed in order of substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
@@ -97,6 +106,7 @@ def Substrait_AtomicTypes {
 def Substrait_ContainerTypes {
   list<Type> types = [
     Substrait_FixedCharType, // FixedChar
+    Substrait_VarCharType, // VarChar
   ];
 }
 
