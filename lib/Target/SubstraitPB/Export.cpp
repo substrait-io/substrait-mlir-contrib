@@ -861,10 +861,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `FixedCharType`.
   else if (auto fixedCharType = dyn_cast<FixedCharType>(literalType)) {
     literal->set_fixed_char(mlir::cast<StringAttr>(value).getValue().str());
-  // `VarCharType`.
+    // `VarCharType`.
   } else if (auto varCharType = dyn_cast<VarCharType>(literalType)) {
-    auto varChar = std::make_unique<
-        ::substrait::proto::Expression_Literal_VarChar>();
+    auto varChar =
+        std::make_unique<::substrait::proto::Expression_Literal_VarChar>();
     varChar->set_length(mlir::cast<StringAttr>(value).size());
     varChar->set_value(mlir::cast<StringAttr>(value).getValue().str());
     literal->set_allocated_var_char(varChar.release());
