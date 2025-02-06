@@ -366,6 +366,19 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle fixed binary.
+  if (mlir::isa<FixedBinaryType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto fixedBinaryType = std::make_unique<proto::Type::FixedBinary>();
+    fixedBinaryType->set_length(
+        mlir::cast<FixedBinaryType>(mlirType).getLength());
+    fixedBinaryType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_fixed_binary(fixedBinaryType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -868,6 +881,10 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     varChar->set_length(mlir::cast<StringAttr>(value).size());
     varChar->set_value(mlir::cast<StringAttr>(value).getValue().str());
     literal->set_allocated_var_char(varChar.release());
+  // `FixedBinaryType`.
+  } else if (auto fixedBinaryType = dyn_cast<FixedBinaryType>(literalType)) {
+    literal->set_allocated_fixed_binary(
+    new std::string(mlir::cast<StringAttr>(value).getValue().str()));
   } else
     op->emitOpError("has unsupported value");
 

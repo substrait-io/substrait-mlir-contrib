@@ -206,6 +206,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return FixedCharType::get(context, type.fixed_char().length());
   case proto::Type::kVarchar:
     return VarCharType::get(context, type.varchar().length());
+  case proto::Type::kFixedBinary:
+    return FixedBinaryType::get(context, type.fixed_binary().length());
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -605,6 +607,12 @@ importLiteral(ImplicitLocOpBuilder builder,
     auto attr =
         StringAttr::get(message.var_char().value(),
                         VarCharType::get(context, message.var_char().length()));
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFixedBinary: {
+    auto attr = StringAttr::get(
+        message.fixed_binary(),
+        FixedBinaryType::get(context, message.fixed_binary().size()));
     return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.

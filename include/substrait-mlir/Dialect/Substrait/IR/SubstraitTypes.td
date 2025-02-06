@@ -42,6 +42,15 @@ def Substrait_FixedCharType : Substrait_Type<"FixedChar", "fixed_char"> {
   let assemblyFormat = [{ `<` $length `>` }];
 }
 
+def Substrait_FixedBinaryType : Substrait_Type<"FixedBinary", "fixed_binary"> {
+  let summary = "Substrait fixed-length binary type";
+  let description = [{
+    This type represents a substrait binary string of L bytes.
+  }];
+  let parameters = (ins "int32_t":$length);
+  let assemblyFormat = [{ `<` $length `>` }];
+}
+
 def Substrait_StringType : Substrait_Type<"String", "string"> {
   let summary = "Substrait string type";
   let description = [{
@@ -107,6 +116,7 @@ def Substrait_ContainerTypes {
   list<Type> types = [
     Substrait_FixedCharType, // FixedChar
     Substrait_VarCharType, // VarChar
+    Substrait_FixedBinaryType, // FixedBinary
   ];
 }
 
