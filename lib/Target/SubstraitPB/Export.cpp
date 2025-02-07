@@ -155,13 +155,13 @@ std::unique_ptr<pb::Any> SubstraitExporter::exportAny(StringAttr attr) {
   return any;
 }
 
-std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
+/// Function that export `IntegerType`'s to the corresponding Substrait types.
+std::unique_ptr<proto::Type> exportIntegerType(IntegerType intType,
                                                MLIRContext *context) {
-  // Function that handles `IntegerType`'s.
+  assert(intType.isSigned() && "only signed integer types supported");
 
-  // Handle SI1.
-  auto si1 = IntegerType::get(context, 1, IntegerType::Signed);
-  if (mlirType == si1) {
+  switch (intType.getWidth()) {
+  case 1: { // Handle SI1.
     // TODO(ingomueller): support other nullability modes.
     auto i1Type = std::make_unique<proto::Type::Boolean>();
     i1Type->set_nullability(
@@ -172,9 +172,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
     return type;
   }
 
-  // Handle SI8.
-  auto si8 = IntegerType::get(context, 8, IntegerType::Signed);
-  if (mlirType == si8) {
+  case 8: { // Handle SI8.
     // TODO(ingomueller): support other nullability modes.
     auto i8Type = std::make_unique<proto::Type::I8>();
     i8Type->set_nullability(
@@ -185,9 +183,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
     return type;
   }
 
-  // Handle SI6.
-  auto si16 = IntegerType::get(context, 16, IntegerType::Signed);
-  if (mlirType == si16) {
+  case 16: { // Handle SI16.
     // TODO(ingomueller): support other nullability modes.
     auto i16Type = std::make_unique<proto::Type::I16>();
     i16Type->set_nullability(
@@ -198,9 +194,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
     return type;
   }
 
-  // Handle SI32.
-  auto si32 = IntegerType::get(context, 32, IntegerType::Signed);
-  if (mlirType == si32) {
+  case 32: { // Handle SI32.
     // TODO(ingomueller): support other nullability modes.
     auto i32Type = std::make_unique<proto::Type::I32>();
     i32Type->set_nullability(
@@ -211,9 +205,7 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
     return type;
   }
 
-  // Handle SI64.
-  auto si64 = IntegerType::get(context, 64, IntegerType::Signed);
-  if (mlirType == si64) {
+  case 64: { // Handle SI64.
     // TODO(ingomueller): support other nullability modes.
     auto i64Type = std::make_unique<proto::Type::I64>();
     i64Type->set_nullability(
@@ -224,16 +216,17 @@ std::unique_ptr<proto::Type> exportIntegerType(mlir::Type mlirType,
     return type;
   }
 
-  llvm_unreachable("We should have handled all integer types.");
+  default:
+    llvm_unreachable("We should have handled all integer types.");
+  }
 }
 
-std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
+/// Function that export `FloatType`'s to the corresponding Substrait types.
+std::unique_ptr<proto::Type> exportFloatType(FloatType floatType,
                                              MLIRContext *context) {
-  // Function that handles `FloatType`'s.
 
-  // Handle FP32.
-  auto fp32 = FloatType::getF32(context);
-  if (mlirType == fp32) {
+  switch (floatType.getWidth()) {
+  case 32: { // Handle FP32.
     // TODO(ingomueller): support other nullability modes.
     auto fp32Type = std::make_unique<proto::Type::FP32>();
     fp32Type->set_nullability(
@@ -244,9 +237,7 @@ std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
     return type;
   }
 
-  // Handle FP64.
-  auto fp64 = FloatType::getF64(context);
-  if (mlirType == fp64) {
+  case 64: { // Handle FP64.
     // TODO(ingomueller): support other nullability modes.
     auto fp64Type = std::make_unique<proto::Type::FP64>();
     fp64Type->set_nullability(
@@ -257,7 +248,9 @@ std::unique_ptr<proto::Type> exportFloatType(mlir::Type mlirType,
     return type;
   }
 
-  llvm_unreachable("We should have handled all float types.");
+  default:
+    llvm_unreachable("We should have handled all float types.");
+  }
 }
 
 FailureOr<std::unique_ptr<proto::Type>>
@@ -265,13 +258,13 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
   MLIRContext *context = mlirType.getContext();
 
   // Handle `IntegerType`'s.
-  if (mlir::isa<IntegerType>(mlirType)) {
-    return exportIntegerType(mlirType, context);
+  if (auto intType = mlir::dyn_cast<IntegerType>(mlirType)) {
+    return exportIntegerType(intType, context);
   }
 
   // Handle `FloatType`'s.
-  if (mlir::isa<FloatType>(mlirType)) {
-    return exportFloatType(mlirType, context);
+  if (auto floatType = mlir::dyn_cast<FloatType>(mlirType)) {
+    return exportFloatType(floatType, context);
   }
 
   // Handle String.

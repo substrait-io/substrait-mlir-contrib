@@ -37,8 +37,8 @@ struct SubstraitEmitDeduplicationPass
 void SubstraitEmitDeduplicationPass::runOnOperation() {
   mlir::RewritePatternSet patterns(&getContext());
   populateEmitDeduplicationPatterns(patterns);
-  if (failed(mlir::applyPatternsAndFoldGreedily(getOperation(),
-                                                std::move(patterns)))) {
+  if (failed(
+          mlir::applyPatternsGreedily(getOperation(), std::move(patterns)))) {
     Location loc = getOperation()->getLoc();
     emitError(loc) << "emit deduplication: pattern application failed";
     signalPassFailure();
