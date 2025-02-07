@@ -33,6 +33,20 @@ def Substrait_DateType : Substrait_Type<"Date", "date"> {
   }];
 }
 
+def Substrait_IntervalDaySecondType : Substrait_Type<"IntervalDaySecond", "interval_day_second"> {
+  let summary = "Substrait interval day to second type";
+  let description = [{
+    This type represents a substrait interval day to second type. 
+  }];
+}
+
+def Substrait_IntervalYearMonthType : Substrait_Type<"IntervalYearMonth", "interval_year_month"> {
+  let summary = "Substrait interval year to month type";
+  let description = [{
+    This type represents a substrait interval year to month type. 
+  }];
+}
+
 def Substrait_StringType : Substrait_Type<"String", "string"> {
   let summary = "Substrait string type";
   let description = [{
@@ -79,6 +93,8 @@ def Substrait_AtomicTypes {
     Substrait_TimestampTzType, // TimestampTZ
     Substrait_DateType, // Date
     Substrait_TimeType, // Time
+    Substrait_IntervalYearMonthType, // IntervalYear
+    Substrait_IntervalDaySecondType, // IntervalDay
   ];
 }
 

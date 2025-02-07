@@ -70,6 +70,28 @@ def Substrait_DateAttr
   let assemblyFormat = [{ `<` $value `>` }];
 }
 
+def Substrait_IntervalDaySecondAttr
+    : Substrait_StaticallyTypedAttr<"IntervalDaySecond", "interval_day_second",
+                                    "IntervalDaySecondType"> {
+  let summary = "Substrait interval day to second type";
+  let description = [{
+    This type represents a substrait interval day to second attribute type.
+  }];  
+  let parameters = (ins "int32_t":$days_value, "int32_t":$seconds_value);
+  let assemblyFormat = [{ `<` $days_value `` `d` $seconds_value `` `s` `>` }];
+}
+
+def Substrait_IntervalYearMonthAttr 
+    : Substrait_StaticallyTypedAttr<"IntervalYearMonth", "interval_year_month",
+                                    "IntervalYearMonthType"> {
+  let summary = "Substrait interval year to month type";
+  let description = [{
+    This type represents a substrait interval year to month attribute type.
+  }];  
+  let parameters = (ins "int32_t":$years_value, "int32_t":$months_value);
+  let assemblyFormat = [{ `<` $years_value `` `y` $months_value `` `m` `>` }];
+}
+
 def Substrait_TimeAttr
     : Substrait_StaticallyTypedAttr<"Time", "time", "TimeType"> {
   let summary = "Substrait time type";
@@ -156,6 +178,8 @@ def Substrait_AtomicAttributes {
     Substrait_TimestampTzAttr, // TimestampTZ
     Substrait_DateAttr, // Date
     Substrait_TimeAttr, // Time
+    Substrait_IntervalYearMonthAttr, // IntervalYear
+    Substrait_IntervalDaySecondAttr, // IntervalDay
   ];
 }
 
