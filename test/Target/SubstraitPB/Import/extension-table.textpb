@@ -1,0 +1,46 @@
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN: | FileCheck %s
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    relation {
+# CHECK-NEXT:      %[[V0:.*]] = extension_table
+# CHECK-SAME:        "some detail" : !substrait.any<"some url">
+# CHECK-SAME:        as ["a"] : tuple<si32>
+# CHECK-NEXT:      yield %[[V0]] : tuple<si32>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      extension_table {
+        detail {
+          type_url: "some url"
+          value: "some detail"
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}

@@ -547,6 +547,29 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
   }];
 }
 
+def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table"> {
+  let summary = "Extension table operation (i.e., a `ReadRel` case)";
+  let description = [{
+    Represents a `ExtensionTable` message together with the `ReadRel` and `Rel`
+    messages that contain it.
+
+    Example:
+
+    ```mlir
+    %0 = extension_table
+           "some detail" : !substrait.any<"some url">
+           as ["a"] : tuple<si32>
+    ```
+  }];
+  let arguments = (ins
+    StringArrayAttr:$field_names,
+    Substrait_AnyAttr:$detail
+  );
+  let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = "$detail `as` $field_names attr-dict `:` type($result)";
+  let hasVerifier = true;
+}
+
 def Substrait_FetchOp : Substrait_RelOp<"fetch", [
     SameOperandsAndResultType
   ]> {

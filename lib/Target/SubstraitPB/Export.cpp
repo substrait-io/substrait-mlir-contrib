@@ -53,6 +53,7 @@ public:
   DECLARE_EXPORT_FUNC(CrossOp, Rel)
   DECLARE_EXPORT_FUNC(EmitOp, Rel)
   DECLARE_EXPORT_FUNC(ExpressionOpInterface, Expression)
+  DECLARE_EXPORT_FUNC(ExtensionTableOp, Rel)
   DECLARE_EXPORT_FUNC(FieldReferenceOp, Expression)
   DECLARE_EXPORT_FUNC(FetchOp, Rel)
   DECLARE_EXPORT_FUNC(FilterOp, Rel)
@@ -81,6 +82,8 @@ public:
   FailureOr<std::unique_ptr<Expression>> exportCallOpWindow(CallOp op);
 
   std::unique_ptr<pb::Any> exportAny(StringAttr attr);
+  FailureOr<std::unique_ptr<NamedStruct>>
+  exportNamedStruct(Location loc, ArrayAttr fieldNames, TupleType relationType);
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
                                                      mlir::Type mlirType);
@@ -631,6 +634,42 @@ SubstraitExporter::exportOperation(ExpressionOpInterface op) {
           [](auto op) { return op->emitOpError("not supported for export"); });
 }
 
+FailureOr<std::unique_ptr<Rel>>
+SubstraitExporter::exportOperation(ExtensionTableOp op) {
+  Location loc = op.getLoc();
+
+  // Build `RelCommon` message.
+  auto relCommon = std::make_unique<RelCommon>();
+  auto direct = std::make_unique<RelCommon::Direct>();
+  relCommon->set_allocated_direct(direct.release());
+
+  // Build `ExtensionTable` message.
+  StringAttr detailAttr = op.getDetailAttr();
+  std::unique_ptr<pb::Any> detail = exportAny(detailAttr);
+  auto extensionTable = std::make_unique<ReadRel::ExtensionTable>();
+  extensionTable->set_allocated_detail(detail.release());
+
+  // TODO(ingomueller): factor out commong logic of `ReadRel`.
+  // Export field names and result type into `base_schema`.
+  auto tupleType = llvm::cast<TupleType>(op.getResult().getType());
+  FailureOr<std::unique_ptr<NamedStruct>> baseSchema =
+      exportNamedStruct(loc, op.getFieldNames(), tupleType);
+  if (failed(baseSchema))
+    return failure();
+
+  // Build `ReadRel` message.
+  auto readRel = std::make_unique<ReadRel>();
+  readRel->set_allocated_common(relCommon.release());
+  readRel->set_allocated_extension_table(extensionTable.release());
+  readRel->set_allocated_base_schema(baseSchema->release());
+
+  // Build `Rel` message.
+  auto rel = std::make_unique<Rel>();
+  rel->set_allocated_read(readRel.release());
+
+  return rel;
+}
+
 FailureOr<std::unique_ptr<Expression>>
 SubstraitExporter::exportOperation(FieldReferenceOp op) {
   using FieldReference = Expression::FieldReference;
@@ -864,6 +903,31 @@ SubstraitExporter::exportOperation(ModuleOp op) {
   return failure();
 }
 
+FailureOr<std::unique_ptr<NamedStruct>>
+SubstraitExporter::exportNamedStruct(Location loc, ArrayAttr fieldNames,
+                                     TupleType relationType) {
+
+  // Build `Struct` message.
+  auto struct_ = std::make_unique<proto::Type::Struct>();
+  struct_->set_nullability(
+      Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+  for (mlir::Type fieldType : relationType.getTypes()) {
+    FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
+    if (failed(type))
+      return (failure());
+    *struct_->add_types() = *std::move(type.value());
+  }
+
+  // Build `NamedStruct` message.
+  auto namedStruct = std::make_unique<NamedStruct>();
+  namedStruct->set_allocated_struct_(struct_.release());
+  for (Attribute attr : fieldNames) {
+    namedStruct->add_names(mlir::cast<StringAttr>(attr).getValue().str());
+  }
+
+  return namedStruct;
+}
+
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(NamedTableOp op) {
   Location loc = op.getLoc();
@@ -880,29 +944,18 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   auto direct = std::make_unique<RelCommon::Direct>();
   relCommon->set_allocated_direct(direct.release());
 
-  // Build `Struct` message.
-  auto struct_ = std::make_unique<proto::Type::Struct>();
-  struct_->set_nullability(
-      Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+  // TODO(ingomueller): factor out commong logic of `ReadRel`.
+  // Export field names and result type into `base_schema`.
   auto tupleType = llvm::cast<TupleType>(op.getResult().getType());
-  for (mlir::Type fieldType : tupleType.getTypes()) {
-    FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
-    if (failed(type))
-      return (failure());
-    *struct_->add_types() = *std::move(type.value());
-  }
-
-  // Build `NamedStruct` message.
-  auto namedStruct = std::make_unique<NamedStruct>();
-  namedStruct->set_allocated_struct_(struct_.release());
-  for (Attribute attr : op.getFieldNames()) {
-    namedStruct->add_names(mlir::cast<StringAttr>(attr).getValue().str());
-  }
+  FailureOr<std::unique_ptr<NamedStruct>> baseSchema =
+      exportNamedStruct(loc, op.getFieldNames(), tupleType);
+  if (failed(baseSchema))
+    return failure();
 
   // Build `ReadRel` message.
   auto readRel = std::make_unique<ReadRel>();
   readRel->set_allocated_common(relCommon.release());
-  readRel->set_allocated_base_schema(namedStruct.release());
+  readRel->set_allocated_base_schema(baseSchema->release());
   readRel->set_allocated_named_table(namedTable.release());
 
   // Build `Rel` message.
@@ -1313,6 +1366,7 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           AggregateOp,
           CrossOp,
           EmitOp,
+          ExtensionTableOp,
           FetchOp,
           FieldReferenceOp,
           FilterOp,
