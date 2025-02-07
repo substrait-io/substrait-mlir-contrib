@@ -339,6 +339,30 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle fixed char.
+  if (mlir::isa<FixedCharType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto fixedCharType = std::make_unique<proto::Type::FixedChar>();
+    fixedCharType->set_length(mlir::cast<FixedCharType>(mlirType).getLength());
+    fixedCharType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_fixed_char(fixedCharType.release());
+    return std::move(type);
+  }
+
+  // Handle varchar.
+  if (mlir::isa<VarCharType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto varCharType = std::make_unique<proto::Type::VarChar>();
+    varCharType->set_length(mlir::cast<VarCharType>(mlirType).getLength());
+    varCharType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_varchar(varCharType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -904,6 +928,17 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `TimeType`.
   else if (auto timeType = dyn_cast<TimeType>(literalType)) {
     literal->set_time(mlir::cast<TimeAttr>(value).getValue());
+  }
+  // `FixedCharType`.
+  else if (auto fixedCharType = dyn_cast<FixedCharType>(literalType)) {
+    literal->set_fixed_char(mlir::cast<StringAttr>(value).getValue().str());
+    // `VarCharType`.
+  } else if (auto varCharType = dyn_cast<VarCharType>(literalType)) {
+    auto varChar =
+        std::make_unique<::substrait::proto::Expression_Literal_VarChar>();
+    varChar->set_length(mlir::cast<StringAttr>(value).size());
+    varChar->set_value(mlir::cast<StringAttr>(value).getValue().str());
+    literal->set_allocated_var_char(varChar.release());
   } else
     op->emitOpError("has unsupported value");
 
