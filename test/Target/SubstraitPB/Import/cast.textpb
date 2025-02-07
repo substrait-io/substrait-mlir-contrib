@@ -1,0 +1,102 @@
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | FileCheck %s
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      named_table
+# CHECK-NEXT:      project
+# CHECK-NEXT:      (%[[V0:.*]]: tuple<si32>):
+# CHECK-DAG:         %[[V1:.*]] = cast %{{.*}} or return_null : si32 to si64
+# CHECK-DAG:         %[[V2:.*]] = cast %{{.*}} or throw_exception : si32 to si64
+# CHECK-DAG:         %[[V3:.*]] = cast %{{.*}} or unspecified : si32 to si64
+# CHECK-NEXT:        yield %[[V1]], %[[V2]], %[[V3]] :
+
+relations {
+  rel {
+    project {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      expressions {
+        cast {
+          type {
+            i64 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          input {
+            literal {
+              i32: 42
+            }
+          }
+          failure_behavior: FAILURE_BEHAVIOR_RETURN_NULL
+        }
+      }
+      expressions {
+        cast {
+          type {
+            i64 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          input {
+            literal {
+              i32: 42
+            }
+          }
+          failure_behavior: FAILURE_BEHAVIOR_THROW_EXCEPTION
+        }
+      }
+      expressions {
+        cast {
+          type {
+            i64 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          input {
+            literal {
+              i32: 42
+            }
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}

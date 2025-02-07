@@ -50,6 +50,7 @@ public:
 
   DECLARE_EXPORT_FUNC(AggregateOp, Rel)
   DECLARE_EXPORT_FUNC(CallOp, Expression)
+  DECLARE_EXPORT_FUNC(CastOp, Expression)
   DECLARE_EXPORT_FUNC(CrossOp, Rel)
   DECLARE_EXPORT_FUNC(EmitOp, Rel)
   DECLARE_EXPORT_FUNC(ExpressionOpInterface, Expression)
@@ -505,6 +506,44 @@ SubstraitExporter::exportOperation(CallOp op) {
   return op->emitOpError() << "with aggregate function not expected here";
 }
 
+FailureOr<std::unique_ptr<Expression>>
+SubstraitExporter::exportOperation(CastOp op) {
+  using FailureBehavior = Expression::Cast::FailureBehavior;
+
+  Location loc = op.getLoc();
+
+  // Export `input` as `Expression` message.
+  Value inputVal = op.getInput();
+  auto definingOp = llvm::dyn_cast_if_present<ExpressionOpInterface>(
+      inputVal.getDefiningOp());
+  if (!definingOp)
+    return op->emitOpError()
+           << "with 'input' that was not produced by Substrait expression op";
+
+  FailureOr<std::unique_ptr<Expression>> input = exportOperation(definingOp);
+  if (failed(input))
+    return failure();
+
+  // Build message for `output_type`.
+  FailureOr<std::unique_ptr<proto::Type>> outputType =
+      exportType(loc, op.getResult().getType());
+  if (failed(outputType))
+    return failure();
+
+  // Build `Cast` message.
+  auto cast = std::make_unique<Expression::Cast>();
+  cast->set_allocated_input(input->release());
+  cast->set_allocated_type(outputType->release());
+  cast->set_failure_behavior(
+      static_cast<FailureBehavior>(op.getFailureBehavior()));
+
+  // Build `Expression` message.
+  auto expression = std::make_unique<Expression>();
+  expression->set_allocated_cast(cast.release());
+
+  return expression;
+}
+
 FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(CrossOp op) {
   // Build `RelCommon` message.
   auto relCommon = std::make_unique<RelCommon>();
@@ -628,7 +667,7 @@ FailureOr<std::unique_ptr<Expression>>
 SubstraitExporter::exportOperation(ExpressionOpInterface op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::unique_ptr<Expression>>>(
              op)
-      .Case<CallOp, FieldReferenceOp, LiteralOp>(
+      .Case<CallOp, CastOp, FieldReferenceOp, LiteralOp>(
           [&](auto op) { return exportOperation(op); })
       .Default(
           [](auto op) { return op->emitOpError("not supported for export"); });

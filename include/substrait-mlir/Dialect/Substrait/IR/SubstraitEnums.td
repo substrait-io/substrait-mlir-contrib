@@ -26,6 +26,20 @@ def AggregationInvocation
   let cppNamespace = "::mlir::substrait";
 }
 
+/// Represents the `FailureBehavior` enum.
+///
+/// The enum values correspond exactly to those in the `Cast.FailureBehavior`
+/// enum, i.e., conversion through integers is possible.
+def FailureBehavior : I32EnumAttr<"FailureBehavior", "", [
+    // clang-format off
+    I32EnumAttrCase<"unspecified", 0>,
+    I32EnumAttrCase<"return_null", 1>,
+    I32EnumAttrCase<"throw_exception", 2>,
+    // clang-format on
+  ]> {
+  let cppNamespace = "::mlir::substrait";
+}
+
 /// Represents the `JoinType` protobuf enum.
 ///
 /// The enum values correspond exactly to those in the `JoinRel.JoinType` enum,

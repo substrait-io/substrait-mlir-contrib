@@ -77,6 +77,7 @@ struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
 DECLARE_IMPORT_FUNC(AggregateFunction, AggregateFunction, CallOp)
 DECLARE_IMPORT_FUNC(AggregateRel, Rel, AggregateOp)
 DECLARE_IMPORT_FUNC(Any, pb::Any, StringAttr)
+DECLARE_IMPORT_FUNC(Cast, Expression::Cast, CastOp)
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
@@ -376,6 +377,31 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   return aggregateOp;
 }
 
+static mlir::FailureOr<CastOp> importCast(ImplicitLocOpBuilder builder,
+                                          const Expression::Cast &message) {
+  MLIRContext *context = builder.getContext();
+
+  // Import `input` field.
+  const Expression &input = message.input();
+  FailureOr<ExpressionOpInterface> inputOp = importExpression(builder, input);
+  if (failed(inputOp))
+    return failure();
+
+  // Import `type` field.
+  const proto::Type &type = message.type();
+  FailureOr<mlir::Type> mlirType = importType(context, type);
+  if (failed(mlirType))
+    return failure();
+
+  // Import `failure_behavior` field.
+  auto failureBehavior =
+      static_cast<FailureBehavior>(message.failure_behavior());
+
+  // Create `cast` op.
+  Value inputVal = inputOp.value()->getResult(0);
+  return builder.create<CastOp>(mlirType.value(), inputVal, failureBehavior);
+}
+
 static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
                                                const Rel &message) {
   const CrossRel &crossRel = message.cross();
@@ -429,6 +455,8 @@ importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
 
   Expression::RexTypeCase rex_type = message.rex_type_case();
   switch (rex_type) {
+  case Expression::kCast:
+    return importCast(builder, message.cast());
   case Expression::kLiteral:
     return importLiteral(builder, message.literal());
   case Expression::kSelection:

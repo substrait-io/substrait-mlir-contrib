@@ -14,6 +14,7 @@ include "substrait-mlir/Dialect/Substrait/IR/SubstraitDialect.td"
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.td"
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td"
 include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypes.td"
+include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/IR/BuiltinAttributes.td"
@@ -284,6 +285,40 @@ class Substrait_ExpressionOp<string mnemonic, list<Trait> traits = []> :
   Substrait_Op<mnemonic, traits # [
     Substrait_ExpressionOpInterface, Pure
   ]>;
+
+def Substrait_CastOp : Substrait_ExpressionOp<"cast", [
+     DeclareOpInterfaceMethods<CastOpInterface>
+  ]> {
+  let summary = "Cast expression";
+  let description = [{
+    Represents a `Cast` message.
+
+    Example:
+
+    ```mlir
+    %0 = literal 42 : si32
+    %1 = cast %0 : si32 to si64
+    ```
+  }];
+  let arguments = (ins
+    Substrait_FieldType:$input,
+    FailureBehavior:$failure_behavior
+  );
+  // TODO(ingomueller): verify that result type is nullable if
+  // `failure_behavior` is set to `return_null` once we have implemented
+  // nullability.
+  let results = (outs Substrait_FieldType:$result);
+  let assemblyFormat = [{
+    $input `or` $failure_behavior attr-dict `:` type($input) `to` type($result)
+  }];
+  let extraClassDefinition = [{
+    /// Implement `CastOpInterface`.
+    bool $cppClass::areCastCompatible(::mlir::TypeRange inputs,
+                                      ::mlir::TypeRange outputs) {
+      return true;
+    }
+  }];
+}
 
 def Substrait_FieldReferenceOp : Substrait_ExpressionOp<"field_reference", [
     DeclareOpInterfaceMethods<InferTypeOpInterface>
