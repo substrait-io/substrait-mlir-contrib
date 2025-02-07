@@ -207,6 +207,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return DateType::get(context);
   case proto::Type::kTime:
     return TimeType::get(context);
+  case proto::Type::kFixedChar:
+    return FixedCharType::get(context, type.fixed_char().length());
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -646,6 +648,12 @@ importLiteral(ImplicitLocOpBuilder builder,
   }
   case Expression::Literal::LiteralTypeCase::kTime: {
     auto attr = TimeAttr::get(context, message.time());
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFixedChar: {
+    auto attr = StringAttr::get(
+        message.fixed_char(),
+        FixedCharType::get(context, message.fixed_char().size()));
     return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.
