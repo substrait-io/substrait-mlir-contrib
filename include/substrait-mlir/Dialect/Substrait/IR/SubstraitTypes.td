@@ -109,6 +109,48 @@ def Substrait_FieldType : AnyTypeOf<[
 /// Placeholder for a proper relation type, the result of any `RelOpInterface`
 /// op.
 // TODO(ingomueller): Transform this into a proper relation type.
-def Substrait_Relation : NestedTupleOf<Substrait_AtomicTypes.types>;
+// def Substrait_Relation : NestedTupleOf<Substrait_AtomicTypes.types>;
+
+//===----------------------------------------------------------------------===//
+// TupleType
+//===----------------------------------------------------------------------===//
+
+def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
+  let summary = "Substrait relation, i.e., result of `RelOpInterface` ops";
+  let description = [{
+  }];
+  let parameters = (ins "ArrayRef<Type>":$fieldTypes);
+  let builders = [
+    TypeBuilder<(ins "TypeRange":$fieldTypes), [{
+      return $_get($_ctxt, fieldTypes);
+    }]>,
+    TypeBuilder<(ins), [{
+      return $_get($_ctxt, TypeRange());
+    }]>,
+  ];
+  let skipDefaultBuilders = 1;
+  let genStorageClass = 0;
+  let hasCustomAssemblyFormat = 1;
+  let extraClassDeclaration = [{
+    /// Return the number of held types.
+    size_t size() const { return getFieldTypes().size(); }
+
+    /// Iterate over the held elements.
+    using iterator = ArrayRef<Type>::iterator;
+    iterator begin() const { return getFieldTypes().begin(); }
+    iterator end() const { return getFieldTypes().end(); }
+
+    // /// Return the element type at index 'index'.
+    // Type getType(size_t index) const {
+    //   assert(index < size() && "invalid index for tuple type");
+    //   return getFieldTypes()[index];
+    // }
+  }];
+  let extraClassDefinition = [{
+    ArrayRef<Type> $cppClass::getFieldTypes() const {
+      return getImpl()->getTypes();
+    }
+  }];
+}
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES
