@@ -27,6 +27,7 @@ declare_mlir_python_extension(SubstraitMLIRPythonSources.DialectExtension
   SubstraitDialects.cpp
   EMBED_CAPI_LINK_LIBS
   SubstraitMLIRCAPI
+  PYTHON_BINDINGS_LIBRARY nanobind
 )
 
 declare_mlir_python_sources(SubstraitMLIRPythonSources.MLIRLibs
@@ -34,7 +35,6 @@ declare_mlir_python_sources(SubstraitMLIRPythonSources.MLIRLibs
   ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
   SOURCES
     _mlir_libs/_substraitDialects/__init__.pyi
-    _mlir_libs/_substraitDialects/substrait.pyi
 )
 
 # ###############################################################################
@@ -70,4 +70,15 @@ add_mlir_python_modules(SubstraitMLIRPythonModules
   SubstraitMLIRPythonCAPI
 )
 
-add_dependencies(substrait-mlir-all SubstraitMLIRPythonModules)
+nanobind_add_stub(
+  SubstraitMLIRPythonModuleStubs
+  MODULE substrait_mlir._mlir_libs._substraitDialects.substrait
+  OUTPUT "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs/_substraitDialects/substrait.pyi"
+  PYTHON_PATH "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/"
+  DEPENDS SubstraitMLIRPythonModules
+)
+
+add_dependencies(substrait-mlir-all
+  SubstraitMLIRPythonModules
+  SubstraitMLIRPythonModuleStubs
+)

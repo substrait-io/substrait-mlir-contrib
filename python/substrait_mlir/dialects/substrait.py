@@ -42,7 +42,7 @@ class PlanOp(PlanOp):
   def to_json(self, pretty: bool = False) -> str:
     return to_json(self.operation, pretty)
 
-  def to_binpb(self) -> str:
+  def to_binpb(self) -> bytes:
     return to_binpb(self.operation)
 
   def to_textpb(self) -> str:

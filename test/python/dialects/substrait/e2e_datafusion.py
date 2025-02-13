@@ -46,7 +46,6 @@ def testNamedTable():
 
   # Export MLIR plan to protobuf.
   pb_plan = ss.to_binpb(plan.operation)
-  pb_plan = pb_plan.encode('utf8')
 
   # Import plan in datafusion, execute, and print result.
   ss_plan = dfss.substrait.serde.deserialize_bytes(pb_plan)

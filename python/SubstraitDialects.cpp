@@ -7,19 +7,23 @@
 //===----------------------------------------------------------------------===//
 
 #include "mlir-c/BuiltinAttributes.h"
-#include "mlir-c/BuiltinTypes.h"
 #include "mlir-c/IR.h"
-#include "mlir/Bindings/Python/PybindAdaptors.h"
+#include "mlir/Bindings/Python/NanobindAdaptors.h" // IWYU pragma: keep
 #include "substrait-mlir-c/Dialects.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
 
-#include <vector>
+// Suppress warning from nanobind, otherwise CI with `-Werror` fails.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
+#pragma clang diagnostic ignored "-Wnested-anon-types"
+#pragma clang diagnostic ignored "-Wzero-length-array"
+#include <nanobind/nanobind.h>
+#pragma clang diagnostic pop
 
-namespace py = pybind11;
-using namespace mlir::python::adaptors;
+namespace nb = nanobind;
 
-PYBIND11_MODULE(_substraitDialects, mainModule) {
+NB_MODULE(_substraitDialects, mainModule) {
 #ifndef NDEBUG
   static std::string executable =
       llvm::sys::fs::getMainExecutable(nullptr, nullptr);
@@ -43,17 +47,20 @@ PYBIND11_MODULE(_substraitDialects, mainModule) {
         if (doLoad)
           mlirDialectHandleLoadDialect(handle, context);
       },
-      py::arg("context") = py::none(), py::arg("load") = true);
+      nb::arg("context").none() = nb::none(), nb::arg("load") = true,
+      nb::sig("def register_dialect("
+              "context: Optional[substrait_mlir.ir.Context] = None,"
+              "load: bool = True) -> None"),
+      "Register and optionally load the dialect with the given context");
 
   //
   // Import
   //
 
-  static const auto importSubstraitPlan = [](const std::string &input,
+  static const auto importSubstraitPlan = [](MlirStringRef input,
                                              MlirContext context,
                                              MlirSubstraitSerdeFormat format) {
-    MlirStringRef mlirInput{/*data=*/input.data(), /*length=*/input.size()};
-    MlirModule module = mlirSubstraitImportPlan(context, mlirInput, format);
+    MlirModule module = mlirSubstraitImportPlan(context, input, format);
     if (mlirModuleIsNull(module))
       throw std::invalid_argument("Could not import Substrait plan");
     return module;
@@ -61,29 +68,40 @@ PYBIND11_MODULE(_substraitDialects, mainModule) {
 
   substraitModule.def(
       "from_binpb",
-      [&](const std::string &input, MlirContext context) {
-        return importSubstraitPlan(input, context,
+      [&](const nb::bytes &input, MlirContext context) {
+        MlirStringRef mlirInput{reinterpret_cast<const char *>(input.data()),
+                                input.size()};
+        return importSubstraitPlan(mlirInput, context,
                                    MlirSubstraitBinarySerdeFormat);
       },
-      py::arg("input") = py::none(), py::arg("context") = py::none(),
+      nb::arg("input") = nb::none(), nb::arg("context") = nb::none(),
+      nb::sig("def from_binpb(input: bytes,"
+              "context: typing.Optional[substrait_mlir.ir.Context] = None)"
+              "-> substrait_mlir.ir.Module"),
       "Import a Substrait plan in the binary protobuf format");
 
   substraitModule.def(
       "from_textpb",
       [&](const std::string &input, MlirContext context) {
-        return importSubstraitPlan(input, context,
+        return importSubstraitPlan({input.data(), input.size()}, context,
                                    MlirSubstraitTextSerdeFormat);
       },
-      py::arg("input") = py::none(), py::arg("context") = py::none(),
+      nb::arg("input") = nb::none(), nb::arg("context") = nb::none(),
+      nb::sig("def from_textpb(input: str,"
+              "context: typing.Optional[substrait_mlir.ir.Context] = None)"
+              "-> substrait_mlir.ir.Module"),
       "Import a Substrait plan in the textual protobuf format");
 
   substraitModule.def(
       "from_json",
       [&](const std::string &input, MlirContext context) {
-        return importSubstraitPlan(input, context,
+        return importSubstraitPlan({input.data(), input.size()}, context,
                                    MlirSubstraitJsonSerdeFormat);
       },
-      py::arg("input") = py::none(), py::arg("context") = py::none(),
+      nb::arg("input") = nb::none(), nb::arg("context") = nb::none(),
+      nb::sig("def from_json(input: str,"
+              "context: typing.Optional[substrait_mlir.ir.Context] = None)"
+              "-> substrait_mlir.ir.Module"),
       "Import a Substrait plan in the JSON format");
 
   //
@@ -103,16 +121,25 @@ PYBIND11_MODULE(_substraitDialects, mainModule) {
   substraitModule.def(
       "to_binpb",
       [&](MlirOperation op) {
-        return exportSubstraitPlan(op, MlirSubstraitBinarySerdeFormat);
+        std::string_view sv =
+            exportSubstraitPlan(op, MlirSubstraitBinarySerdeFormat);
+        return nb::bytes(sv.data(), sv.size());
       },
-      py::arg("op"), "Export a Substrait plan into the binary protobuf format");
+      nb::arg("op"),
+      nb::sig("def to_binpb("
+              "op: typing.Optional[substrait_mlir.ir.Operation] = None)"
+              "-> bytes"),
+      "Export a Substrait plan into the binary protobuf format");
 
   substraitModule.def(
       "to_textpb",
       [&](MlirOperation op) {
         return exportSubstraitPlan(op, MlirSubstraitTextSerdeFormat);
       },
-      py::arg("op"),
+      nb::arg("op"),
+      nb::sig(
+          "def to_textpb("
+          "op: typing.Optional[substrait_mlir.ir.Operation] = None) -> str"),
       "Export a Substrait plan into the textual protobuf format");
 
   substraitModule.def(
@@ -122,6 +149,9 @@ PYBIND11_MODULE(_substraitDialects, mainModule) {
                              : MlirSubstraitJsonSerdeFormat;
         return exportSubstraitPlan(op, format);
       },
-      py::arg("op"), py::arg("pretty") = false,
+      nb::arg("op"), nb::arg("pretty") = false,
+      nb::sig("def to_json("
+              "op: typing.Optional[substrait_mlir.ir.Operation] = None,"
+              "pretty: typing.Optional[bool] = False) -> str"),
       "Export a Substrait plan into the JSON format");
 }
