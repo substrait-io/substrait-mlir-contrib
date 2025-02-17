@@ -16,7 +16,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.time> {
     ^bb0(%arg : tuple<si1>):
-      %time = literal #substrait.time<200000000us> : !substrait.time
+      %time = literal #substrait.time<200000000us>
       yield %time : !substrait.time
     }
     yield %1 : tuple<si1, !substrait.time>
@@ -40,7 +40,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.date> {
     ^bb0(%arg : tuple<si1>):
-      %date = literal #substrait.date<200000000> : !substrait.date
+      %date = literal #substrait.date<200000000> 
       yield %date : !substrait.date
     }
     yield %1 : tuple<si1, !substrait.date>
