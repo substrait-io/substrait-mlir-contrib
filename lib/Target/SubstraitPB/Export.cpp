@@ -929,13 +929,12 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     literal->set_time(mlir::cast<TimeAttr>(value).getValue());
   }
   // `IntervalType`'s.
-  else if (auto timeType = dyn_cast<IntervalYearMonthType>(literalType)) {
+  else if (auto intervalType = dyn_cast<IntervalYearMonthType>(literalType)) {
     auto intervalYearToMonth = std::make_unique<
         ::substrait::proto::Expression_Literal_IntervalYearToMonth>();
-    auto intervalYear =
-        mlir::cast<IntervalYearMonthAttr>(value).getYearsValue();
-    auto intervalMonth =
-        mlir::cast<IntervalYearMonthAttr>(value).getMonthsValue();
+    auto intervalYearMonth = mlir::cast<IntervalYearMonthAttr>(value);
+    int32_t intervalYear = intervalYearMonth.getYearsValue();
+    int32_t intervalMonth = intervalYearMonth.getMonthsValue();
     intervalYearToMonth->set_years(intervalYear);
     intervalYearToMonth->set_months(intervalMonth);
     literal->set_allocated_interval_year_to_month(
@@ -943,9 +942,9 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   } else if (auto timeType = dyn_cast<IntervalDaySecondType>(literalType)) {
     auto intervalDaytoSecond = std::make_unique<
         ::substrait::proto::Expression_Literal_IntervalDayToSecond>();
-    auto intervalDay = mlir::cast<IntervalDaySecondAttr>(value).getDaysValue();
-    auto intervalSecond =
-        mlir::cast<IntervalDaySecondAttr>(value).getSecondsValue();
+    auto intervalDaySecond = mlir::cast<IntervalDaySecondAttr>(value);
+    int32_t intervalDay = intervalDaySecond.getDaysValue();
+    int32_t intervalSecond = intervalDaySecond.getSecondsValue();
     intervalDaytoSecond->set_days(intervalDay);
     intervalDaytoSecond->set_seconds(intervalSecond);
     literal->set_allocated_interval_day_to_second(
