@@ -1,9 +1,19 @@
 # Generated with plus manual fixes:
-#   pybind11-stubgen substrait_mlir._mlir_libs._substraitDialects -o python`
+#   pybind11-stubgen substrait_mlir._mlir_libs._substraitDialects -o python
 from __future__ import annotations
-from typing import Optional
-from substrait_mlir.ir import Context, Module, Operation
-__all__ = ['from_binpb', 'from_json', 'from_textpb', 'register_dialect', 'to_binpb', 'to_json', 'to_textpb']
+from typing import Iterable, Optional
+
+from substrait_mlir.ir import Context, Module, Operation, Type
+
+__all__ = ['from_binpb', 'from_json', 'from_textpb', 'register_dialect', 'RelationType', 'to_binpb', 'to_json', 'to_textpb']
+
+class RelationType(Type):
+  @staticmethod
+  def isinstance(type: Type) -> bool: ...
+
+  @staticmethod
+  def get(types: Iterable[Type], context: Context | None = None) -> RelationType: ...
+
 def from_binpb(input, context: Optional[Context] = None) -> Module:
     """
     Import a Substrait plan in the binary protobuf format

@@ -42,7 +42,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = extension_table
            "some detail" : !substrait.any<"some url">
-           as ["a"] : tuple<si32>
-    yield %0 : tuple<si32>
+           as ["a"] : <si32>
+    yield %0 : !substrait.relation<si32>
   }
 }

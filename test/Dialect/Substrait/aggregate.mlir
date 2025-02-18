@@ -6,7 +6,7 @@
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si1, si1, si32, si1, si32>
+// CHECK-NEXT:    %[[V1:.*]] = aggregate %[[V0]] : <si32> -> <si1, si1, si32, si1, si32>
 // CHECK-NEXT:      groupings {
 // CHECK-NEXT:        ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si32>):
 // CHECK-NEXT:        %[[V2:.*]] = literal 0 : si1
@@ -21,14 +21,14 @@
 // CHECK-DAG:         %[[V6:.*]] = call @function(%[[V4]]) aggregate :
 // CHECK-NEXT:        yield %[[V5]], %[[V6]] : si32, si1
 // CHECK-NEXT:      }
-// CHECK-NEXT:      yield %[[V1]]
+// CHECK-NEXT:      yield %[[V1]] :
 
 substrait.plan version 0 : 42 : 1 {
   extension_uri @extension at "http://some.url/with/extensions.yml"
   extension_function @function at @extension["somefunc"]
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1, si32, si1, si32>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si1, si1, si32, si1, si32>
       groupings {
       ^bb0(%arg : tuple<si32>):
         %2 = literal 0 : si1
@@ -43,7 +43,7 @@ substrait.plan version 0 : 42 : 1 {
         %5 = call @function(%3) aggregate all : (si1) -> si1
         yield %4, %5 : si32, si1
       }
-    yield %1 : tuple<si1, si1, si32, si1, si32>
+    yield %1 : !substrait.relation<si1, si1, si32, si1, si32>
   }
 }
 
@@ -72,8 +72,8 @@ substrait.plan version 0 : 42 : 1 {
   extension_uri @extension at "http://some.url/with/extensions.yml"
   extension_function @function at @extension["somefunc"]
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1, si32, si1, si32>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si1, si1, si32, si1, si32>
       measures {
       ^bb0(%arg : tuple<si32>):
         %2 = field_reference %arg[0] : tuple<si32>
@@ -88,7 +88,7 @@ substrait.plan version 0 : 42 : 1 {
         %2 = literal 0 : si1
         yield %2, %2 : si1, si1
       }
-    yield %1 : tuple<si1, si1, si32, si1, si32>
+    yield %1 : !substrait.relation<si1, si1, si32, si1, si32>
   }
 }
 
@@ -107,15 +107,15 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1, si32>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si1, si1, si32>
       groupings {
       ^bb0(%arg : tuple<si32>):
         %2 = literal 0 : si1
         yield %2, %2 : si1, si1
       }
       grouping_sets [[0], [0, 1], [1], []]
-    yield %1 : tuple<si1, si1, si32>
+    yield %1 : !substrait.relation<si1, si1, si32>
   }
 }
 
@@ -133,15 +133,15 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si1, si1>
       groupings {
       ^bb0(%arg : tuple<si32>):
         %2 = literal 0 : si1
         yield %2, %2 : si1, si1
       }
       grouping_sets [[0, 1]]
-    yield %1 : tuple<si1, si1>
+    yield %1 : !substrait.relation<si1, si1>
   }
 }
 
@@ -159,14 +159,14 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si1, si1>
       groupings {
       ^bb0(%arg : tuple<si32>):
         %2 = literal 0 : si1
         yield %2, %2 : si1, si1
       }
-    yield %1 : tuple<si1, si1>
+    yield %1 : !substrait.relation<si1, si1>
   }
 }
 
@@ -187,8 +187,8 @@ substrait.plan version 0 : 42 : 1 {
   extension_uri @extension at "http://some.url/with/extensions.yml"
   extension_function @function at @extension["somefunc"]
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si32>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si32>
       grouping_sets []
       measures {
       ^bb0(%arg : tuple<si32>):
@@ -196,7 +196,7 @@ substrait.plan version 0 : 42 : 1 {
         %3 = call @function(%2) aggregate : (si32) -> si32
         yield %3 : si32
       }
-    yield %1 : tuple<si32>
+    yield %1 : !substrait.relation<si32>
   }
 }
 
@@ -216,15 +216,15 @@ substrait.plan version 0 : 42 : 1 {
   extension_uri @extension at "http://some.url/with/extensions.yml"
   extension_function @function at @extension["somefunc"]
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si32>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si32>
       measures {
       ^bb0(%arg : tuple<si32>):
         %2 = field_reference %arg[0] : tuple<si32>
         %3 = call @function(%2) aggregate : (si32) -> si32
         yield %3 : si32
       }
-    yield %1 : tuple<si32>
+    yield %1 : !substrait.relation<si32>
   }
 }
 
@@ -244,8 +244,8 @@ substrait.plan version 0 : 42 : 1 {
   extension_uri @extension at "http://some.url/with/extensions.yml"
   extension_function @function at @extension["somefunc"]
   relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si32>
+    %0 = named_table @t1 as ["a"] : <si32>
+    %1 = aggregate %0 : <si32> -> <si32>
       grouping_sets [[]]
       measures {
       ^bb0(%arg : tuple<si32>):
@@ -253,6 +253,6 @@ substrait.plan version 0 : 42 : 1 {
         %3 = call @function(%2) aggregate : (si32) -> si32
         yield %3 : si32
       }
-    yield %1 : tuple<si32>
+    yield %1 : !substrait.relation<si32>
   }
 }

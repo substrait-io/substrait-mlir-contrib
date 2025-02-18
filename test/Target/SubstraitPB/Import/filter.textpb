@@ -9,12 +9,12 @@
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:    relation {
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = filter %[[V0]] : tuple<si32>
+# CHECK-NEXT:      %[[V1:.*]] = filter %[[V0]] : <si32>
 # CHECK-NEXT:      ^bb0(%[[ARG0:.*]]: tuple<si32>):
 # CHECK-NEXT:        %[[V2:.*]] = literal -1 : si1
 # CHECK-NEXT:        yield %[[V2]] : si1
 # CHECK-NEXT:      }
-# CHECK-NEXT:      yield %[[V1]] : tuple<si32>
+# CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
 
 relations {
   rel {
