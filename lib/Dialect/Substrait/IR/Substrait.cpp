@@ -73,6 +73,9 @@ LogicalResult mlir::substrait::IntervalYearMonthAttr::verify(
     int32_t month) {
   if (year < -100000 || year > 100000)
     return emitError() << "year must be in a range of [-10,000..10,000] years";
+  if (month < -120000 || month > 120000)
+    return emitError()
+           << "month must be in a range of [120,000..120,000] months";
   return success();
 }
 

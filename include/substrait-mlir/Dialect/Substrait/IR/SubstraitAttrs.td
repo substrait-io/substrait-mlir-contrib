@@ -75,24 +75,26 @@ def Substrait_IntervalDaySecondAttr
                                     "IntervalDaySecondType"> {
   let summary = "Substrait interval day to second type";
   let description = [{
-    This type represents a substrait interval day to second attribute type. Note that this
-    attribute does not attempt to canonicalize equivalent day-second intervals.
-  }];  
-  let parameters = (ins "int32_t":$days_value, "int32_t":$seconds_value);
-  let assemblyFormat = [{ `<` $days_value `` `d` $seconds_value `` `s` `>` }];
+    This type represents a substrait interval day to second attribute type. Note
+    that this attribute does not attempt to canonicalize equivalent day-second
+    intervals.
+  }];
+  let parameters = (ins "int32_t":$days, "int32_t":$seconds);
+  let assemblyFormat = [{ `<` $days `` `d` $seconds `` `s` `>` }];
   let genVerifyDecl = 1;
 }
 
-def Substrait_IntervalYearMonthAttr 
+def Substrait_IntervalYearMonthAttr
     : Substrait_StaticallyTypedAttr<"IntervalYearMonth", "interval_year_month",
                                     "IntervalYearMonthType"> {
   let summary = "Substrait interval year to month type";
   let description = [{
-    This type represents a substrait interval year to month attribute type. Note that this
-    attribute does not attempt to canonicalize equivalent year-month intervals.
-  }];  
-  let parameters = (ins "int32_t":$years_value, "int32_t":$months_value);
-  let assemblyFormat = [{ `<` $years_value `` `y` $months_value `` `m` `>` }];
+    This type represents a substrait interval year to month attribute type. Note
+    that this attribute does not attempt to canonicalize equivalent year-month
+    intervals.
+  }];
+  let parameters = (ins "int32_t":$years, "int32_t":$months);
+  let assemblyFormat = [{ `<` $years `` `y` $months `` `m` `>` }];
   let genVerifyDecl = 1;
 }
 

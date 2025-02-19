@@ -933,8 +933,8 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     auto intervalYearToMonth = std::make_unique<
         ::substrait::proto::Expression_Literal_IntervalYearToMonth>();
     auto intervalYearMonth = mlir::cast<IntervalYearMonthAttr>(value);
-    int32_t intervalYear = intervalYearMonth.getYearsValue();
-    int32_t intervalMonth = intervalYearMonth.getMonthsValue();
+    int32_t intervalYear = intervalYearMonth.getYears();
+    int32_t intervalMonth = intervalYearMonth.getMonths();
     intervalYearToMonth->set_years(intervalYear);
     intervalYearToMonth->set_months(intervalMonth);
     literal->set_allocated_interval_year_to_month(
@@ -943,8 +943,8 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     auto intervalDaytoSecond = std::make_unique<
         ::substrait::proto::Expression_Literal_IntervalDayToSecond>();
     auto intervalDaySecond = mlir::cast<IntervalDaySecondAttr>(value);
-    int32_t intervalDay = intervalDaySecond.getDaysValue();
-    int32_t intervalSecond = intervalDaySecond.getSecondsValue();
+    int32_t intervalDay = intervalDaySecond.getDays();
+    int32_t intervalSecond = intervalDaySecond.getSeconds();
     intervalDaytoSecond->set_days(intervalDay);
     intervalDaytoSecond->set_seconds(intervalSecond);
     literal->set_allocated_interval_day_to_second(
