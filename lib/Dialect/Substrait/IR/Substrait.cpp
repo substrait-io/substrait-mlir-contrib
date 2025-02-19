@@ -68,6 +68,26 @@ LogicalResult AdvancedExtensionAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::IntervalYearMonthAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t year,
+    int32_t month) {
+  if (year < -100000 || year > 100000)
+    return emitError() << "year must be in a range of [-10,000..10,000] years";
+  if (month < -120000 || month > 120000)
+    return emitError()
+           << "month must be in a range of [120,000..120,000] months";
+  return success();
+}
+
+LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t days,
+    int32_t seconds) {
+  if (days < -3650000 || days > 3650000)
+    return emitError()
+           << "days must be in a range of [-3,650,000..3,650,000] days";
+  return success();
+}
+
 //===----------------------------------------------------------------------===//
 // Substrait enums
 //===----------------------------------------------------------------------===//

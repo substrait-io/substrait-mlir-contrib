@@ -339,6 +339,29 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle interval_year.
+  if (mlir::isa<IntervalYearMonthType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto intervalYearType = std::make_unique<proto::Type::IntervalYear>();
+    intervalYearType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_interval_year(intervalYearType.release());
+    return std::move(type);
+  }
+  // Handle interval_day.
+  if (mlir::isa<IntervalDaySecondType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto intervalDayType = std::make_unique<proto::Type::IntervalDay>();
+    intervalDayType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_interval_day(intervalDayType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -904,6 +927,28 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   // `TimeType`.
   else if (auto timeType = dyn_cast<TimeType>(literalType)) {
     literal->set_time(mlir::cast<TimeAttr>(value).getValue());
+  }
+  // `IntervalType`'s.
+  else if (auto intervalType = dyn_cast<IntervalYearMonthType>(literalType)) {
+    auto intervalYearToMonth = std::make_unique<
+        ::substrait::proto::Expression_Literal_IntervalYearToMonth>();
+    auto intervalYearMonth = mlir::cast<IntervalYearMonthAttr>(value);
+    int32_t intervalYear = intervalYearMonth.getYears();
+    int32_t intervalMonth = intervalYearMonth.getMonths();
+    intervalYearToMonth->set_years(intervalYear);
+    intervalYearToMonth->set_months(intervalMonth);
+    literal->set_allocated_interval_year_to_month(
+        intervalYearToMonth.release());
+  } else if (auto timeType = dyn_cast<IntervalDaySecondType>(literalType)) {
+    auto intervalDaytoSecond = std::make_unique<
+        ::substrait::proto::Expression_Literal_IntervalDayToSecond>();
+    auto intervalDaySecond = mlir::cast<IntervalDaySecondAttr>(value);
+    int32_t intervalDay = intervalDaySecond.getDays();
+    int32_t intervalSecond = intervalDaySecond.getSeconds();
+    intervalDaytoSecond->set_days(intervalDay);
+    intervalDaytoSecond->set_seconds(intervalSecond);
+    literal->set_allocated_interval_day_to_second(
+        intervalDaytoSecond.release());
   } else
     op->emitOpError("has unsupported value");
 
