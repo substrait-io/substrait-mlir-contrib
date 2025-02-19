@@ -667,10 +667,11 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kUuid: {
-    APInt var(128,0);
-    llvm::LoadIntFromMemory(var, reinterpret_cast<const uint8_t *>(message.uuid().data()), 16);
-    IntegerAttr integer_attr = IntegerAttr::get(
-        IntegerType::get(context, 128), var);
+    APInt var(128, 0);
+    llvm::LoadIntFromMemory(
+        var, reinterpret_cast<const uint8_t *>(message.uuid().data()), 16);
+    IntegerAttr integer_attr =
+        IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = UUIDAttr::get(context, integer_attr);
     return builder.create<LiteralOp>(attr);
   }
