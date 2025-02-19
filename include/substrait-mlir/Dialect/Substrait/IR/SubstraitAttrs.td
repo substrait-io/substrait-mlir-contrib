@@ -129,6 +129,19 @@ def Substrait_TimestampTzAttr
   let assemblyFormat = [{ `<` $value `` `us` `>` }];
 }
 
+def Substrait_UUIDAttr
+    : Substrait_StaticallyTypedAttr<"UUID", "uuid",
+                                    "UUIDType"> {
+  let summary = "Substrait uuid type";
+  let description = [{
+    This type represents a substrait uuid (universally-unique identifier)
+    attribute type. This is a 16-byte binary value.
+  }];
+  let parameters = (ins "IntegerAttr":$value);
+  //TODO: print the UUID in typical format
+  let assemblyFormat = [{ `<` $value `>` }];
+}
+
 def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
   let summary = "Substrait version";
   let description = [{
@@ -186,6 +199,7 @@ def Substrait_AtomicAttributes {
     Substrait_TimeAttr, // Time
     Substrait_IntervalYearMonthAttr, // IntervalYear
     Substrait_IntervalDaySecondAttr, // IntervalDay
+    Substrait_UUIDAttr, // UUID
   ];
 }
 

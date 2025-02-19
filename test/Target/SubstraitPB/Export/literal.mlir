@@ -20,6 +20,33 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:            uuid: "\000\312\232;\000\000\000\000\000\000\000\000\000\000\000\000"
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.uuid> {
+    ^bb0(%arg : tuple<si1>):
+      %uuid = literal #substrait.uuid<1000000000 : i128>
+      yield %uuid : !substrait.uuid
+    }
+    yield %1 : tuple<si1, !substrait.uuid>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            interval_year_to_month {
 // CHECK-NEXT:              years: 2024
 // CHECK-NEXT:              months: 1
@@ -37,8 +64,8 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.interval_year_month, !substrait.interval_day_second> {
     ^bb0(%arg : tuple<si1>):
-      %interval_year_month = literal #substrait.interval_year_month<2024y 1m> 
-      %interval_day_second = literal #substrait.interval_day_second<9d 8000s> 
+      %interval_year_month = literal #substrait.interval_year_month<2024y 1m>
+      %interval_day_second = literal #substrait.interval_day_second<9d 8000s>
       yield %interval_year_month, %interval_day_second : !substrait.interval_year_month, !substrait.interval_day_second
     }
     yield %1 : tuple<si1, !substrait.interval_year_month, !substrait.interval_day_second>
@@ -67,10 +94,10 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.time> {
     ^bb0(%arg : tuple<si1>):
-      %time = literal #substrait.time<200000000us> 
+      %time = literal #substrait.time<200000000us>
       yield %time : !substrait.time
     }
-    yield %1 : tuple<si1, !substrait.time> 
+    yield %1 : tuple<si1, !substrait.time>
   }
 }
 
@@ -94,10 +121,10 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.date> {
     ^bb0(%arg : tuple<si1>):
-      %date = literal #substrait.date<200000000> 
+      %date = literal #substrait.date<200000000>
       yield %date : !substrait.date
     }
-    yield %1 : tuple<si1, !substrait.date> 
+    yield %1 : tuple<si1, !substrait.date>
   }
 }
 
@@ -126,8 +153,8 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.timestamp, !substrait.timestamp_tz> {
     ^bb0(%arg : tuple<si1>):
-      %timestamp = literal #substrait.timestamp<10000000000us> 
-      %timestamp_tz = literal #substrait.timestamp_tz<10000000000us> 
+      %timestamp = literal #substrait.timestamp<10000000000us>
+      %timestamp_tz = literal #substrait.timestamp_tz<10000000000us>
       yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
     }
     yield %1 : tuple<si1, !substrait.timestamp, !substrait.timestamp_tz>

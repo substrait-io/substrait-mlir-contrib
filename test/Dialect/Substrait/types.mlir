@@ -3,6 +3,20 @@
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.uuid>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.uuid>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.uuid>
+    yield %0 : tuple<!substrait.uuid>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
 // CHECK-NEXT:    yield %0 : tuple<!substrait.interval_year_month, !substrait.interval_day_second>
 

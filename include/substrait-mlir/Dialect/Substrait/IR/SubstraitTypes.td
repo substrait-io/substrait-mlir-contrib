@@ -75,6 +75,15 @@ def Substrait_TimestampTzType : Substrait_Type<"TimestampTz", "timestamp_tz"> {
   }];
 }
 
+/// Currently supported atomic types. These correspond directly to the types in
+def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
+  let summary = "Substrait uuid type";
+  let description = [{
+    This type represents a substrait uuid (universally-unique identifier) type.
+    This is a 16-byte binary value.
+  }];
+}
+
 /// Currently supported atomic types, listed in order of substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
@@ -95,6 +104,7 @@ def Substrait_AtomicTypes {
     Substrait_TimeType, // Time
     Substrait_IntervalYearMonthType, // IntervalYear
     Substrait_IntervalDaySecondType, // IntervalDay
+    Substrait_UUIDType, // UUID
   ];
 }
 
