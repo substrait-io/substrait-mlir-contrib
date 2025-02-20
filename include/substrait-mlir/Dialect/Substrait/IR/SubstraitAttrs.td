@@ -203,8 +203,19 @@ def Substrait_AtomicAttributes {
   ];
 }
 
+/// Attributes of currently supported compound types, listed in order of substrait
+/// specification.
+def Substrait_ContainerAttributes {
+  list<Attr> attrs = [
+    TypedStrAttr<Substrait_FixedCharType>, // FixedChar
+  ];
+}
+
 /// Attribute of one of the currently supported atomic types.
 def Substrait_AtomicAttribute : AnyAttrOf<Substrait_AtomicAttributes.attrs>;
+
+/// Attribute of one of the currently supported compound types.
+def Substrait_ContainerAttribute : AnyAttrOf<Substrait_ContainerAttributes.attrs>;
 
 /// `ArrayAttr` of `ArrayAttr`s if `i64`s.
 def I64ArrayArrayAttr : TypedArrayAttrBase<
