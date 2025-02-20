@@ -303,7 +303,7 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
-  // Handle timestampe_tz.
+  // Handle timestamp_tz.
   if (mlir::isa<TimestampTzType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
     auto timestampTzType = std::make_unique<proto::Type::TimestampTZ>();
