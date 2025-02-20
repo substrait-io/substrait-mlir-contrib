@@ -13,6 +13,51 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<!substrait.fixed_char<5>>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            fixed_char {
+              length: 5
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | FileCheck %s
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
 # CHECK-SAME:       : tuple<!substrait.uuid>
 
 relations {

@@ -16,6 +16,20 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.fixed_char<5>>
+// CHECK-NEXT:    yield %0 : tuple<!substrait.fixed_char<5>>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.fixed_char<5>>
+    yield %0 : tuple<!substrait.fixed_char<5>>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: substrait.plan
+// CHECK:         relation
 // CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<!substrait.uuid>
 // CHECK-NEXT:    yield %0 : tuple<!substrait.uuid>
 

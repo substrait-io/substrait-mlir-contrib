@@ -217,6 +217,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntervalDaySecondType::get(context);
   case proto::Type::kUuid:
     return UUIDType::get(context);
+  case proto::Type::kFixedChar:
+    return FixedCharType::get(context, type.fixed_char().length()); 
   case proto::Type::kDecimal: {
     const proto::Type::Decimal &decimalType = type.decimal();
     return mlir::substrait::DecimalType::get(context, decimalType.precision(),
@@ -684,6 +686,12 @@ importLiteral(ImplicitLocOpBuilder builder,
     auto attr = UUIDAttr::get(context, integer_attr);
     return builder.create<LiteralOp>(attr);
   }
+  case Expression::Literal::LiteralTypeCase::kFixedChar: {
+    auto attr = StringAttr::get(
+        message.fixed_char(),
+        FixedCharType::get(context, message.fixed_char().size()));
+    return builder.create<LiteralOp>(attr);
+  }
   case Expression::Literal::LiteralTypeCase::kDecimal: {
     APInt var(128, 0);
     llvm::LoadIntFromMemory(
@@ -696,7 +704,7 @@ importLiteral(ImplicitLocOpBuilder builder,
     auto attr = DecimalAttr::get(context, type, value);
     return builder.create<LiteralOp>(attr);
   }
-
+  
   // TODO(ingomueller): Support more types.
   default: {
     const pb::FieldDescriptor *desc =
