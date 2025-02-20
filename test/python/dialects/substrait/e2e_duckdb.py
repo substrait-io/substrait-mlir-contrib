@@ -46,7 +46,7 @@ def testNamedTable():
   ''')
 
   # Export MLIR plan to protobuf.
-  pb_plan = ss.to_binpb(plan.operation).encode()
+  pb_plan = ss.to_binpb(plan.operation)
 
   # Execute in duckdb and print result.
   # Ignore type because DuckDB's `from_substrait` has wrong type annotation.
