@@ -8,18 +8,11 @@
 
 #include "mlir-c/BuiltinAttributes.h"
 #include "mlir-c/IR.h"
+#include "mlir/Bindings/Python/Nanobind.h"         // IWYU pragma: keep
 #include "mlir/Bindings/Python/NanobindAdaptors.h" // IWYU pragma: keep
 #include "substrait-mlir-c/Dialects.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
-
-// Suppress warning from nanobind, otherwise CI with `-Werror` fails.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
-#pragma clang diagnostic ignored "-Wnested-anon-types"
-#pragma clang diagnostic ignored "-Wzero-length-array"
-#include <nanobind/nanobind.h>
-#pragma clang diagnostic pop
 
 namespace nb = nanobind;
 
