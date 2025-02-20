@@ -85,6 +85,9 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
   if (days < -3650000 || days > 3650000)
     return emitError()
            << "days must be in a range of [-3,650,000..3,650,000] days";
+  // The value of `seconds` should be within the range [-315,360,000,000..
+  // 315,360,000,000]. However, this exceeds the limits of int32_t (as required
+  // by the specification), making it untestable within the given constraints.
   return success();
 }
 
