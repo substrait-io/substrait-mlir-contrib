@@ -374,7 +374,6 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
-
   // Handle fixed char.
   if (mlir::isa<FixedCharType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
@@ -980,7 +979,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     std::string res(16, 0);
     llvm::StoreIntToMemory(uuid, reinterpret_cast<uint8_t *>(res.data()), 16);
     literal->set_uuid(res);
-  // `FixedCharType`.
+    // `FixedCharType`.
   } else if (auto fixedCharType = dyn_cast<FixedCharType>(literalType)) {
     literal->set_fixed_char(mlir::cast<StringAttr>(value).getValue().str());
   } else
