@@ -379,7 +379,6 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
-
   // Handle fixed char.
   if (mlir::isa<FixedCharType>(mlirType)) {
     // TODO(ingomueller): support other nullability modes.
