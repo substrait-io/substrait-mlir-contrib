@@ -30,7 +30,7 @@ using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
-namespace pb = google::protobuf;
+namespace _pb = google::protobuf;
 
 namespace {
 
@@ -76,7 +76,7 @@ struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
 
 DECLARE_IMPORT_FUNC(AggregateFunction, AggregateFunction, CallOp)
 DECLARE_IMPORT_FUNC(AggregateRel, Rel, AggregateOp)
-DECLARE_IMPORT_FUNC(Any, pb::Any, StringAttr)
+DECLARE_IMPORT_FUNC(Any, _pb::Any, StringAttr)
 DECLARE_IMPORT_FUNC(Cast, Expression::Cast, CastOp)
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
@@ -124,14 +124,14 @@ void importAdvancedExtension(ImplicitLocOpBuilder builder,
   // Import `optimization` field if present.
   StringAttr optimizationAttr;
   if (advancedExtension.has_optimization()) {
-    const pb::Any &optimization = advancedExtension.optimization();
+    const _pb::Any &optimization = advancedExtension.optimization();
     optimizationAttr = importAny(builder, optimization).value();
   }
 
   // Import `enhancement` field if present.
   StringAttr enhancementAttr;
   if (advancedExtension.has_enhancement()) {
-    const pb::Any &enhancement = advancedExtension.enhancement();
+    const _pb::Any &enhancement = advancedExtension.enhancement();
     enhancementAttr = importAny(builder, enhancement).value();
   }
 
@@ -143,7 +143,7 @@ void importAdvancedExtension(ImplicitLocOpBuilder builder,
 }
 
 FailureOr<StringAttr> importAny(ImplicitLocOpBuilder builder,
-                                const pb::Any &message) {
+                                const _pb::Any &message) {
   MLIRContext *context = builder.getContext();
   auto typeUrlAttr = StringAttr::get(context, message.type_url());
   auto anyType = AnyType::get(context, typeUrlAttr);
@@ -228,7 +228,7 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     // TODO(ingomueller): Support more types.
   default: {
     auto loc = UnknownLoc::get(context);
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         proto::Type::GetDescriptor()->FindFieldByNumber(kindCase);
     assert(desc && "could not get field descriptor");
     return emitError(loc) << "could not import unsupported type "
@@ -472,7 +472,7 @@ importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
   case Expression::REX_TYPE_NOT_SET:
     return emitError(loc) << Twine("expression type not set");
   default: {
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         Expression::GetDescriptor()->FindFieldByNumber(rex_type);
     return emitError(loc) << Twine("unsupported expression type: ") +
                                  desc->name();
@@ -495,7 +495,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
   auto [fieldNamesAttr, resultType] = importedNamedStruct.value();
 
   // Import `detail` attribute.
-  const pb::Any &detail = extensionTable.detail();
+  const _pb::Any &detail = extensionTable.detail();
   auto detailAttr = importAny(builder, detail).value();
 
   // Assemble final op.
@@ -677,7 +677,7 @@ importLiteral(ImplicitLocOpBuilder builder,
   }
   // TODO(ingomueller): Support more types.
   default: {
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         Expression::Literal::GetDescriptor()->FindFieldByNumber(literalType);
     return emitError(loc) << Twine("unsupported Literal type: ") + desc->name();
   }
@@ -876,7 +876,7 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
       break;
     }
     default:
-      const pb::FieldDescriptor *desc =
+      const _pb::FieldDescriptor *desc =
           SimpleExtensionDeclaration::GetDescriptor()->FindFieldByNumber(
               mappingCase);
       return emitError(loc)
@@ -899,7 +899,7 @@ static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
 
   if (!message.has_rel() && !message.has_root()) {
     PlanRel::RelTypeCase relType = message.rel_type_case();
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         PlanRel::GetDescriptor()->FindFieldByNumber(relType);
     return emitError(loc) << Twine("unsupported PlanRel type: ") + desc->name();
   }
@@ -1015,7 +1015,7 @@ importReadRel(ImplicitLocOpBuilder builder, const Rel &message) {
     return importNamedTable(builder, message);
   }
   default:
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         ReadRel::GetDescriptor()->FindFieldByNumber(readType);
     return emitError(loc) << Twine("unsupported ReadRel type: ") + desc->name();
   }
@@ -1054,7 +1054,7 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     maybeOp = importSetRel(builder, message);
     break;
   default:
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);
     return emitError(loc) << Twine("unsupported Rel type: ") + desc->name();
   }
@@ -1113,7 +1113,7 @@ FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
     // Error out on unsupported cases.
     // TODO(ingomueller): Support other function argument types.
     if (!arg.has_value()) {
-      const pb::FieldDescriptor *desc =
+      const _pb::FieldDescriptor *desc =
           FunctionArgument::GetDescriptor()->FindFieldByNumber(
               arg.arg_type_case());
       return emitError(loc) << Twine("unsupported arg type: ") + desc->name();
@@ -1148,7 +1148,7 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
   // Parse from serialized form into desired protobuf `MessageType`.
   switch (options.serdeFormat) {
   case SerdeFormat::kText:
-    if (!pb::TextFormat::ParseFromString(input.str(), &message)) {
+    if (!_pb::TextFormat::ParseFromString(input.str(), &message)) {
       emitError(loc) << "could not parse string as '" << message.GetTypeName()
                      << "' message.";
       return {};
@@ -1163,12 +1163,11 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
     break;
   case SerdeFormat::kJson:
   case SerdeFormat::kPrettyJson: {
-    pb::util::Status status =
-        pb::util::JsonStringToMessage(input.str(), &message);
+    auto status = _pb::util::JsonStringToMessage(input.str(), &message);
     if (!status.ok()) {
       emitError(loc) << "could not deserialize JSON as '"
                      << message.GetTypeName() << "' message:\n"
-                     << status.message().as_string();
+                     << std::string(status.message());
       return {};
     }
   }

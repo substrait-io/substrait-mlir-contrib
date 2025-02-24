@@ -15,7 +15,7 @@ using namespace mlir;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
-namespace pb = google::protobuf;
+namespace _pb = google::protobuf;
 
 namespace mlir::substrait::protobuf_utils {
 
@@ -44,7 +44,7 @@ FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
   case Rel::RelTypeCase::kSet:
     return getCommon(rel.set());
   default:
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);
     return emitError(loc) << Twine("unsupported Rel type: ") + desc->name();
   }
@@ -75,7 +75,7 @@ FailureOr<RelCommon *> getMutableCommon(Rel *rel, Location loc) {
   case Rel::RelTypeCase::kSet:
     return getMutableCommon(rel->mutable_set());
   default:
-    const pb::FieldDescriptor *desc =
+    const _pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);
     return emitError(loc) << Twine("unsupported Rel type: ") + desc->name();
   }
