@@ -98,6 +98,13 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
   return success();
 }
 
+
+LogicalResult mlir::substrait::VarCharType::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t length) {
+  if (length < 1 || length > 2147483647)
+    return emitError() << "length must be in a range of [1..2,147,483,647].";
+  return success();
+}
 //===----------------------------------------------------------------------===//
 // Substrait enums
 //===----------------------------------------------------------------------===//

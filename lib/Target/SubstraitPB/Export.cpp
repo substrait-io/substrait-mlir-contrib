@@ -998,7 +998,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   } else if (auto varCharType = dyn_cast<VarCharType>(literalType)) {
     auto varChar =
         std::make_unique<::substrait::proto::Expression_Literal_VarChar>();
-    varChar->set_length(mlir::cast<StringAttr>(value).size());
+    varChar->set_length(varCharType.getLength());
     varChar->set_value(mlir::cast<StringAttr>(value).getValue().str());
     literal->set_allocated_var_char(varChar.release());
   } else

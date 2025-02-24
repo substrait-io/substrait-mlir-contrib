@@ -97,10 +97,12 @@ def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
 def Substrait_VarCharType : Substrait_Type<"VarChar", "var_char"> {
   let summary = "Substrait variable-length char type";
   let description = [{
-    This type represents a substrait variable-length unicode string of at most L characters.
+    This type represents a substrait variable-length unicode string of at most L
+    characters.
   }];
   let parameters = (ins "int32_t":$length);
   let assemblyFormat = [{ `<` $length `>` }];
+  let genVerifyDecl = 1;
 }
 
 /// Currently supported atomic types, listed in order of substrait specification.

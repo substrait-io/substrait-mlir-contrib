@@ -22,7 +22,7 @@
 // CHECK-NEXT:          literal {
 // CHECK-NEXT:           var_char {
 // CHECK-NEXT:            value: "hello"
-// CHECK-NEXT:            length: 5
+// CHECK-NEXT:            length: 6
 // CHECK-NEXT:          }
 // CHECK-NEXT:        }
 // CHECK-NEXT:       }
