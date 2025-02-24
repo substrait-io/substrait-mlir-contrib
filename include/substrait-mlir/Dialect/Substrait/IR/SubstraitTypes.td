@@ -45,14 +45,14 @@ def Substrait_FixedCharType : Substrait_Type<"FixedChar", "fixed_char"> {
 def Substrait_IntervalDaySecondType : Substrait_Type<"IntervalDaySecond", "interval_day_second"> {
   let summary = "Substrait interval day to second type";
   let description = [{
-    This type represents a substrait interval day to second type. 
+    This type represents a substrait interval day to second type.
   }];
 }
 
 def Substrait_IntervalYearMonthType : Substrait_Type<"IntervalYearMonth", "interval_year_month"> {
   let summary = "Substrait interval year to month type";
   let description = [{
-    This type represents a substrait interval year to month type. 
+    This type represents a substrait interval year to month type.
   }];
 }
 
@@ -142,13 +142,25 @@ def Substrait_AnyType : Substrait_Type<"Any", "any"> {
 def Substrait_AtomicType : AnyTypeOf<Substrait_AtomicTypes.types>;
 
 /// Any container type, i.e., structs, maps, lists, and nestings thereof.
-def Substrait_ContainerType : AnyTypeOf<Substrait_ContainerTypes.types#[NestedTupleOf<Substrait_AtomicTypes.types>]>;
-
+def Substrait_ContainerType : AnyTypeOf<
+    Substrait_ContainerTypes.types#[
+        NestedTupleOf<Substrait_AtomicTypes.types>
+    ]
+>;
 /// One of the currently supported atomic or nested types.
 def Substrait_FieldType : AnyTypeOf<[
   Substrait_AtomicType,
   Substrait_ContainerType
 ]>;
+
+/// One of the types of the result of an expression.
+def Substrait_ResultExpressionType :
+    AnyTypeOf<
+        [
+            Substrait_AtomicType,
+            Substrait_ContainerType
+        ]
+    >;
 
 /// Placeholder for a proper relation type, the result of any `RelOpInterface`
 /// op.

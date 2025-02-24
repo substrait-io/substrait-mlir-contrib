@@ -217,6 +217,10 @@ def Substrait_AtomicAttribute : AnyAttrOf<Substrait_AtomicAttributes.attrs>;
 /// Attribute of one of the currently supported compound types.
 def Substrait_ContainerAttribute : AnyAttrOf<Substrait_ContainerAttributes.attrs>;
 
+/// Attribute of one of the currently supported atomic or compound types.
+def Substrait_LiteralAttribute : AnyAttrOf<[Substrait_AtomicAttribute,Substrait_ContainerAttribute]>;
+
+
 /// `ArrayAttr` of `ArrayAttr`s if `i64`s.
 def I64ArrayArrayAttr : TypedArrayAttrBase<
     I64ArrayAttr, "64-bit integer array array attribute"
