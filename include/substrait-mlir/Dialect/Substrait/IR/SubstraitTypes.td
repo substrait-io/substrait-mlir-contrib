@@ -40,6 +40,7 @@ def Substrait_FixedCharType : Substrait_Type<"FixedChar", "fixed_char"> {
   }];
   let parameters = (ins "int32_t":$length);
   let assemblyFormat = [{ `<` $length `>` }];
+  let genVerifyDecl = 1;
 }
 
 def Substrait_IntervalDaySecondType : Substrait_Type<"IntervalDaySecond", "interval_day_second"> {
