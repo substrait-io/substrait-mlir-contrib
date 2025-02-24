@@ -7,5 +7,5 @@ add_mlir_dialect_library(MLIRSubstraitDialect
   MLIRIR
 
   DEPENDS
-  MLIRSubstraitOpsIncGen
+  MLIRSubstraitIncGen
 )
