@@ -1497,12 +1497,9 @@ SubstraitExporter::exportOperation(Operation *op) {
 
 } // namespace
 
-namespace mlir {
-namespace substrait {
-
-LogicalResult
-translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
-                             substrait::ImportExportOptions options) {
+LogicalResult mlir::substrait::translateSubstraitToProtobuf(
+    Operation *op, llvm::raw_ostream &output,
+    substrait::ImportExportOptions options) {
   SubstraitExporter exporter;
   FailureOr<std::unique_ptr<_pb::Message>> result =
       exporter.exportOperation(op);
@@ -1542,6 +1539,3 @@ translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
   output << out;
   return success();
 }
-
-} // namespace substrait
-} // namespace mlir
