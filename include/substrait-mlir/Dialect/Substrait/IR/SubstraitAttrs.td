@@ -208,6 +208,7 @@ def Substrait_AtomicAttributes {
 def Substrait_ContainerAttributes {
   list<Attr> attrs = [
     TypedStrAttr<Substrait_FixedCharType>, // FixedChar
+    TypedStrAttr<Substrait_VarCharType>, // VarChar
   ];
 }
 
