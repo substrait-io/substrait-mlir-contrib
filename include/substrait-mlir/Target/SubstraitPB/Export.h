@@ -9,15 +9,12 @@
 #ifndef SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_EXPORT_H
 #define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_EXPORT_H
 
+#include "mlir/Support/LogicalResult.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace llvm {
-class LogicalResult;
-}
 namespace mlir {
 class Operation;
-using LogicalResult = llvm::LogicalResult;
 
 namespace substrait {
 

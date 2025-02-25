@@ -1499,7 +1499,7 @@ SubstraitExporter::exportOperation(Operation *op) {
 
 LogicalResult mlir::substrait::translateSubstraitToProtobuf(
     Operation *op, llvm::raw_ostream &output,
-    substrait::ImportExportOptions options) {
+    mlir::substrait::ImportExportOptions options) {
   SubstraitExporter exporter;
   FailureOr<std::unique_ptr<_pb::Message>> result =
       exporter.exportOperation(op);
