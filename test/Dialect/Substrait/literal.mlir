@@ -227,3 +227,26 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : tuple<si1, si1, si8, si16, si32, si64>
   }
 }
+
+// -----
+
+// CHECK:   substrait.plan version 0 : 42 : 1 {
+// CHECK-NEXT:           relation {
+// CHECK-NEXT:             %[[VAL_0:.*]] = named_table @t1 as ["a"] : tuple<si1>
+// CHECK-NEXT:             %[[VAL_1:.*]] = project %[[VAL_0]] : tuple<si1> -> tuple<si1, !substrait.decimal<10, 2>> {
+// CHECK-NEXT:             ^bb0(%[[VAL_2:.*]]: tuple<si1>):
+// CHECK-NEXT:               %[[VAL_3:.*]] = literal "123.45" : !substrait.decimal<10, 2>
+// CHECK-NEXT:               yield %[[VAL_3]] : !substrait.decimal<10, 2>
+// CHECK-NEXT:             }
+// CHECK-NEXT:             yield %[[VAL_1]] : tuple<si1, !substrait.decimal<10, 2>>
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.decimal<10, 2>> {
+    ^bb0(%arg : tuple<si1>):
+      %decimal = literal "123.45" : !substrait.decimal<10, 2>
+      yield %decimal :!substrait.decimal<10, 2>
+    }
+    yield %1 : tuple<si1, !substrait.decimal<10, 2>>
+  }
+}
