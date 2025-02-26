@@ -213,6 +213,11 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntervalDaySecondType::get(context);
   case proto::Type::kUuid:
     return UUIDType::get(context);
+  case proto::Type::kDecimal: {
+    const proto::Type::Decimal &decimalType = type.decimal();
+    return mlir::substrait::DecimalType::get(context, decimalType.precision(),
+                                             decimalType.scale());
+  }
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -675,6 +680,14 @@ importLiteral(ImplicitLocOpBuilder builder,
     auto attr = UUIDAttr::get(context, integer_attr);
     return builder.create<LiteralOp>(attr);
   }
+  case Expression::Literal::LiteralTypeCase::kDecimal: {
+    auto attr =
+        StringAttr::get(message.decimal().value(),
+                        DecimalType::get(context, message.decimal().precision(),
+                                         message.decimal().scale()));
+    return builder.create<LiteralOp>(attr);
+  }
+
   // TODO(ingomueller): Support more types.
   default: {
     const pb::FieldDescriptor *desc =

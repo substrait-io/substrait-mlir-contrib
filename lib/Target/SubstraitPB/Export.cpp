@@ -390,6 +390,21 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle decimal types.
+  if (auto decimalType = llvm::dyn_cast<DecimalType>(mlirType)) {
+    auto decimalTypeProto = std::make_unique<proto::Type::Decimal>();
+    decimalTypeProto->set_precision(decimalType.getPrecision());
+    decimalTypeProto->set_scale(decimalType.getScale());
+
+    // TODO(ingomueller): support other nullability modes.
+    decimalTypeProto->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_decimal(decimalTypeProto.release());
+    return std::move(type);
+  }
+
   // TODO(ingomueller): Support other types.
   return emitError(loc) << "could not export unsupported type " << mlirType;
 }
@@ -967,6 +982,15 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     std::string res(16, 0);
     llvm::StoreIntToMemory(uuid, reinterpret_cast<uint8_t *>(res.data()), 16);
     literal->set_uuid(res);
+  } else if (auto decimalType = dyn_cast<DecimalType>(literalType)) {
+    auto decimal =
+        std::make_unique<::substrait::proto::Expression_Literal_Decimal>();
+    auto decimalAttr = mlir::cast<StringAttr>(value);
+    std::string value = decimalAttr.getValue().str();
+    decimal->set_scale(decimalType.getScale());
+    decimal->set_precision(decimalType.getPrecision());
+    decimal->set_value(value);
+    literal->set_allocated_decimal(decimal.release());
   } else
     op->emitOpError("has unsupported value");
 

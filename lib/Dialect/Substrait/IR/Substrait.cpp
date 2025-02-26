@@ -92,6 +92,25 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
 }
 
 //===----------------------------------------------------------------------===//
+// Substrait types
+//===----------------------------------------------------------------------===//
+
+LogicalResult mlir::substrait::DecimalType::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t precision,
+    int32_t scale) {
+  if (precision > 38)
+    return emitError() << "precision must be in a range of [0..38] but got "
+                       << precision;
+
+  if (scale < 0 || scale > precision)
+    return emitError() << "scale must be in a range of [0..P] (P = "
+                       << precision << ")"
+                       << " but got " << scale;
+
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
 // Substrait enums
 //===----------------------------------------------------------------------===//
 
