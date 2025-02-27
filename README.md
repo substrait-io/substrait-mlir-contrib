@@ -199,15 +199,13 @@ for the `LLVM_EXTERNAL_PROJECTS` config setting).
 
 ### Prerequisites
 
-You need to have the following software installed and in your `PATH` or
-[discoverable](https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html)
-by CMake:
+You need to have the following software installed and in your `PATH`:
 
 * `git`
 * [`ninja`](<https://ninja-build.org/>)
-* [LLVM prerequisites](https://llvm.org/docs/GettingStarted.html#software) and a
+* [LLVM prerequisites](https://llvm.org/docs/GettingStarted.html#software)
+  including [CMake](https://cmake.org/download/) and a
   [C/C++ toolchain](https://llvm.org/docs/GettingStarted.html#host-c-toolchain-both-compiler-and-standard-library)
-* Protobuf >= 3.12 (compiler, runtime, and headers)
 
 ### Define Paths
 

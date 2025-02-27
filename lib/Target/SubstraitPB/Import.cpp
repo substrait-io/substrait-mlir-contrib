@@ -14,8 +14,11 @@
 #include "mlir/IR/OwningOpRef.h"
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
-#include "llvm/ADT/SmallSet.h"
 
+// TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
+// as system headers and remove the diagnostic fiddling here.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
@@ -23,6 +26,7 @@
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>
 #include <substrait/proto/type.pb.h>
+#pragma clang diagnostic pop
 
 using namespace mlir;
 using namespace mlir::substrait;
@@ -30,9 +34,9 @@ using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
-namespace pb = google::protobuf;
-
 namespace {
+
+namespace pb = ::google::protobuf;
 
 using ImportedNamedStruct = std::tuple<ArrayAttr, TupleType>;
 
@@ -1163,12 +1167,11 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
     break;
   case SerdeFormat::kJson:
   case SerdeFormat::kPrettyJson: {
-    pb::util::Status status =
-        pb::util::JsonStringToMessage(input.str(), &message);
+    absl::Status status = pb::util::JsonStringToMessage(input.str(), &message);
     if (!status.ok()) {
       emitError(loc) << "could not deserialize JSON as '"
                      << message.GetTypeName() << "' message:\n"
-                     << status.message().as_string();
+                     << status.message();
       return {};
     }
   }
