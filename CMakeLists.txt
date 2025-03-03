@@ -14,15 +14,6 @@ option(SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR
        OFF)
 
 ################################################################################
-# Set up dependencies
-################################################################################
-
-# Required for Substrait. v3.6.1 provided by Ubuntu 20.04 did not work due to
-# an incompatibility with `-fno-rtti`, which LLVM uses, while v3.12.4 provided
-# by Ubuntu 22.04 worked. Possibly some versions inbetween work as well.
-find_package(Protobuf 3.12.0 REQUIRED)
-
-################################################################################
 # Set some variables
 ################################################################################
 set(MLIR_MAIN_SRC_DIR ${LLVM_MAIN_SRC_DIR}/../mlir)
@@ -34,7 +25,7 @@ list(APPEND CMAKE_MODULE_PATH ${LLVM_MAIN_SRC_DIR}/cmake)
 set(MLIR_TABLEGEN_EXE mlir-tblgen)
 
 set(SUBSTRAIT_MLIR_MAIN_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(SUBSTRAIT_MLIR_INCLUDE_DIRS ${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/include)
+set(SUBSTRAIT_MLIR_INCLUDE_DIR ${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/include)
 set(SUBSTRAIT_MLIR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(SUBSTRAIT_MLIR_TABLEGEN_OUTPUT_DIR ${SUBSTRAIT_MLIR_BINARY_DIR}/include)
 message(STATUS "Substrait MLIR build directory: ${SUBSTRAIT_MLIR_BINARY_DIR}")
@@ -44,9 +35,8 @@ message(STATUS "Substrait MLIR build directory: ${SUBSTRAIT_MLIR_BINARY_DIR}")
 ################################################################################
 include_directories(SYSTEM ${MLIR_INCLUDE_DIR})
 include_directories(SYSTEM ${MLIR_TABLEGEN_OUTPUT_DIR})
-include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
 
-include_directories(${SUBSTRAIT_MLIR_INCLUDE_DIRS})
+include_directories(${SUBSTRAIT_MLIR_INCLUDE_DIR})
 include_directories(${SUBSTRAIT_MLIR_TABLEGEN_OUTPUT_DIR})
 
 ################################################################################

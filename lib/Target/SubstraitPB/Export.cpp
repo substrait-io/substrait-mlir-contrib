@@ -18,12 +18,17 @@
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
 
+// TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
+// as system headers and remove the diagnostic fiddling here.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
 #include <substrait/proto/algebra.pb.h>
 #include <substrait/proto/extensions/extensions.pb.h>
 #include <substrait/proto/plan.pb.h>
 #include <substrait/proto/type.pb.h>
+#pragma clang diagnostic pop
 
 using namespace mlir;
 using namespace mlir::substrait;
@@ -31,9 +36,9 @@ using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
-namespace pb = google::protobuf;
-
 namespace {
+
+namespace pb = ::google::protobuf;
 
 /// Main structure to drive export from the dialect to protobuf. This class
 /// holds the visitor functions for the various ops etc. from the dialect as
@@ -1523,6 +1528,8 @@ SubstraitExporter::exportOperation(Operation *op) {
 namespace mlir {
 namespace substrait {
 
+namespace pb = ::google::protobuf;
+
 LogicalResult
 translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
                              substrait::ImportExportOptions options) {
@@ -1547,10 +1554,10 @@ translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
     break;
   case substrait::SerdeFormat::kJson:
   case substrait::SerdeFormat::kPrettyJson: {
-    pb::util::JsonOptions jsonOptions;
+    pb::util::JsonPrintOptions jsonOptions;
     if (options.serdeFormat == SerdeFormat::kPrettyJson)
       jsonOptions.add_whitespace = true;
-    pb::util::Status status =
+    absl::Status status =
         pb::util::MessageToJsonString(*result.value(), &out, jsonOptions);
     if (!status.ok()) {
       InFlightDiagnostic diag =
