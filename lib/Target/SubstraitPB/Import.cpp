@@ -1201,7 +1201,7 @@ OwningOpRef<ModuleOp> mlir::substrait::translateProtobufToSubstraitPlan(
   return translateProtobufToSubstraitTopLevel(input, context, options, plan);
 }
 
-OwningOpRef<ModuleOp> translateProtobufToSubstraitPlanVersion(
+OwningOpRef<ModuleOp> mlir::substrait::translateProtobufToSubstraitPlanVersion(
     llvm::StringRef input, MLIRContext *context, ImportExportOptions options) {
   PlanVersion planVersion;
   return translateProtobufToSubstraitTopLevel(input, context, options,
