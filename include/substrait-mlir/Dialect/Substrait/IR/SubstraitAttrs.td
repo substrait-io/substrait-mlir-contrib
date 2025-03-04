@@ -176,6 +176,30 @@ def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
   ];
 }
 
+def Substrait_DecimalAttr : Substrait_StaticallyTypedAttr<"Decimal", "decimal",
+                                      "DecimalType"> {
+  let summary = "Substrait decimal type";
+  let description = [{
+    This type represents a substrait decimal attribute type. The attribute is backed
+    by an IntegerAttr `value` which stores the 128-bit decimal value as an APInt.
+  }];
+  let parameters = (ins "DecimalType":$type, "IntegerAttr":$value);
+  let genVerifyDecl = 1;
+
+  // #substrait.decimal<"{integer}.{fraction}" : !substrait.decimal<{P}, {S}>>
+  let hasCustomAssemblyFormat = 1;
+
+  let builders = [
+    // Builder that accepts a string representation of the decimal value.
+    AttrBuilder<(ins "DecimalType":$type, "StringRef":$value)>,
+  ];
+
+  let extraClassDeclaration = [{
+    // Returns a string representation of the decimal value.
+    std::string decimalStr() const;
+  }];
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers and constraints
 //===----------------------------------------------------------------------===//
@@ -193,7 +217,7 @@ def Substrait_AtomicAttributes {
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
     TypedStrAttr<Substrait_BinaryType>, // Binary
-    TypedStrAttr<Substrait_DecimalType>, // Decimal
+    Substrait_DecimalAttr, // Decimal
     Substrait_TimestampAttr, // Timestamp
     Substrait_TimestampTzAttr, // TimestampTZ
     Substrait_DateAttr, // Date

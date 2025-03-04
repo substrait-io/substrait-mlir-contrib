@@ -230,23 +230,15 @@ substrait.plan version 0 : 42 : 1 {
 
 // -----
 
-// CHECK:   substrait.plan version 0 : 42 : 1 {
-// CHECK-NEXT:           relation {
-// CHECK-NEXT:             %[[VAL_0:.*]] = named_table @t1 as ["a"] : tuple<si1>
-// CHECK-NEXT:             %[[VAL_1:.*]] = project %[[VAL_0]] : tuple<si1> -> tuple<si1, !substrait.decimal<10, 2>> {
-// CHECK-NEXT:             ^bb0(%[[VAL_2:.*]]: tuple<si1>):
-// CHECK-NEXT:               %[[VAL_3:.*]] = literal "123.45" : !substrait.decimal<10, 2>
-// CHECK-NEXT:               yield %[[VAL_3]] : !substrait.decimal<10, 2>
-// CHECK-NEXT:             }
-// CHECK-NEXT:             yield %[[VAL_1]] : tuple<si1, !substrait.decimal<10, 2>>
-substrait.plan version 0 : 42 : 1 {
-  relation {
-    %0 = named_table @t1 as ["a"] : tuple<si1>
-    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.decimal<10, 2>> {
-    ^bb0(%arg : tuple<si1>):
-      %decimal = literal "123.45" : !substrait.decimal<10, 2>
-      yield %decimal :!substrait.decimal<10, 2>
-    }
-    yield %1 : tuple<si1, !substrait.decimal<10, 2>>
-  }
-}
+// CHECK:         %[[VAL_8:.*]] = substrait.literal #substrait.decimal<"1234567.89" : !substrait.decimal<9, 2>>
+// CHECK:         %[[VAL_9:.*]] = substrait.literal #substrait.decimal<"0.123" : !substrait.decimal<3, 3>>
+// CHECK:         %[[VAL_10:.*]] = substrait.literal #substrait.decimal<"0.123" : !substrait.decimal<3, 3>>
+// CHECK:         %[[VAL_11:.*]] = substrait.literal #substrait.decimal<"123.0" : !substrait.decimal<3, 0>>
+// CHECK:         %[[VAL_12:.*]] = substrait.literal #substrait.decimal<"123.0" : !substrait.decimal<3, 0>>
+// CHECK:         %[[VAL_13:.*]] = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2" : !substrait.decimal<38, 1>>
+%d0 = substrait.literal #substrait.decimal<"1234567.89" : !substrait.decimal<9, 2>>
+%d1 = substrait.literal #substrait.decimal<"0.123" : !substrait.decimal<3, 3>>
+%d2 = substrait.literal #substrait.decimal<"000.123" : !substrait.decimal<3, 3>>
+%d3 = substrait.literal #substrait.decimal<"123.0" : !substrait.decimal<3, 0>>
+%d4 = substrait.literal #substrait.decimal<"123.000" : !substrait.decimal<3, 0>>
+%d5 = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2" : !substrait.decimal<38, 1>>

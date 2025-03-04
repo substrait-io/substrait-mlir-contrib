@@ -298,3 +298,34 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : tuple<si1, si1, si8, si16, si32, si64>
   }
 }
+
+// -----
+
+
+// CHECK: relations {
+// CHECK-NEXT:   rel {
+// CHECK-NEXT:     project {
+// CHECK-NEXT:       common {
+// CHECK-NEXT:         direct {
+// CHECK-NEXT:         }
+// CHECK-NEXT:       }
+// CHECK-NEXT:       input {
+// CHECK-NEXT:         read {
+// CHECK:       expressions {
+// CHECK-NEXT:         literal {
+// CHECK-NEXT:           decimal {
+// CHECK-NEXT:             value: "\005\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
+// CHECK-NEXT:             precision: 9
+// CHECK-NEXT:             scale: 2
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.decimal<9, 2>> {
+    ^bb0(%arg : tuple<si1>):
+      %hi = literal #substrait.decimal<"0.05" : !substrait.decimal<9, 2>>
+      yield %hi : !substrait.decimal<9, 2>
+    }
+    yield %1 : tuple<si1, !substrait.decimal<9, 2>>
+  }
+}

@@ -7,8 +7,3 @@
 
 // expected-error@+1 {{scale must be in a range of [0..P] (P = 3) but got 4}}
 %0 = substrait.literal "0.42" : !substrait.decimal<3, 4>
-
-// -----
-
-// expected-error@+1 {{scale must be in a range of [0..P] (P = 3) but got -1}}
-%0 = substrait.literal "0.42" : !substrait.decimal<3, -1>

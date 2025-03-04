@@ -685,10 +685,15 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kDecimal: {
-    auto attr =
-        StringAttr::get(message.decimal().value(),
-                        DecimalType::get(context, message.decimal().precision(),
-                                         message.decimal().scale()));
+    APInt var(128, 0);
+    llvm::LoadIntFromMemory(
+        var,
+        reinterpret_cast<const uint8_t *>(message.decimal().value().data()),
+        16);
+    DecimalType type = DecimalType::get(context, message.decimal().precision(),
+                                        message.decimal().scale());
+    IntegerAttr value = IntegerAttr::get(IntegerType::get(context, 128), var);
+    auto attr = DecimalAttr::get(context, type, value);
     return builder.create<LiteralOp>(attr);
   }
 

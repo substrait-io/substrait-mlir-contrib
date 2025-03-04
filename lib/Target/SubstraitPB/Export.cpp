@@ -987,14 +987,17 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     std::string res(16, 0);
     llvm::StoreIntToMemory(uuid, reinterpret_cast<uint8_t *>(res.data()), 16);
     literal->set_uuid(res);
-  } else if (auto decimalType = dyn_cast<DecimalType>(literalType)) {
+  } // `DecimalType`.
+  else if (auto decimalType = dyn_cast<DecimalType>(literalType)) {
     auto decimal =
         std::make_unique<::substrait::proto::Expression_Literal_Decimal>();
-    auto decimalAttr = mlir::cast<StringAttr>(value);
-    std::string value = decimalAttr.getValue().str();
+    auto decimalAttr = mlir::cast<DecimalAttr>(value);
+    APInt value = decimalAttr.getValue().getValue();
+    std::string res(16, 0);
+    llvm::StoreIntToMemory(value, reinterpret_cast<uint8_t *>(res.data()), 16);
     decimal->set_scale(decimalType.getScale());
     decimal->set_precision(decimalType.getPrecision());
-    decimal->set_value(value);
+    decimal->set_value(res);
     literal->set_allocated_decimal(decimal.release());
   } else
     op->emitOpError("has unsupported value");

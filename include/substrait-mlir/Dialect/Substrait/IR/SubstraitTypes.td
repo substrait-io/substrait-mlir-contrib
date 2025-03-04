@@ -89,7 +89,7 @@ def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
   let description = [{
     This type represents a substrait decimal type.
   }];
-  let parameters = (ins "int32_t":$precision, "int32_t":$scale);
+  let parameters = (ins "uint32_t":$precision, "uint32_t":$scale);
   let assemblyFormat = "`<` $precision `,` $scale `>`";
   let genVerifyDecl = 1;
 }

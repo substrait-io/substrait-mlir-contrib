@@ -13,6 +13,7 @@
 #include "mlir/Support/LogicalResult.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/TypeSwitch.h" // IWYU pragma: keep
+#include "llvm/Support/Regex.h"
 
 using namespace mlir;
 using namespace mlir::substrait;
@@ -96,18 +97,144 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
 //===----------------------------------------------------------------------===//
 
 LogicalResult mlir::substrait::DecimalType::verify(
-    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t precision,
-    int32_t scale) {
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
+    uint32_t precision, uint32_t scale) {
   if (precision > 38)
     return emitError() << "precision must be in a range of [0..38] but got "
                        << precision;
 
-  if (scale < 0 || scale > precision)
+  if (scale > precision)
     return emitError() << "scale must be in a range of [0..P] (P = "
-                       << precision << ")"
-                       << " but got " << scale;
+                       << precision << ") but got " << scale;
 
   return success();
+}
+
+// Count the number of digits in an APInt in base 10.
+static size_t countDigits(const APInt &value) {
+  llvm::SmallVector<char> buffer;
+  value.toString(buffer, 10, /*isSigned=*/false);
+  return buffer.size();
+}
+
+LogicalResult mlir::substrait::DecimalAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, DecimalType type,
+    IntegerAttr value) {
+
+  if (value.getType().getIntOrFloatBitWidth() != 128)
+    return emitError() << "value must be a 128-bit integer";
+
+  // Max 38 digits.
+  size_t nDigits = countDigits(value.getValue());
+  size_t P = type.getPrecision();
+  if (nDigits > P)
+    return emitError() << "value must have at most '" << P
+                       << "' digits as per "
+                          "the type '"
+                       << type << "' but got " << nDigits;
+
+  return success();
+}
+
+std::string DecimalAttr::decimalStr() const {
+  SmallVector<char> buffer;
+  getValue().getValue().toString(buffer, 10, /*isSigned=*/false);
+  size_t scale = getType().getScale();
+
+  if (scale >= buffer.size()) {
+    // < 0; shift in the decimal point and add a leading zero.
+    buffer.insert(buffer.begin(), scale - buffer.size(), '0');
+    buffer.insert(buffer.begin(), {'0', '.'});
+    return std::string(buffer.begin(), buffer.end());
+  }
+
+  // Insert the decimal point, and possibly a trailing zero.
+  buffer.insert(buffer.end() - scale, '.');
+  if (scale == 0)
+    buffer.push_back('0');
+
+  return std::string(buffer.begin(), buffer.end());
+}
+
+Attribute DecimalAttr::parse(AsmParser &odsParser, Type odsType) {
+  Builder odsBuilder(odsParser.getContext());
+  ::llvm::SMLoc odsLoc = odsParser.getCurrentLocation();
+  DecimalType type;
+  if (odsParser.parseLess())
+    return {};
+
+  std::string value;
+  if (odsParser.parseString(&value) || odsParser.parseColon() ||
+      odsParser.parseType(type))
+    return {};
+
+  if (odsParser.parseGreater())
+    return {};
+
+  return odsParser.getChecked<DecimalAttr>(odsLoc, odsParser.getContext(), type,
+                                           mlir::StringRef(value));
+}
+
+void DecimalAttr::print(AsmPrinter &odsPrinter) const {
+  Builder odsBuilder(getContext());
+  odsPrinter << "<";
+  odsPrinter << "\"" << decimalStr() << "\"";
+  odsPrinter << " : ";
+  odsPrinter.printType(getType());
+  odsPrinter << ">";
+}
+
+DecimalAttr DecimalAttr::get(::mlir::MLIRContext *context, DecimalType type,
+                             StringRef value) {
+  return getChecked(nullptr, context, type, value);
+}
+DecimalAttr DecimalAttr::getChecked(
+    ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError,
+    ::mlir::MLIRContext *context, DecimalType type, StringRef value) {
+  // Sanity check: contains only digits and a single decimal point.
+  static constexpr std::string_view regex = "^[0-9]+\\.[0-9]+$";
+  auto r = llvm::Regex(regex);
+  if (!r.match(value)) {
+    emitError() << "invalid decimal value: " << value;
+    return nullptr;
+  }
+
+  // Trim trailing zeros.
+  size_t lastNonZero = value.find_last_not_of('0');
+  if (lastNonZero == StringRef::npos)
+    lastNonZero = value.size() - 1;
+  value = value.substr(0, lastNonZero + 1);
+
+  // Verify scale.
+  size_t decimalPos = value.find('.');
+  size_t detectedScale = value.size() - decimalPos - 1;
+  if (detectedScale != type.getScale()) {
+    emitError()
+        << "decimal value has incorrect number of digits after the decimal "
+           "point: "
+        << value << ". Expected " << type.getScale() << " as per the type "
+        << type;
+    return nullptr;
+  }
+
+  // Parse the value by removing the decimal point.
+  std::string baseValueStr = value.str();
+  baseValueStr.erase(std::remove(baseValueStr.begin(), baseValueStr.end(), '.'),
+                     baseValueStr.end());
+
+  size_t nDigits = baseValueStr.size();
+
+  if (nDigits > 38) {
+    emitError() << "decimal value has too many digits (" << nDigits
+                << "). Expected at most 38 digits";
+    return nullptr;
+  }
+
+  APInt intValue(128, baseValueStr, 10);
+  return DecimalAttr::getChecked(
+      emitError, context, type,
+      IntegerAttr::getChecked(emitError, IntegerType::get(context, 128),
+                              intValue));
 }
 
 //===----------------------------------------------------------------------===//
