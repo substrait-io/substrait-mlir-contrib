@@ -113,11 +113,11 @@ jobs:
     steps:
     - name: Compute substrait-mlir base path
       run: |
-        echo "SUBSTRAIT_MLIR_MAIN_SRC_DIR=${GITHUB_WORKSPACE}/substrait-mlir" | Out-File -Append -FilePath $env:GITHUB_ENV
-        echo "SUBSTRAIT_MLIR_MAIN_BINARY_DIR=${GITHUB_WORKSPACE}/substrait-mlir/build" | Out-File -Append -FilePath $env:GITHUB_ENV
-        echo "LLVM_SYSPATH=${GITHUB_WORKSPACE}/substrait-mlir/build" | Out-File -Append -FilePath $env:GITHUB_ENV
-        echo "MLIR_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_runner_utils.dll" | Out-File -Append -FilePath $env:GITHUB_ENV
-        echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_c_runner_utils.dll" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "SUBSTRAIT_MLIR_MAIN_SRC_DIR=${GITHUB_WORKSPACE}\substrait-mlir" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "SUBSTRAIT_MLIR_MAIN_BINARY_DIR=${GITHUB_WORKSPACE}\substrait-mlir/build" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "LLVM_SYSPATH=${GITHUB_WORKSPACE}\substrait-mlir/build" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "MLIR_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}\substrait-mlir/build/lib/libmlir_runner_utils.dll" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}\substrait-mlir/build/lib/libmlir_c_runner_utils.dll" | Out-File -Append -FilePath $env:GITHUB_ENV
 
     - name: Set up Python
       uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
