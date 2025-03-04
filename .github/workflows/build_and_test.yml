@@ -148,6 +148,7 @@ jobs:
 
     - name: Configure CMake
       run: |
+        $ErrorActionPreference = 'Stop'
         & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
         cmake `
           -DPython3_EXECUTABLE=$(where python) `
@@ -175,9 +176,12 @@ jobs:
 
     - name: Build main project
       run: |
+        $ErrorActionPreference = 'Stop'
+        & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
         cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target substrait-mlir-all
         ccache -s
 
     - name: Run lit tests
       run: |
+        & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
         cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target check-substrait-mlir
