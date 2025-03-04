@@ -143,13 +143,12 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        ls ${env:GITHUB_WORKSPACE}
         cd "$env:GITHUB_WORKSPACE\substrait-mlir"
         python -m pip install -v -r requirements.txt
 
     - name: Configure CMake
       run: |
-        .\$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1
+        & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
         cmake `
           -DPython3_EXECUTABLE=$(where python) `
           -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE `
