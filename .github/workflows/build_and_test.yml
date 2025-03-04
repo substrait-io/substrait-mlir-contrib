@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: CMake Build and Test (Release Asserts)
+  ubuntu-build-and-test:
+    name: Ubuntu build and test (Release Asserts)
     runs-on: ubuntu-22.04
     env:
       LLVM_SYMBOLIZER_PATH: /usr/lib/llvm-14/bin/llvm-symbolizer
@@ -106,3 +106,90 @@ jobs:
         stats: true
         working-directory: substrait-mlir
         project: pyproject.toml
+
+  windows-build-and-test:
+    name: Windows build and test (Release Asserts)
+    runs-on: windows-latest
+    steps:
+    - name: Compute substrait-mlir base path
+      run: |
+        echo "SUBSTRAIT_MLIR_MAIN_SRC_DIR=${GITHUB_WORKSPACE}/substrait-mlir" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "SUBSTRAIT_MLIR_MAIN_BINARY_DIR=${GITHUB_WORKSPACE}/substrait-mlir/build" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "LLVM_SYSPATH=${GITHUB_WORKSPACE}/substrait-mlir/build" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "MLIR_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_runner_utils.dll" | Out-File -Append -FilePath $env:GITHUB_ENV
+        echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_c_runner_utils.dll" | Out-File -Append -FilePath $env:GITHUB_ENV
+
+    - name: Set up Python
+      uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
+      with:
+        python-version: 3.11
+
+    - name: Cache git folder
+      uses: actions/cache@v4
+      with:
+        path: substrait-mlir/.git
+        key: git-folder
+
+    - name: Checkout project
+      uses: actions/checkout@v3
+      with:
+        path: substrait-mlir
+        submodules: recursive
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Ccache for C++ compilation
+      uses: hendrikmuhs/ccache-action@53911442209d5c18de8a31615e0923161e435875 # v1.2.16
+      with:
+        key: ${{ runner.os }}-substrait-mlir
+        # LLVM needs serious cache size
+        max-size: 6G
+
+    - name: Install Python dependencies
+      run: |
+        echo "Github workspace:"
+        dir ${GITHUB_WORKSPACE}
+        echo "Substrait-mlir directory:"
+        dir ${env:SUBSTRAIT_MLIR_MAIN_SRC_DIR}
+
+        cd ${env:SUBSTRAIT_MLIR_MAIN_SRC_DIR}
+        python -m pip install -v -r requirements.txt
+
+    - name: Configure CMake
+      run: |
+        .\${env:SUBSTRAIT_MLIR_MAIN_SRC_DIR}\utils\find_vs.ps1
+        cmake `
+          -DPython3_EXECUTABLE=$(where python) `
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE `
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+          -DLLVM_ENABLE_PROJECTS="mlir" `
+          -DLLVM_TARGETS_TO_BUILD="Native" `
+          -DLLVM_ENABLE_ASSERTIONS=ON `
+          -DLLVM_INCLUDE_TESTS=OFF `
+          -DLLVM_INCLUDE_UTILS=ON `
+          -DLLVM_INSTALL_UTILS=ON `
+          -DLLVM_LIT_ARGS=-v `
+          -DLLVM_EXTERNAL_PROJECTS=substrait_mlir `
+          -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR=${env:SUBSTRAIT_MLIR_MAIN_SRC_DIR} `
+          -DLLVM_ENABLE_LLD=ON `
+          -DLLVM_CCACHE_BUILD=ON `
+          -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
+          -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
+          -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
+          -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=ON `
+          -S${env:SUBSTRAIT_MLIR_MAIN_SRC_DIR}\third_party\llvm-project\llvm `
+          -B${env:SUBSTRAIT_MLIR_MAIN_BINARY_DIR} -G Ninja
+        echo "PYTHONPATH=${env:PYTHONPATH}:${env:SUBSTRAIT_MLIR_MAIN_BINARY_DIR}\tools\substrait_mlir\python_packages" | Out-File -Append -FilePath $env:GITHUB_ENV
+
+    - name: Build main project
+      run: |
+        cmake --build ${env:SUBSTRAIT_MLIR_MAIN_BINARY_DIR} --target substrait-mlir-all
+        ccache -s
+
+    - name: Run lit tests
+      run: |
+        cmake --build ${env:SUBSTRAIT_MLIR_MAIN_BINARY_DIR} --target check-substrait-mlir
