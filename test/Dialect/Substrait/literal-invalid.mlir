@@ -6,7 +6,7 @@
 
 // -----
 
-// expected-error@+1 {{decimal value has incorrect number of digits after the decimal point: 123.453. Expected 2 as per the type '!substrait.decimal<10, 2>'}}
+// expected-error@+1 {{decimal value has incorrect number of digits after the decimal point (3). Expected <=2 as per the type '!substrait.decimal<10, 2>'}}
 %d0 = substrait.literal #substrait.decimal<"123.453" : !substrait.decimal<10, 2>>
 
 // -----

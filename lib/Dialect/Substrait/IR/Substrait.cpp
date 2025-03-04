@@ -129,9 +129,8 @@ LogicalResult mlir::substrait::DecimalAttr::verify(
   size_t P = type.getPrecision();
   if (nDigits > P)
     return emitError() << "value must have at most '" << P
-                       << "' digits as per "
-                          "the type '"
-                       << type << "' but got " << nDigits;
+                       << "' digits as per the type '" << type << "' but got "
+                       << nDigits;
 
   return success();
 }
@@ -139,21 +138,36 @@ LogicalResult mlir::substrait::DecimalAttr::verify(
 std::string DecimalAttr::decimalStr() const {
   SmallVector<char> buffer;
   getValue().getValue().toString(buffer, 10, /*isSigned=*/false);
+
+  // Pad buffer up to P digits with leading zeros.
+  buffer.insert(buffer.begin(), getType().getPrecision() - buffer.size(), '0');
+
   size_t scale = getType().getScale();
+  assert(scale <= buffer.size() && "scale must be <= precision");
 
-  if (scale >= buffer.size()) {
-    // < 0; shift in the decimal point and add a leading zero.
-    buffer.insert(buffer.begin(), scale - buffer.size(), '0');
-    buffer.insert(buffer.begin(), {'0', '.'});
-    return std::string(buffer.begin(), buffer.end());
-  }
-
-  // Insert the decimal point, and possibly a trailing zero.
+  // Insert the decimal point.
   buffer.insert(buffer.end() - scale, '.');
-  if (scale == 0)
-    buffer.push_back('0');
 
-  return std::string(buffer.begin(), buffer.end());
+  // Trim trailing and leading zeros
+  auto ref = StringRef(buffer.data(), buffer.size());
+  size_t firstNonZero = ref.find_first_not_of('0');
+  if (firstNonZero != StringRef::npos)
+    ref = ref.drop_front(firstNonZero);
+
+  size_t lastNonZero = ref.find_last_not_of('0');
+  if (lastNonZero != StringRef::npos)
+    ref = ref.substr(0, lastNonZero + 1);
+
+  std::string res = ref.str();
+
+  // Edge cases: no integer and no fractional parts. In these cases, we want to
+  // have a single trailing/leading zero.
+  if (res.front() == '.')
+    res = "0" + res;
+  if (res.back() == '.')
+    res = res + "0";
+
+  return res;
 }
 
 Attribute DecimalAttr::parse(AsmParser &odsParser, Type odsType) {
@@ -208,17 +222,23 @@ DecimalAttr DecimalAttr::getChecked(
   // Verify scale.
   size_t decimalPos = value.find('.');
   size_t detectedScale = value.size() - decimalPos - 1;
-  if (detectedScale != type.getScale()) {
+  if (detectedScale > type.getScale()) {
     emitError()
         << "decimal value has incorrect number of digits after the decimal "
-           "point: "
-        << value << ". Expected " << type.getScale() << " as per the type "
-        << type;
+        << "point (" << detectedScale << "). Expected <=" << type.getScale()
+        << " as per the type " << type;
     return nullptr;
   }
 
-  // Parse the value by removing the decimal point.
+  // Add trailing zeros if necessary (detectedScale != type.getScale()). This is
+  // required to be able to represent values where the number of digits after
+  // the decimal point is less than the scale.
   std::string baseValueStr = value.str();
+  if (detectedScale < type.getScale()) {
+    baseValueStr.append(type.getScale() - detectedScale, '0');
+  }
+
+  // Parse the value by removing the decimal point.
   baseValueStr.erase(std::remove(baseValueStr.begin(), baseValueStr.end(), '.'),
                      baseValueStr.end());
 
@@ -231,10 +251,9 @@ DecimalAttr DecimalAttr::getChecked(
   }
 
   APInt intValue(128, baseValueStr, 10);
-  return DecimalAttr::getChecked(
-      emitError, context, type,
-      IntegerAttr::getChecked(emitError, IntegerType::get(context, 128),
-                              intValue));
+  auto iType = IntegerType::get(context, 128);
+  auto iAttr = IntegerAttr::getChecked(emitError, iType, intValue);
+  return DecimalAttr::getChecked(emitError, context, type, iAttr);
 }
 
 //===----------------------------------------------------------------------===//
