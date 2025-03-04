@@ -217,6 +217,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return IntervalDaySecondType::get(context);
   case proto::Type::kUuid:
     return UUIDType::get(context);
+  case proto::Type::kFixedChar:
+    return FixedCharType::get(context, type.fixed_char().length());
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -677,6 +679,12 @@ importLiteral(ImplicitLocOpBuilder builder,
     IntegerAttr integer_attr =
         IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = UUIDAttr::get(context, integer_attr);
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFixedChar: {
+    auto attr = StringAttr::get(
+        message.fixed_char(),
+        FixedCharType::get(context, message.fixed_char().size()));
     return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.
