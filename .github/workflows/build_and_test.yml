@@ -143,12 +143,13 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        cd ${GITHUB_WORKSPACE}\substrait-mlir
+        ls ${env:GITHUB_WORKSPACE}
+        cd "$env:GITHUB_WORKSPACE\substrait-mlir"
         python -m pip install -v -r requirements.txt
 
     - name: Configure CMake
       run: |
-        .\${GITHUB_WORKSPACE}\substrait-mlir\utils\find_vs.ps1
+        .\$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1
         cmake `
           -DPython3_EXECUTABLE=$(where python) `
           -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE `
@@ -161,22 +162,22 @@ jobs:
           -DLLVM_INSTALL_UTILS=ON `
           -DLLVM_LIT_ARGS=-v `
           -DLLVM_EXTERNAL_PROJECTS=substrait_mlir `
-          -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR=${GITHUB_WORKSPACE}\substrait-mlir `
+          -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR=$env:GITHUB_WORKSPACE\substrait-mlir `
           -DLLVM_ENABLE_LLD=ON `
           -DLLVM_CCACHE_BUILD=ON `
           -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
           -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=ON `
-          -S${GITHUB_WORKSPACE}\substrait-mlir\third_party\llvm-project\llvm `
-          -B${GITHUB_WORKSPACE}\substrait-mlir\build -G Ninja
-        echo "PYTHONPATH=${env:PYTHONPATH}:${GITHUB_WORKSPACE}\substrait-mlir\build\tools\substrait_mlir\python_packages" | Out-File -Append -FilePath $env:GITHUB_ENV
+          -S$env:GITHUB_WORKSPACE\substrait-mlir\third_party\llvm-project\llvm `
+          -B$env:GITHUB_WORKSPACE\substrait-mlir\build -G Ninja
+        echo "PYTHONPATH=${env:PYTHONPATH}:$env:GITHUB_WORKSPACE\substrait-mlir\build\tools\substrait_mlir\python_packages" | Out-File -Append -FilePath $env:GITHUB_ENV
 
     - name: Build main project
       run: |
-        cmake --build ${GITHUB_WORKSPACE}\substrait-mlir\build --target substrait-mlir-all
+        cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target substrait-mlir-all
         ccache -s
 
     - name: Run lit tests
       run: |
-        cmake --build ${GITHUB_WORKSPACE}\substrait-mlir\build --target check-substrait-mlir
+        cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target check-substrait-mlir
