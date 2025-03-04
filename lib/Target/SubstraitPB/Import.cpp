@@ -1194,12 +1194,8 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
 
 } // namespace
 
-namespace mlir {
-namespace substrait {
-
-OwningOpRef<ModuleOp>
-translateProtobufToSubstraitPlan(llvm::StringRef input, MLIRContext *context,
-                                 ImportExportOptions options) {
+OwningOpRef<ModuleOp> mlir::substrait::translateProtobufToSubstraitPlan(
+    llvm::StringRef input, MLIRContext *context, ImportExportOptions options) {
 
   Plan plan;
   return translateProtobufToSubstraitTopLevel(input, context, options, plan);
@@ -1211,6 +1207,3 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitPlanVersion(
   return translateProtobufToSubstraitTopLevel(input, context, options,
                                               planVersion);
 }
-
-} // namespace substrait
-} // namespace mlir
