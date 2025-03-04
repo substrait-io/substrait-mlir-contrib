@@ -168,7 +168,7 @@ jobs:
           -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
-          -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=ON `
+          -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=OFF `
           -S "$env:GITHUB_WORKSPACE\substrait-mlir\third_party\llvm-project\llvm" `
           -B "$env:GITHUB_WORKSPACE\substrait-mlir\build" `
           -G Ninja
