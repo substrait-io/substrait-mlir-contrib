@@ -51,13 +51,6 @@ include(MLIRDetectPythonEnv)
 mlir_configure_python_dev_packages()
 
 ################################################################################
-# Enable LLVM stuff
-################################################################################
-include(TableGen)
-include(AddLLVM)
-include(AddMLIR)
-
-################################################################################
 # Dependencies from git sub-modules
 ################################################################################
 add_subdirectory(third_party)
