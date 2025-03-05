@@ -17,7 +17,7 @@ if(${LLVM_INCLUDE_TESTS})
 endif()
 
 # Propagate zlib settings to protobuf build.
-set(protobuf_WITH_ZLIB ${LLVM_ENABLE_ZLIB} CACHE BOOL "")
+set(protobuf_WITH_ZLIB ${LLVM_ENABLE_ZLIB} CACHE BOOL "" FORCE)
 
 # Add `substrait-cpp` as a subdirectory with above settings.
 set(SUBSTRAIT_CPP_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/substrait-cpp)
