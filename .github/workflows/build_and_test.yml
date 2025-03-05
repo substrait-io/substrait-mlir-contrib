@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: CMake Build and Test (Release Asserts)
+  ubuntu-build-and-test:
+    name: Ubuntu build and test (Release Asserts)
     runs-on: ubuntu-22.04
     env:
       LLVM_SYMBOLIZER_PATH: /usr/lib/llvm-14/bin/llvm-symbolizer
@@ -106,3 +106,83 @@ jobs:
         stats: true
         working-directory: substrait-mlir
         project: pyproject.toml
+
+  windows-build-and-test:
+    name: Windows build and test (Release Asserts)
+    runs-on: windows-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
+      with:
+        python-version: 3.11
+
+    - name: Cache git folder
+      uses: actions/cache@v4
+      with:
+        path: substrait-mlir/.git
+        key: git-folder
+
+    - name: Checkout project
+      uses: actions/checkout@v3
+      with:
+        path: substrait-mlir
+        submodules: recursive
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Ccache for C++ compilation
+      uses: hendrikmuhs/ccache-action@53911442209d5c18de8a31615e0923161e435875 # v1.2.16
+      with:
+        key: ${{ runner.os }}-substrait-mlir
+        # LLVM needs serious cache size
+        max-size: 6G
+
+    - name: Install Python dependencies
+      run: |
+        cd "$env:GITHUB_WORKSPACE\substrait-mlir"
+        python -m pip install -v -r requirements.txt
+
+    - name: Configure CMake
+      run: |
+        $ErrorActionPreference = 'Stop'
+        & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
+        cmake `
+          -DPython3_EXECUTABLE=$(where python) `
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE `
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+          -DLLVM_ENABLE_PROJECTS="mlir" `
+          -DLLVM_TARGETS_TO_BUILD="Native" `
+          -DLLVM_ENABLE_ASSERTIONS=ON `
+          -DLLVM_INCLUDE_TESTS=OFF `
+          -DLLVM_INCLUDE_UTILS=ON `
+          -DLLVM_INSTALL_UTILS=ON `
+          -DLLVM_LIT_ARGS=-v `
+          -DLLVM_EXTERNAL_PROJECTS=substrait_mlir `
+          -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR="$env:GITHUB_WORKSPACE\substrait-mlir" `
+          -DLLVM_ENABLE_LLD=ON `
+          -DLLVM_CCACHE_BUILD=ON `
+          -DLLVM_ENABLE_ZLIB=OFF `
+          -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
+          -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
+          -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
+          -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=OFF `
+          -S "$env:GITHUB_WORKSPACE\substrait-mlir\third_party\llvm-project\llvm" `
+          -B "$env:GITHUB_WORKSPACE\substrait-mlir\build" `
+          -G Ninja
+        echo "PYTHONPATH=${env:PYTHONPATH}:$env:GITHUB_WORKSPACE\substrait-mlir\build\tools\substrait_mlir\python_packages" | Out-File -Append -FilePath $env:GITHUB_ENV
+
+    - name: Build main project
+      run: |
+        $ErrorActionPreference = 'Stop'
+        & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
+        cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target substrait-mlir-all
+        ccache -s
+
+    - name: Run lit tests
+      run: |
+        & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
+        cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target check-substrait-mlir
