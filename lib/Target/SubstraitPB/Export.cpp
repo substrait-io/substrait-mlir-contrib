@@ -1501,9 +1501,9 @@ SubstraitExporter::exportOperation(Operation *op) {
 
 } // namespace
 
-mlir::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
+llvm::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
     Operation *op, llvm::raw_ostream &output,
-    substrait::ImportExportOptions options) {
+    mlir::substrait::ImportExportOptions options) {
   SubstraitExporter exporter;
   FailureOr<std::unique_ptr<::google::protobuf::Message>> result =
       exporter.exportOperation(op);
