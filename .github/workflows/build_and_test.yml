@@ -165,6 +165,7 @@ jobs:
           -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR="$env:GITHUB_WORKSPACE\substrait-mlir" `
           -DLLVM_ENABLE_LLD=ON `
           -DLLVM_CCACHE_BUILD=ON `
+          -DLLVM_ENABLE_ZLIB=OFF ` # Avoid hard to resolve transitive dependencies on zlib (python modules).
           -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
