@@ -21,7 +21,7 @@ using LogicalResult = llvm::LogicalResult;
 
 namespace substrait {
 
-LogicalResult
+mlir::LogicalResult
 translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
                              substrait::ImportExportOptions options = {});
 
