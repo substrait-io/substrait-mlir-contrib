@@ -190,7 +190,7 @@ jobs:
         $ErrorActionPreference = 'Stop'
         & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
         cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target substrait-mlir-all
-        ccache -s
+        sccache --show-stats
 
     - name: Run lit tests
       run: |
