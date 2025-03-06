@@ -146,6 +146,10 @@ jobs:
         cd "$env:GITHUB_WORKSPACE\substrait-mlir"
         python -m pip install -v -r requirements.txt
 
+    # We build the project without zlib; it isn't needed for any substrait-related
+    # functionality, however, it does end up becoming a transitive include for
+    # all libraries that we generate. This is especially problematic for
+    # nanobind libraries on Windows.
     - name: Configure CMake
       run: |
         $ErrorActionPreference = 'Stop'

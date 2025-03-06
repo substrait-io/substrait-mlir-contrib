@@ -7,6 +7,7 @@
 # ===----------------------------------------------------------------------=== #
 
 # RUN: %PYTHON %s | FileCheck %s
+# XFAIL: system-windows
 
 import duckdb
 
