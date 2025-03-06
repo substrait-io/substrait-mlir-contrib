@@ -134,12 +134,17 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
 
-    - name: Ccache for C++ compilation
-      uses: hendrikmuhs/ccache-action@53911442209d5c18de8a31615e0923161e435875 # v1.2.16
+    # Setup Caching
+    #
+    # Use sccache as it works on Windows.  Disable caching for non-release Windows
+    # builds due to a bug between cmake and sccache. See:
+    #   - https://gitlab.kitware.com/cmake/cmake/-/issues/22529
+    - name: sccache
+      uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{ runner.os }}-substrait-mlir
-        # LLVM needs serious cache size
         max-size: 6G
+        variant: sccache
 
     - name: Install Python dependencies
       run: |
@@ -157,7 +162,7 @@ jobs:
         cmake `
           -DPython3_EXECUTABLE=$(where python) `
           -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE `
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo `
+          -DCMAKE_BUILD_TYPE=Release `
           -DLLVM_ENABLE_PROJECTS="mlir" `
           -DLLVM_TARGETS_TO_BUILD="Native" `
           -DLLVM_ENABLE_ASSERTIONS=ON `
@@ -168,12 +173,13 @@ jobs:
           -DLLVM_EXTERNAL_PROJECTS=substrait_mlir `
           -DLLVM_EXTERNAL_SUBSTRAIT_MLIR_SOURCE_DIR="$env:GITHUB_WORKSPACE\substrait-mlir" `
           -DLLVM_ENABLE_LLD=ON `
-          -DLLVM_CCACHE_BUILD=ON `
           -DLLVM_ENABLE_ZLIB=OFF `
           -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
           -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=OFF `
+          -DCMAKE_C_COMPILER_LAUNCHER=sccache `
+          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache `
           -S "$env:GITHUB_WORKSPACE\substrait-mlir\third_party\llvm-project\llvm" `
           -B "$env:GITHUB_WORKSPACE\substrait-mlir\build" `
           -G Ninja
