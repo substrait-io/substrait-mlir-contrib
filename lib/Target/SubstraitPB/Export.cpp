@@ -1386,6 +1386,8 @@ FailureOr<std::unique_ptr<AggregateFunction>>
 SubstraitExporter::exportCallOpAggregate(CallOp op) {
   assert(op.isAggregate() && "expected aggregate function");
 
+  using AggregationPhase = ::mlir::substrait::AggregationPhase;
+
   // Export common fields.
   FailureOr<std::unique_ptr<AggregateFunction>> maybeAggregateFunction =
       exportCallOpCommon<AggregateFunction>(op);
@@ -1395,6 +1397,8 @@ SubstraitExporter::exportCallOpAggregate(CallOp op) {
       std::move(maybeAggregateFunction.value());
 
   // Add aggregation-specific fields.
+  AggregationPhase phase = op.getAggregationPhase().value();
+  aggregateFunction->set_phase(static_cast<proto::AggregationPhase>(phase));
   AggregationInvocation invocation = op.getAggregationInvocation().value();
   aggregateFunction->set_invocation(
       static_cast<AggregateFunction::AggregationInvocation>(invocation));

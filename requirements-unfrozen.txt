@@ -9,8 +9,10 @@ ibis-framework==8.0.0
 ibis-substrait==3.2.0
 pyarrow
 pyright
+substrait==0.12.1
 yapf
 
 # Plotting.
 pandas
 matplotlib
+tabulate
