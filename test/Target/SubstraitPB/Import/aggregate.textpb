@@ -15,7 +15,7 @@
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si1, si1, si32, si1, si32>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si1, si1, si32, si32>
 # CHECK-NEXT:        groupings {
 # CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V2:.*]] = literal -1 : si1
@@ -27,11 +27,9 @@
 # CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V4:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
 # CHECK-DAG:           %[[V5:.*]] = call @[[F1]](%[[V4]]) aggregate : (si32) -> si32
-# CHECK-DAG:           %[[V6:.*]] = literal 0 : si1
-# CHECK-DAG:           %[[V7:.*]] = call @[[F1]](%[[V6]]) aggregate : (si1) -> si1
-# CHECK-NEXT:          yield %[[V5]], %[[V7]] : si32, si1
+# CHECK-NEXT:          yield %[[V5]] : si32
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : tuple<si1, si1, si32, si1, si32>
+# CHECK-NEXT:      yield %[[V1]] : tuple<si1, si1, si32, si32>
 
 extension_uris {
   uri: "http://some.url/with/extensions.yml"
@@ -100,6 +98,7 @@ relations {
       }
       measures {
         measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
           output_type {
             i32 {
               nullability: NULLABILITY_REQUIRED
@@ -120,23 +119,6 @@ relations {
           }
         }
       }
-      measures {
-        measure {
-          output_type {
-            bool {
-              nullability: NULLABILITY_REQUIRED
-            }
-          }
-          invocation: AGGREGATION_INVOCATION_ALL
-          arguments {
-            value {
-              literal {
-                boolean: false
-              }
-            }
-          }
-        }
-      }
     }
   }
 }
@@ -146,7 +128,6 @@ version {
 }
 
 # -----
-
 
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:    relation
@@ -205,22 +186,19 @@ version {
 
 # -----
 
-
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si32, si1>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si32>
 # CHECK-NEXT:        measures {
 # CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
-# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate unspecified : (si32) -> si32
-# CHECK-DAG:           %[[V4:.*]] = literal 0 : si1
-# CHECK-DAG:           %[[V5:.*]] = call @[[F1]](%[[V4]]) aggregate distinct : (si1) -> si1
-# CHECK-NEXT:          yield %[[V3]], %[[V5]] : si32, si1
+# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate : (si32) -> si32
+# CHECK-NEXT:          yield %[[V3]] : si32
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : tuple<si32, si1>
+# CHECK-NEXT:      yield %[[V1]] : tuple<si32>
 
 extension_uris {
   uri: "http://some.url/with/extensions.yml"
@@ -263,12 +241,13 @@ relations {
       }
       measures {
         measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
           output_type {
             i32 {
               nullability: NULLABILITY_REQUIRED
             }
           }
-          invocation: AGGREGATION_INVOCATION_UNSPECIFIED
+          invocation: AGGREGATION_INVOCATION_ALL
           arguments {
             value {
               selection {
@@ -283,23 +262,6 @@ relations {
           }
         }
       }
-      measures {
-        measure {
-          output_type {
-            bool {
-              nullability: NULLABILITY_REQUIRED
-            }
-          }
-          invocation: AGGREGATION_INVOCATION_DISTINCT
-          arguments {
-            value {
-              literal {
-                boolean: false
-              }
-            }
-          }
-        }
-      }
     }
   }
 }
@@ -309,7 +271,6 @@ version {
 }
 
 # -----
-
 
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
@@ -365,6 +326,7 @@ relations {
       }
       measures {
         measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
           output_type {
             i32 {
               nullability: NULLABILITY_REQUIRED
@@ -395,20 +357,24 @@ version {
 
 # -----
 
-
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:    extension_uri @[[URI:.*]] at "http://some.url/with/extensions.yml"
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> -> tuple<si32>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : tuple<si32> ->
 # CHECK-NEXT:        measures {
 # CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
-# CHECK-DAG:           %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
-# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate : (si32) -> si32
-# CHECK-NEXT:          yield %[[V3]] : si32
+# CHECK-DAG:           %[[V2:.*]] = call @[[F1]](%{{.*}}) aggregate initial_to_intermediate : (si32) -> si32
+# CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%{{.*}}) aggregate intermediate_to_intermediate : (si32) -> si32
+# CHECK-DAG:           %[[V4:.*]] = call @[[F1]](%{{.*}}) aggregate intermediate_to_result : (si32) -> si32
+# CHECK-DAG:           %[[V5:.*]] = call @[[F1]](%{{.*}}) aggregate unspecified all : (si32) -> si32
+# CHECK-DAG:           %[[V6:.*]] = call @[[F1]](%{{.*}}) aggregate : (si32) -> si32
+# CHECK-DAG:           %[[V7:.*]] = call @[[F1]](%{{.*}}) aggregate initial_to_result unspecified : (si32) -> si32
+# CHECK-DAG:           %[[V8:.*]] = call @[[F1]](%{{.*}}) aggregate distinct : (si32) -> si32
+# CHECK-NEXT:          yield %[[V2]], %[[V3]], %[[V4]], %[[V5]], %[[V6]], %[[V7]], %[[V8]] :
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : tuple<si32>
+# CHECK-NEXT:      yield %[[V1]] :
 
 extension_uris {
   uri: "http://some.url/with/extensions.yml"
@@ -451,12 +417,149 @@ relations {
       }
       measures {
         measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_INTERMEDIATE
           output_type {
             i32 {
               nullability: NULLABILITY_REQUIRED
             }
           }
           invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          phase: AGGREGATION_PHASE_INTERMEDIATE_TO_INTERMEDIATE
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          phase: AGGREGATION_PHASE_INTERMEDIATE_TO_RESULT
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_ALL
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          arguments {
+            value {
+              selection {
+                direct_reference {
+                  struct_field {
+                  }
+                }
+                root_reference {
+                }
+              }
+            }
+          }
+        }
+      }
+      measures {
+        measure {
+          phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
+          output_type {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          invocation: AGGREGATION_INVOCATION_DISTINCT
           arguments {
             value {
               selection {
