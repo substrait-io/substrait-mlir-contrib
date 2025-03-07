@@ -7,6 +7,7 @@
 # ===----------------------------------------------------------------------=== #
 
 # RUN: %PYTHON %s | FileCheck %s
+# XFAIL: system-windows
 
 import datafusion
 from datafusion import substrait as dfss

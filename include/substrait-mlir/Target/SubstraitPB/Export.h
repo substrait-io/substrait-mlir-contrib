@@ -13,7 +13,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 namespace llvm {
-class LogicalResult;
+struct LogicalResult;
 }
 namespace mlir {
 class Operation;
@@ -21,9 +21,9 @@ using LogicalResult = llvm::LogicalResult;
 
 namespace substrait {
 
-LogicalResult
-translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
-                             substrait::ImportExportOptions options = {});
+LogicalResult translateSubstraitToProtobuf(Operation *op,
+                                           llvm::raw_ostream &output,
+                                           ImportExportOptions options = {});
 
 } // namespace substrait
 } // namespace mlir

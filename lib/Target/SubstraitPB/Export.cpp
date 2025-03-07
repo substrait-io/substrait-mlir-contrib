@@ -1501,23 +1501,19 @@ SubstraitExporter::exportOperation(Operation *op) {
 
 } // namespace
 
-namespace mlir {
-namespace substrait {
-
-namespace pb = ::google::protobuf;
-
-LogicalResult
-translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
-                             substrait::ImportExportOptions options) {
+mlir::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
+    Operation *op, llvm::raw_ostream &output,
+    mlir::substrait::ImportExportOptions options) {
   SubstraitExporter exporter;
-  FailureOr<std::unique_ptr<pb::Message>> result = exporter.exportOperation(op);
+  FailureOr<std::unique_ptr<::google::protobuf::Message>> result =
+      exporter.exportOperation(op);
   if (failed(result))
     return failure();
 
   std::string out;
   switch (options.serdeFormat) {
   case substrait::SerdeFormat::kText:
-    if (!pb::TextFormat::PrintToString(*result.value(), &out)) {
+    if (!::google::protobuf::TextFormat::PrintToString(*result.value(), &out)) {
       op->emitOpError("could not be serialized to text format");
       return failure();
     }
@@ -1530,11 +1526,11 @@ translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
     break;
   case substrait::SerdeFormat::kJson:
   case substrait::SerdeFormat::kPrettyJson: {
-    pb::util::JsonPrintOptions jsonOptions;
+    ::google::protobuf::util::JsonPrintOptions jsonOptions;
     if (options.serdeFormat == SerdeFormat::kPrettyJson)
       jsonOptions.add_whitespace = true;
-    absl::Status status =
-        pb::util::MessageToJsonString(*result.value(), &out, jsonOptions);
+    absl::Status status = ::google::protobuf::util::MessageToJsonString(
+        *result.value(), &out, jsonOptions);
     if (!status.ok()) {
       InFlightDiagnostic diag =
           op->emitOpError("could not be serialized to JSON format");
@@ -1547,6 +1543,3 @@ translateSubstraitToProtobuf(Operation *op, llvm::raw_ostream &output,
   output << out;
   return success();
 }
-
-} // namespace substrait
-} // namespace mlir
