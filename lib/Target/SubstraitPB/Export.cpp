@@ -1501,7 +1501,7 @@ SubstraitExporter::exportOperation(Operation *op) {
 
 } // namespace
 
-llvm::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
+mlir::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
     Operation *op, llvm::raw_ostream &output,
     mlir::substrait::ImportExportOptions options) {
   SubstraitExporter exporter;
