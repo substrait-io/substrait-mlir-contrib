@@ -113,7 +113,7 @@ LogicalResult mlir::substrait::VarCharAttr::verify(
   int32_t value_length = value.size();
   if (value_length > varCharType.getLength())
     return emitError() << "value length must be in the range of [0.."
-                      << varCharType.getLength() << "] characters.";
+                       << varCharType.getLength() << "] characters.";
   return success();
 }
 

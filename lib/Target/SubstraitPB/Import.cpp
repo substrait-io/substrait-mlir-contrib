@@ -687,9 +687,9 @@ importLiteral(ImplicitLocOpBuilder builder,
   }
   case Expression::Literal::LiteralTypeCase::kVarChar: {
     auto attr = VarCharAttr::get(
-      context, StringAttr::get(context, message.var_char().value()),
-      VarCharType::get(context, message.var_char().value().size()));
-  return builder.create<LiteralOp>(attr);
+        context, StringAttr::get(context, message.var_char().value()),
+        VarCharType::get(context, message.var_char().value().size()));
+    return builder.create<LiteralOp>(attr);
   }
   // TODO(ingomueller): Support more types.
   default: {
