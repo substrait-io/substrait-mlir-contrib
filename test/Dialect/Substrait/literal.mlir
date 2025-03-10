@@ -6,7 +6,7 @@
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.fixed_char<5>> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-// CHECK-NEXT:      %[[V2:.*]] = literal "hello" : !substrait.fixed_char<5>
+// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_char<"hello"> : !substrait.fixed_char<5>
 // CHECK-NEXT:      yield %[[V2]] : !substrait.fixed_char<5>
 // CHECK-NEXT:    }
 // CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.fixed_char<5>>
@@ -16,7 +16,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.fixed_char<5>> {
     ^bb0(%arg : tuple<si1>):
-      %fixed_char = literal "hello" : !substrait.fixed_char<5>
+      %fixed_char = literal #substrait.fixed_char<"hello"> : !substrait.fixed_char<5>
       yield %fixed_char : !substrait.fixed_char<5>
     }
     yield %1 : tuple<si1, !substrait.fixed_char<5>>
@@ -30,7 +30,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.uuid> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.uuid<1000000000 : i128> 
+// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.uuid<1000000000 : i128>
 // CHECK-NEXT:      yield %[[V2]] : !substrait.uuid
 // CHECK-NEXT:    }
 // CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.uuid>

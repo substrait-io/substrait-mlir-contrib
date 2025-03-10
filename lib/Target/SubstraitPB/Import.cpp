@@ -678,8 +678,8 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kFixedChar: {
-    auto attr = StringAttr::get(
-        message.fixed_char(),
+    auto attr = FixedCharAttr::get(
+        context, StringAttr::get(context, message.fixed_char()),
         FixedCharType::get(context, message.fixed_char().size()));
     return builder.create<LiteralOp>(attr);
   }
