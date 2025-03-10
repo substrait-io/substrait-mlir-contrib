@@ -710,6 +710,8 @@ LogicalResult FilterOp::verifyRegions() {
   return success();
 }
 
+OpFoldResult LiteralOp::fold(FoldAdaptor adaptor) { return getValue(); }
+
 LogicalResult
 LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                             ValueRange operands, DictionaryAttr attributes,
