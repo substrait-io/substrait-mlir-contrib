@@ -69,10 +69,16 @@ LogicalResult AdvancedExtensionAttr::verify(
   return success();
 }
 
-LogicalResult mlir::substrait::FixedCharType::verify(
-    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t length) {
-  if (length < 1 || length > 2147483647)
-    return emitError() << "length must be in a range of [1..2,147,483,647].";
+LogicalResult mlir::substrait::FixedCharAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    Type type) {
+  FixedCharType fixedCharType = mlir::dyn_cast<FixedCharType>(type);
+  if (fixedCharType == nullptr)
+    return emitError() << "expected a fixed char type";
+  int32_t value_length = value.size();
+  if (value_length != fixedCharType.getLength())
+    return emitError()
+        << "value length must be" << fixedCharType.getLength() << "characters.";
   return success();
 }
 

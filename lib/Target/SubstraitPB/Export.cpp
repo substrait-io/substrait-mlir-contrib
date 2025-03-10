@@ -1001,7 +1001,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     literal->set_uuid(res);
     // `FixedCharType`.
   } else if (auto fixedCharType = dyn_cast<FixedCharType>(literalType)) {
-    literal->set_fixed_char(mlir::cast<StringAttr>(value).getValue().str());
+    literal->set_fixed_char(mlir::cast<FixedCharAttr>(value).getValue().str());
   } // `DecimalType`.
   else if (auto decimalType = dyn_cast<DecimalType>(literalType)) {
     auto decimal =
