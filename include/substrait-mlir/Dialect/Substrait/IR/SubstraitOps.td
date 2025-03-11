@@ -301,13 +301,13 @@ def Substrait_CastOp : Substrait_ExpressionOp<"cast", [
     ```
   }];
   let arguments = (ins
-    Substrait_FieldType:$input,
+    Substrait_ExpressionType:$input,
     FailureBehavior:$failure_behavior
   );
   // TODO(ingomueller): verify that result type is nullable if
   // `failure_behavior` is set to `return_null` once we have implemented
   // nullability.
-  let results = (outs Substrait_FieldType:$result);
+  let results = (outs Substrait_ExpressionType:$result);
   let assemblyFormat = [{
     $input `or` $failure_behavior attr-dict `:` type($input) `to` type($result)
   }];
@@ -341,7 +341,7 @@ def Substrait_FieldReferenceOp : Substrait_ExpressionOp<"field_reference", [
     Substrait_ContainerType:$container,
     DenseI64ArrayAttr:$position
   );
-  let results = (outs Substrait_FieldType:$result);
+  let results = (outs Substrait_ExpressionType:$result);
   let assemblyFormat = [{
     $container `` $position attr-dict `:` type($container)
   }];
@@ -362,8 +362,8 @@ def Substrait_LiteralOp : Substrait_ExpressionOp<"literal", [
     ```
   }];
   // TODO(ingomueller): extend to other types.
-  let arguments = (ins Substrait_LiteralAttribute:$value);
-  let results = (outs Substrait_ExpressionResultType:$result);
+  let arguments = (ins Substrait_ExpressionAttribute:$value);
+  let results = (outs Substrait_ExpressionType:$result);
   let assemblyFormat = "$value attr-dict";
 }
 
@@ -400,10 +400,10 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
   // TODO(ingomueller): Add support for `enum` and `type` argument types.
   let arguments = (ins
     FlatSymbolRefAttr:$callee,
-    Variadic<Substrait_FieldType>:$args,
+    Variadic<Substrait_ExpressionType>:$args,
     OptionalAttr<AggregationInvocation>:$aggregation_invocation
   );
-  let results = (outs Substrait_FieldType:$result);
+  let results = (outs Substrait_ExpressionType:$result);
   let assemblyFormat = [{
     $callee `(` $args `)`
     (`aggregate` `` custom<AggregationInvocation>($aggregation_invocation)^)?

@@ -71,15 +71,21 @@ def Substrait_DateAttr
 }
 
 def Substrait_FixedCharAttr
-    : Substrait_Attr<"FixedChar", "fixed_char", [TypedAttrInterface]> {
+    : Substrait_Attr<"FixedChar", "fixed_char", [DeclareAttrInterfaceMethods<TypeInferableAttrInterface>, TypedAttrInterface]> {
   let summary = "Substrait fixed-length char attributetype";
   let description = [{
     This type represents a substrait fixed-length unicode string of `L`
-    characters attribute type.
+    characters.
   }];
   let parameters = (ins "StringAttr":$value, AttributeSelfTypeParameter<"FixedCharType">:$type);
   let assemblyFormat = [{ `<` $value `>` }];
   let genVerifyDecl = 1;
+  let extraClassDeclaration = [{
+    /// Implement TypeInferableAttrInterface.
+    ::mlir::Type getType() {
+      return ::mlir::substrait::FixedCharType::get(getContext(), getValue().size());
+    }
+  }];
 }
 
 def Substrait_IntervalDaySecondAttr
@@ -194,7 +200,7 @@ def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
 
 /// Attributes of currently supported atomic types, listed in order of substrait
 /// specification.
-def Substrait_AtomicAttributes {
+def Substrait_SimpleAttributes {
   list<Attr> attrs = [
     SI1Attr, // Boolean
     SI8Attr, // I8
@@ -217,22 +223,18 @@ def Substrait_AtomicAttributes {
 
 /// Attributes of currently supported compound types, listed in order of
 /// substrait specification.
-def Substrait_CompoundAttributes {
+def Substrait_ParametrizedAttributes {
   list<Attr> attrs = [
     Substrait_FixedCharAttr, // FixedChar
   ];
 }
 
 /// Attribute of one of the currently supported atomic types.
-def Substrait_AtomicAttribute : AnyAttrOf<Substrait_AtomicAttributes.attrs>;
-
-/// Attribute of one of the currently supported compound types.
-def Substrait_CompoundAttribute :
-  AnyAttrOf<Substrait_CompoundAttributes.attrs>;
+def Substrait_AtomicAttribute : AnyAttrOf<Substrait_SimpleAttributes.attrs#Substrait_ParametrizedAttributes.attrs>;
 
 /// Attribute of one of the currently supported atomic or compound types.
-def Substrait_LiteralAttribute :
-  AnyAttrOf<[Substrait_AtomicAttribute, Substrait_CompoundAttribute]>;
+def Substrait_ExpressionAttribute :
+  AnyAttrOf<[Substrait_AtomicAttribute]>;
 
 /// `ArrayAttr` of `ArrayAttr`s if `i64`s.
 def I64ArrayArrayAttr : TypedArrayAttrBase<
