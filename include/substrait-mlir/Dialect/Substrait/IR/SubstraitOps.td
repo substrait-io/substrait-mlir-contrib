@@ -363,8 +363,8 @@ def Substrait_LiteralOp : Substrait_ExpressionOp<"literal", [
     ```
   }];
   // TODO(ingomueller): extend to other types.
-  let arguments = (ins Substrait_AtomicAttribute:$value);
-  let results = (outs Substrait_AtomicType:$result);
+  let arguments = (ins Substrait_LiteralAttribute:$value);
+  let results = (outs Substrait_ExpressionResultType:$result);
   let assemblyFormat = "$value attr-dict";
   let hasFolder = 1;
 }

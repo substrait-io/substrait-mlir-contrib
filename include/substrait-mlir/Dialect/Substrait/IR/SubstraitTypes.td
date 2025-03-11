@@ -33,17 +33,27 @@ def Substrait_DateType : Substrait_Type<"Date", "date"> {
   }];
 }
 
+def Substrait_FixedCharType : Substrait_Type<"FixedChar", "fixed_char"> {
+  let summary = "Substrait fixed-length char type";
+  let description = [{
+    This type represents a substrait fixed-length unicode string of `L`
+    characters.
+  }];
+  let parameters = (ins "int32_t":$length);
+  let assemblyFormat = [{ `<` $length `>` }];
+}
+
 def Substrait_IntervalDaySecondType : Substrait_Type<"IntervalDaySecond", "interval_day_second"> {
   let summary = "Substrait interval day to second type";
   let description = [{
-    This type represents a substrait interval day to second type. 
+    This type represents a substrait interval day to second type.
   }];
 }
 
 def Substrait_IntervalYearMonthType : Substrait_Type<"IntervalYearMonth", "interval_year_month"> {
   let summary = "Substrait interval year to month type";
   let description = [{
-    This type represents a substrait interval year to month type. 
+    This type represents a substrait interval year to month type.
   }];
 }
 
@@ -84,6 +94,16 @@ def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
   }];
 }
 
+def Substrait_VarCharType : Substrait_Type<"VarChar", "var_char"> {
+  let summary = "Substrait variable-length char type";
+  let description = [{
+    This type represents a substrait variable-length unicode string of at most L
+    characters.
+  }];
+  let parameters = (ins "int32_t":$length);
+  let assemblyFormat = [{ `<` $length `>` }];
+}
+
 /// Currently supported atomic types, listed in order of substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
@@ -108,6 +128,16 @@ def Substrait_AtomicTypes {
   ];
 }
 
+/// Currently supported compound types, listed in order of substrait specification.
+/// These correspond directly to the types in
+/// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
+def Substrait_CompoundTypes {
+  list<Type> types = [
+    Substrait_FixedCharType, // FixedChar
+    Substrait_VarCharType, // VarChar
+  ];
+}
+
 def Substrait_AnyType : Substrait_Type<"Any", "any"> {
   let summary = "type of a 'google.protobuf.Any' protobuf message";
   let description = [{
@@ -123,18 +153,30 @@ def Substrait_AnyType : Substrait_Type<"Any", "any"> {
 /// One of the currently supported atomic types.
 def Substrait_AtomicType : AnyTypeOf<Substrait_AtomicTypes.types>;
 
+/// One of the currently supported compound types.
+def Substrait_CompoundType : AnyTypeOf<Substrait_CompoundTypes.types>;
+
 /// Any container type, i.e., structs, maps, lists, and nestings thereof.
 def Substrait_ContainerType : NestedTupleOf<Substrait_AtomicTypes.types>;
 
-/// One of the currently supported atomic or nested types.
+/// One of the currently supported atomic, compound or nested types.
 def Substrait_FieldType : AnyTypeOf<[
   Substrait_AtomicType,
-  Substrait_ContainerType
+  Substrait_CompoundType,
+  Substrait_ContainerType,
 ]>;
+
+/// One of the types of the result of an expression.
+def Substrait_ExpressionResultType : AnyTypeOf<[
+    Substrait_AtomicType,
+    Substrait_CompoundType,
+    Substrait_ContainerType,
+  ]>;
 
 /// Placeholder for a proper relation type, the result of any `RelOpInterface`
 /// op.
 // TODO(ingomueller): Transform this into a proper relation type.
-def Substrait_Relation : NestedTupleOf<Substrait_AtomicTypes.types>;
+def Substrait_Relation :
+  NestedTupleOf<Substrait_AtomicTypes.types#Substrait_CompoundTypes.types>;
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES

@@ -68,6 +68,19 @@ LogicalResult AdvancedExtensionAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::FixedCharAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    Type type) {
+  FixedCharType fixedCharType = mlir::dyn_cast<FixedCharType>(type);
+  if (fixedCharType == nullptr)
+    return emitError() << "expected a fixed char type";
+  int32_t value_length = value.size();
+  if (value_length != fixedCharType.getLength())
+    return emitError() << "value length must be" << fixedCharType.getLength()
+                       << "characters.";
+  return success();
+}
+
 LogicalResult mlir::substrait::IntervalYearMonthAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t year,
     int32_t month) {
@@ -88,6 +101,19 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
   // The value of `seconds` should be within the range [-315,360,000,000..
   // 315,360,000,000]. However, this exceeds the limits of int32_t (as required
   // by the specification), making it untestable within the given constraints.
+  return success();
+}
+
+LogicalResult mlir::substrait::VarCharAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    Type type) {
+  VarCharType varCharType = mlir::dyn_cast<VarCharType>(type);
+  if (varCharType == nullptr)
+    return emitError() << "expected a var char type";
+  int32_t value_length = value.size();
+  if (value_length > varCharType.getLength())
+    return emitError() << "value length must be in the range of [0.."
+                       << varCharType.getLength() << "] characters.";
   return success();
 }
 
