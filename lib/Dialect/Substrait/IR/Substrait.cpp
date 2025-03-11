@@ -75,8 +75,8 @@ LogicalResult mlir::substrait::FixedCharAttr::verify(
   FixedCharType fixedCharType = mlir::dyn_cast<FixedCharType>(type);
   int32_t value_length = value.size();
   if (fixedCharType != nullptr && value_length != fixedCharType.getLength())
-      return emitError() << "value length must be " << fixedCharType.getLength()
-                        << " characters.";
+    return emitError() << "value length must be " << fixedCharType.getLength()
+                       << " characters.";
   return success();
 }
 
