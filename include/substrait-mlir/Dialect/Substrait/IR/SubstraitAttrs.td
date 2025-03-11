@@ -176,27 +176,32 @@ def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
   ];
 }
 
-def Substrait_DecimalAttr : Substrait_StaticallyTypedAttr<"Decimal", "decimal",
-                                      "DecimalType"> {
+def Substrait_DecimalAttr : Substrait_Attr<"Decimal", "decimal", [
+    TypeInferableAttrInterface
+  ]> {
   let summary = "Substrait decimal type";
   let description = [{
-    This type represents a substrait decimal attribute type. The attribute is backed
-    by an IntegerAttr `value` which stores the 128-bit decimal value as an APInt.
+    This type represents a substrait decimal attribute type. The attribute is
+    backed by an `IntegerAttr` that stores the 128-bit decimal value.
   }];
   let parameters = (ins "DecimalType":$type, "IntegerAttr":$value);
   let genVerifyDecl = 1;
-
-  // #substrait.decimal<"{integer}.{fraction}" : !substrait.decimal<{P}, {S}>>
-  let hasCustomAssemblyFormat = 1;
-
-  let builders = [
-    // Builder that accepts a string representation of the decimal value.
-    AttrBuilder<(ins "DecimalType":$type, "StringRef":$value)>,
-  ];
-
+  let assemblyFormat = "`<` custom<DecimalNumber>($type, $value) `>`";
   let extraClassDeclaration = [{
     // Returns a string representation of the decimal value.
-    std::string decimalStr() const;
+    std::string decimalStr() const {
+      return toDecimalString(getType(), getValue());
+    }
+
+    // Converts the given integer attribute to the string represation of a
+    // decimal attribute with that value and the given type.
+    static std::string toDecimalString(DecimalType type, IntegerAttr value);
+
+    // Parses the given string into the integer attribute underlying a decimal
+    // attribute of the given decimal type.
+    static ParseResult parseDecimalString(
+        ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError,
+        StringRef str, DecimalType type, IntegerAttr &value);
   }];
 }
 

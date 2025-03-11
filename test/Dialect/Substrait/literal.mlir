@@ -230,23 +230,25 @@ substrait.plan version 0 : 42 : 1 {
 
 // -----
 
-// CHECK: %[[V8:.*]] = substrait.literal #substrait.decimal<"1234567.89" : !substrait.decimal<9, 2>>
-// CHECK: %[[V9:.*]] = substrait.literal #substrait.decimal<"0.123" : !substrait.decimal<3, 3>>
-// CHECK: %[[V10:.*]] = substrait.literal #substrait.decimal<"0.123" : !substrait.decimal<3, 3>>
-// CHECK: %[[V11:.*]] = substrait.literal #substrait.decimal<"123.0" : !substrait.decimal<3, 0>>
-// CHECK: %[[V12:.*]] = substrait.literal #substrait.decimal<"123.0" : !substrait.decimal<3, 0>>
-// CHECK: %[[V13:.*]] = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2" : !substrait.decimal<38, 1>>
-// CHECK: %[[V14:.*]] = substrait.literal #substrait.decimal<"0.12" : !substrait.decimal<3, 3>>
-// CHECK: %[[V15:.*]] = substrait.literal #substrait.decimal<"12.0345" : !substrait.decimal<20, 10>>
-// CHECK: %[[V16:.*]] = substrait.literal #substrait.decimal<"1234.0" : !substrait.decimal<20, 10>>
-// CHECK: %[[V17:.*]] = substrait.literal #substrait.decimal<"1234.0" : !substrait.decimal<20, 10>>
-%d0 = substrait.literal #substrait.decimal<"1234567.89" : !substrait.decimal<9, 2>>
-%d1 = substrait.literal #substrait.decimal<"0.123" : !substrait.decimal<3, 3>>
-%d2 = substrait.literal #substrait.decimal<"000.123" : !substrait.decimal<3, 3>>
-%d3 = substrait.literal #substrait.decimal<"123.0" : !substrait.decimal<3, 0>>
-%d4 = substrait.literal #substrait.decimal<"123.000" : !substrait.decimal<3, 0>>
-%d5 = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2" : !substrait.decimal<38, 1>>
-%d6 = substrait.literal #substrait.decimal<"0.12" : !substrait.decimal<3, 3>>
-%d7 = substrait.literal #substrait.decimal<"12.0345" : !substrait.decimal<20, 10>>
-%d8 = substrait.literal #substrait.decimal<"1234.0" : !substrait.decimal<20, 10>>
-%d9 = substrait.literal #substrait.decimal<"00001234.0000" : !substrait.decimal<20, 10>>
+// CHECK: = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
+// CHECK: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
+// CHECK: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
+// CHECK: = substrait.literal #substrait.decimal<"0.012", P = 3, S = 3>
+// CHECK: = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
+// CHECK: = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
+// CHECK: = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2", P = 38, S = 1>
+// CHECK: = substrait.literal #substrait.decimal<"0.12", P = 3, S = 3>
+// CHECK: = substrait.literal #substrait.decimal<"12.0345", P = 20, S = 10>
+// CHECK: = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
+// CHECK: = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
+%0 = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
+%1 = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
+%2 = substrait.literal #substrait.decimal<"000.123", P = 3, S = 3>
+%3 = substrait.literal #substrait.decimal<"0.012", P = 3, S = 3>
+%4 = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
+%5 = substrait.literal #substrait.decimal<"123.000", P = 3, S = 0>
+%6 = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2", P = 38, S = 1>
+%7 = substrait.literal #substrait.decimal<"0.12", P = 3, S = 3>
+%8 = substrait.literal #substrait.decimal<"12.0345", P = 20, S = 10>
+%9 = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
+%a = substrait.literal #substrait.decimal<"00001234.0000", P = 20, S = 10>
