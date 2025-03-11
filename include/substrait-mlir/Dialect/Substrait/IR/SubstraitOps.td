@@ -348,6 +348,7 @@ def Substrait_FieldReferenceOp : Substrait_ExpressionOp<"field_reference", [
 }
 
 def Substrait_LiteralOp : Substrait_ExpressionOp<"literal", [
+    ConstantLike,
     DeclareOpInterfaceMethods<InferTypeOpInterface>
   ]> {
   let summary = "Literal expression";
@@ -365,6 +366,7 @@ def Substrait_LiteralOp : Substrait_ExpressionOp<"literal", [
   let arguments = (ins Substrait_AtomicAttribute:$value);
   let results = (outs Substrait_AtomicType:$result);
   let assemblyFormat = "$value attr-dict";
+  let hasFolder = 1;
 }
 
 def Substrait_CallOp : Substrait_ExpressionOp<"call", [
