@@ -125,7 +125,6 @@ def Substrait_SimpleTypes {
     Substrait_IntervalYearMonthType, // IntervalYear
     Substrait_IntervalDaySecondType, // IntervalDay
     Substrait_UUIDType, // UUID
-    Substrait_DecimalType, // Decimal
   ];
 }
 
@@ -135,6 +134,7 @@ def Substrait_SimpleTypes {
 def Substrait_ParametrizedTypes {
   list<Type> types = [
     Substrait_FixedCharType, // FixedChar
+    Substrait_DecimalType, // Decimal
   ];
 }
 

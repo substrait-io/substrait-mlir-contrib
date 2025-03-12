@@ -243,7 +243,6 @@ def Substrait_SimpleAttributes {
     F64Attr, // FP64
     TypedStrAttr<Substrait_StringType>, // String
     TypedStrAttr<Substrait_BinaryType>, // Binary
-    Substrait_DecimalAttr, // Decimal
     Substrait_TimestampAttr, // Timestamp
     Substrait_TimestampTzAttr, // TimestampTZ
     Substrait_DateAttr, // Date
@@ -259,6 +258,7 @@ def Substrait_SimpleAttributes {
 def Substrait_ParametrizedAttributes {
   list<Attr> attrs = [
     Substrait_FixedCharAttr, // FixedChar
+    Substrait_DecimalAttr, // Decimal
   ];
 }
 
