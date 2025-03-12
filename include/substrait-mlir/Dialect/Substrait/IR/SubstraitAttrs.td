@@ -71,13 +71,16 @@ def Substrait_DateAttr
 }
 
 def Substrait_FixedCharAttr
-    : Substrait_Attr<"FixedChar", "fixed_char", [DeclareAttrInterfaceMethods<TypeInferableAttrInterface>, TypedAttrInterface]> {
+    : Substrait_Attr<"FixedChar", "fixed_char",
+    [DeclareAttrInterfaceMethods<TypeInferableAttrInterface>,
+    TypedAttrInterface]> {
   let summary = "Substrait fixed-length char attributetype";
   let description = [{
     This type represents a substrait fixed-length unicode string of `L`
     characters.
   }];
-  let parameters = (ins "StringAttr":$value, AttributeSelfTypeParameter<"FixedCharType">:$type);
+  let parameters = (ins "StringAttr":$value,
+      AttributeSelfTypeParameter<"FixedCharType">:$type);
   let assemblyFormat = [{ `<` $value `>` }];
   let genVerifyDecl = 1;
   let extraClassDeclaration = [{
@@ -251,8 +254,8 @@ def Substrait_SimpleAttributes {
   ];
 }
 
-/// Attributes of currently supported compound types, listed in order of
-/// substrait specification.
+/// Attributes of currently supported parametrized types, listed in order of
+/// the Substrait specification (where they are called "compound" types).
 def Substrait_ParametrizedAttributes {
   list<Attr> attrs = [
     Substrait_FixedCharAttr, // FixedChar
@@ -262,9 +265,12 @@ def Substrait_ParametrizedAttributes {
 /// Attribute of one of the currently supported atomic types.
 def Substrait_AtomicAttribute : AnyAttrOf<Substrait_SimpleAttributes.attrs#Substrait_ParametrizedAttributes.attrs>;
 
-/// Attribute of one of the currently supported atomic or compound types.
+/// Attribute of one of the currently supported atomic or container types.
 def Substrait_ExpressionAttribute :
-  AnyAttrOf<[Substrait_AtomicAttribute]>;
+  AnyAttrOf<[
+    // TODO: add container attributes here once we have them.
+    Substrait_AtomicAttribute,
+  ]>;
 
 /// `ArrayAttr` of `ArrayAttr`s if `i64`s.
 def I64ArrayArrayAttr : TypedArrayAttrBase<

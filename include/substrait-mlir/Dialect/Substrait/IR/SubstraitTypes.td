@@ -104,7 +104,7 @@ def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
   let genVerifyDecl = 1;
 }
 
-/// Currently supported atomic types, listed in order of substrait specification.
+/// Currently supported simple types, listed in order of the Substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 def Substrait_SimpleTypes {
@@ -129,8 +129,8 @@ def Substrait_SimpleTypes {
   ];
 }
 
-/// Currently supported compound types, listed in order of substrait specification.
-/// These correspond directly to the types in
+/// Currently supported parametrized types, listed in order of the Substrait
+/// specification. These correspond to the "compound" types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
 def Substrait_ParametrizedTypes {
   list<Type> types = [
@@ -150,19 +150,29 @@ def Substrait_AnyType : Substrait_Type<"Any", "any"> {
 
 }
 
-def Substrait_AtomicTypes { list<Type> types = Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types;}
+/// Currently supported atomic types, made up of simple and parametrized types.
+def Substrait_AtomicTypes {
+  list<Type> types =
+    Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types;
+}
 
 /// One of the currently supported atomic types.
-def Substrait_AtomicType : AnyTypeOf<Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types>;
+def Substrait_AtomicType :
+  AnyTypeOf<Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types>;
 
 /// Any container type, i.e., structs, maps, lists, and nestings thereof.
 def Substrait_ContainerType : NestedTupleOf<Substrait_AtomicTypes.types>;
 
+/// Currently supported expression types.
+def Substrait_ExpressionTypes {
+  list<Type> types =
+  Substrait_AtomicTypes.types;
+  // TODO: add container types here once we have them.
+}
 
-def Substrait_ExpressionTypes { list<Type> types = Substrait_AtomicTypes.types;}
-
-// TODO: ADD comment
-/// One of the currently supported atomic, compound or nested types.
+/// One of the currently supported expression types, i.e., types of values that
+/// can be the result of an expression (as opposed to results of relational
+/// operators).
 def Substrait_ExpressionType : AnyTypeOf<[
   Substrait_AtomicType,
   Substrait_ContainerType,
