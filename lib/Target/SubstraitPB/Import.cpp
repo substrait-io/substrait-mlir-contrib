@@ -218,7 +218,7 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
   case proto::Type::kUuid:
     return UUIDType::get(context);
   case proto::Type::kFixedChar:
-    return FixedCharType::get(context, type.fixed_char().length()); 
+    return FixedCharType::get(context, type.fixed_char().length());
   case proto::Type::kDecimal: {
     const proto::Type::Decimal &decimalType = type.decimal();
     return mlir::substrait::DecimalType::get(context, decimalType.precision(),
@@ -705,7 +705,7 @@ importLiteral(ImplicitLocOpBuilder builder,
     auto attr = DecimalAttr::get(context, type, value);
     return builder.create<LiteralOp>(attr);
   }
-  
+
   // TODO(ingomueller): Support more types.
   default: {
     const pb::FieldDescriptor *desc =
