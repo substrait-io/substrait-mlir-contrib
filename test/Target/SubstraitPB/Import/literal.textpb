@@ -549,7 +549,7 @@ version {
 # CHECK-NEXT:             %[[VAL_0:.*]] = named_table @t1 as ["a"] : tuple<f32>
 # CHECK-NEXT:             %[[VAL_1:.*]] = project %[[VAL_0]] : tuple<f32> -> tuple<f32, !substrait.decimal<3, 2>> {
 # CHECK-NEXT:             ^bb0(%[[VAL_2:.*]]: tuple<f32>):
-# CHECK-NEXT:               %[[VAL_3:.*]] = literal #substrait.decimal<"0.05" : !substrait.decimal<3, 2>>
+# CHECK-NEXT:               %[[VAL_3:.*]] = literal #substrait.decimal<"0.05", P = 3, S = 2>
 # CHECK-NEXT:               yield %[[VAL_3]] : !substrait.decimal<3, 2>
 # CHECK-NEXT:             }
 # CHECK-NEXT:             yield %[[VAL_1]] : tuple<f32, !substrait.decimal<3, 2>>

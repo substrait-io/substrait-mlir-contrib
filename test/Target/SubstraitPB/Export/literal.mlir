@@ -313,7 +313,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.decimal<9, 2>> {
     ^bb0(%arg : tuple<si1>):
-      %hi = literal #substrait.decimal<"0.05" : !substrait.decimal<9, 2>>
+      %hi = literal #substrait.decimal<"0.05", P = 9, S = 2>
       yield %hi : !substrait.decimal<9, 2>
     }
     yield %1 : tuple<si1, !substrait.decimal<9, 2>>
