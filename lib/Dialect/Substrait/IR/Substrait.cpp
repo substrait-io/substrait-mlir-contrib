@@ -280,23 +280,32 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
 ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
                                IntegerAttr &value) {
   llvm::SMLoc loc = parser.getCurrentLocation();
+
+  // Parse decimal value as quoted string.
   std::string valueStr;
   if (parser.parseString(&valueStr))
     return failure();
 
+  // Parse `P = <precision>`.
   uint32_t precision;
   if (parser.parseComma() || parser.parseKeyword("P") || parser.parseEqual() ||
       parser.parseInteger(precision))
     return failure();
 
+  // Parse `S = <scale>`.
   uint32_t scale;
   if (parser.parseComma() || parser.parseKeyword("S") || parser.parseEqual() ||
       parser.parseInteger(scale))
     return failure();
 
-  type = DecimalType::get(parser.getContext(), precision, scale);
-  if (failed(DecimalAttr::parseDecimalString(
-          [&]() { return parser.emitError(loc); }, valueStr, type, value)))
+  // Create `DecimalType`.
+  auto emitError = [&]() { return parser.emitError(loc); };
+  if (!(type = DecimalType::getChecked(emitError, parser.getContext(),
+                                       precision, scale)))
+    return failure();
+
+  // Parse value as the given type.
+  if (failed(DecimalAttr::parseDecimalString(emitError, valueStr, type, value)))
     return failure();
 
   return success();
