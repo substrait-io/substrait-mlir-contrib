@@ -33,17 +33,27 @@ def Substrait_DateType : Substrait_Type<"Date", "date"> {
   }];
 }
 
+def Substrait_FixedCharType : Substrait_Type<"FixedChar", "fixed_char"> {
+  let summary = "Substrait fixed-length char type";
+  let description = [{
+    This type represents a substrait fixed-length unicode string of `L`
+    characters.
+  }];
+  let parameters = (ins "int32_t":$length);
+  let assemblyFormat = [{ `<` $length `>` }];
+}
+
 def Substrait_IntervalDaySecondType : Substrait_Type<"IntervalDaySecond", "interval_day_second"> {
   let summary = "Substrait interval day to second type";
   let description = [{
-    This type represents a substrait interval day to second type. 
+    This type represents a substrait interval day to second type.
   }];
 }
 
 def Substrait_IntervalYearMonthType : Substrait_Type<"IntervalYearMonth", "interval_year_month"> {
   let summary = "Substrait interval year to month type";
   let description = [{
-    This type represents a substrait interval year to month type. 
+    This type represents a substrait interval year to month type.
   }];
 }
 
@@ -94,10 +104,10 @@ def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
   let genVerifyDecl = 1;
 }
 
-/// Currently supported atomic types, listed in order of substrait specification.
+/// Currently supported simple types, listed in order of the Substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
-def Substrait_AtomicTypes {
+def Substrait_SimpleTypes {
   list<Type> types = [
     SI1, // Boolean
     SI8, // I8
@@ -115,6 +125,15 @@ def Substrait_AtomicTypes {
     Substrait_IntervalYearMonthType, // IntervalYear
     Substrait_IntervalDaySecondType, // IntervalDay
     Substrait_UUIDType, // UUID
+  ];
+}
+
+/// Currently supported parametrized types, listed in order of the Substrait
+/// specification. These correspond to the "compound" types in
+/// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
+def Substrait_ParametrizedTypes {
+  list<Type> types = [
+    Substrait_FixedCharType, // FixedChar
     Substrait_DecimalType, // Decimal
   ];
 }
@@ -131,21 +150,38 @@ def Substrait_AnyType : Substrait_Type<"Any", "any"> {
 
 }
 
+/// Currently supported atomic types, made up of simple and parametrized types.
+def Substrait_AtomicTypes {
+  list<Type> types =
+    Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types;
+}
+
 /// One of the currently supported atomic types.
-def Substrait_AtomicType : AnyTypeOf<Substrait_AtomicTypes.types>;
+def Substrait_AtomicType :
+  AnyTypeOf<Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types>;
 
 /// Any container type, i.e., structs, maps, lists, and nestings thereof.
 def Substrait_ContainerType : NestedTupleOf<Substrait_AtomicTypes.types>;
 
-/// One of the currently supported atomic or nested types.
-def Substrait_FieldType : AnyTypeOf<[
+/// Currently supported expression types.
+def Substrait_ExpressionTypes {
+  list<Type> types =
+  Substrait_AtomicTypes.types;
+  // TODO: add container types here once we have them.
+}
+
+/// One of the currently supported expression types, i.e., types of values that
+/// can be the result of an expression (as opposed to results of relational
+/// operators).
+def Substrait_ExpressionType : AnyTypeOf<[
   Substrait_AtomicType,
-  Substrait_ContainerType
+  Substrait_ContainerType,
 ]>;
 
 /// Placeholder for a proper relation type, the result of any `RelOpInterface`
 /// op.
 // TODO(ingomueller): Transform this into a proper relation type.
-def Substrait_Relation : NestedTupleOf<Substrait_AtomicTypes.types>;
+def Substrait_Relation :
+  NestedTupleOf<Substrait_ExpressionTypes.types>;
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITTYPES

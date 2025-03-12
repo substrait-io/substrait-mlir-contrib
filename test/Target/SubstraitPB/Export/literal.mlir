@@ -20,6 +20,35 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:            fixed_char: "hello"
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.fixed_char<5>> {
+    ^bb0(%arg0: tuple<si1>):
+      %2 = literal #substrait.fixed_char<"hello"> 
+      yield %2 : !substrait.fixed_char<5>
+    }
+    yield %1 : tuple<si1, !substrait.fixed_char<5>>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            uuid: "\000\312\232;\000\000\000\000\000\000\000\000\000\000\000\000"
 
 substrait.plan version 0 : 42 : 1 {

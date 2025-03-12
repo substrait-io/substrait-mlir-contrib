@@ -69,6 +69,17 @@ LogicalResult AdvancedExtensionAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::FixedCharAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    Type type) {
+  FixedCharType fixedCharType = mlir::dyn_cast<FixedCharType>(type);
+  int32_t value_length = value.size();
+  if (fixedCharType != nullptr && value_length != fixedCharType.getLength())
+    return emitError() << "value length must be " << fixedCharType.getLength()
+                       << " characters.";
+  return success();
+}
+
 LogicalResult mlir::substrait::IntervalYearMonthAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t year,
     int32_t month) {
