@@ -136,19 +136,22 @@ LogicalResult mlir::substrait::DecimalAttr::verify(
 }
 
 std::string DecimalAttr::toDecimalString(DecimalType type, IntegerAttr value) {
+  size_t scale = type.getScale();
+  size_t precision = type.getPrecision();
+
+  // Convert to string and pad up to `P` digits with leading zeros.
   SmallVector<char> buffer;
   value.getValue().toString(buffer, 10, /*isSigned=*/false);
-
-  // Pad buffer up to P digits with leading zeros.
-  buffer.insert(buffer.begin(), type.getPrecision() - buffer.size(), '0');
-
-  size_t scale = type.getScale();
-  assert(scale <= buffer.size() && "scale must be <= precision");
+  buffer.insert(buffer.begin(), precision - buffer.size(), '0');
+  assert(buffer.size() == precision &&
+         "expected padded string to be exactly `P` digits long");
 
   // Get parts before and after the decimal point.
-  StringRef ref(buffer.data(), buffer.size());
-  StringRef integralPart = ref.drop_back(scale);
-  StringRef fractionalPart = ref.take_back(scale);
+  StringRef str(buffer.data(), buffer.size());
+  StringRef integralPart = str.drop_back(scale);
+  StringRef fractionalPart = str.take_back(scale);
+  assert(str.size() == precision &&
+         "expected padded string to be exactly `P` digits long");
 
   {
     // Trim leading zeros of integral part.
@@ -156,8 +159,7 @@ std::string DecimalAttr::toDecimalString(DecimalType type, IntegerAttr value) {
     if (firstNonZero != StringRef::npos)
       integralPart = integralPart.drop_front(firstNonZero);
     else
-      assert(integralPart.empty() && "if there are no non-zero digits, then we "
-                                     "expect the integral part to be empty");
+      integralPart = "0";
 
     // Trim trailing zeros of fractional part.
     size_t lastNonZero = fractionalPart.find_last_not_of('0');
