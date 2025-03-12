@@ -13,6 +13,7 @@
 #include "mlir/Support/LogicalResult.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/TypeSwitch.h" // IWYU pragma: keep
+#include "llvm/Support/Regex.h"
 
 using namespace mlir;
 using namespace mlir::substrait;
@@ -92,6 +93,146 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
 }
 
 //===----------------------------------------------------------------------===//
+// Substrait types
+//===----------------------------------------------------------------------===//
+
+LogicalResult mlir::substrait::DecimalType::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
+    uint32_t precision, uint32_t scale) {
+  if (precision > 38)
+    return emitError() << "precision must be in a range of [0..38] but got "
+                       << precision;
+
+  if (scale > precision)
+    return emitError() << "scale must be in a range of [0..P] (P = "
+                       << precision << ") but got " << scale;
+
+  return success();
+}
+
+// Count the number of digits in an APInt in base 10.
+static size_t countDigits(const APInt &value) {
+  llvm::SmallVector<char> buffer;
+  value.toString(buffer, 10, /*isSigned=*/false);
+  return buffer.size();
+}
+
+LogicalResult mlir::substrait::DecimalAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, DecimalType type,
+    IntegerAttr value) {
+
+  if (value.getType().getIntOrFloatBitWidth() != 128)
+    return emitError() << "value must be a 128-bit integer";
+
+  // Max `P` digits.
+  size_t nDigits = countDigits(value.getValue());
+  size_t P = type.getPrecision();
+  if (nDigits > P)
+    return emitError() << "value must have at most " << P
+                       << " digits as per the type " << type << " but got "
+                       << nDigits;
+
+  return success();
+}
+
+std::string DecimalAttr::toDecimalString(DecimalType type, IntegerAttr value) {
+  size_t scale = type.getScale();
+  size_t precision = type.getPrecision();
+
+  // Convert to string and pad up to `P` digits with leading zeros.
+  SmallVector<char> buffer;
+  value.getValue().toString(buffer, 10, /*isSigned=*/false);
+  buffer.insert(buffer.begin(), precision - buffer.size(), '0');
+  assert(buffer.size() == precision &&
+         "expected padded string to be exactly `P` digits long");
+
+  // Get parts before and after the decimal point.
+  StringRef str(buffer.data(), buffer.size());
+  StringRef integralPart = str.drop_back(scale);
+  StringRef fractionalPart = str.take_back(scale);
+  assert(str.size() == precision &&
+         "expected padded string to be exactly `P` digits long");
+
+  {
+    // Trim leading zeros of integral part.
+    size_t firstNonZero = integralPart.find_first_not_of('0');
+    if (firstNonZero != StringRef::npos)
+      integralPart = integralPart.drop_front(firstNonZero);
+    else
+      integralPart = "0";
+
+    // Trim trailing zeros of fractional part.
+    size_t lastNonZero = fractionalPart.find_last_not_of('0');
+    if (lastNonZero != StringRef::npos)
+      fractionalPart = fractionalPart.take_front(lastNonZero + 1);
+    else
+      fractionalPart = "0";
+  }
+
+  // Make sure neither part is emtpy.
+  if (integralPart.empty())
+    integralPart = "0";
+  if (fractionalPart.empty())
+    fractionalPart = "0";
+
+  return (integralPart + Twine(".") + fractionalPart).str();
+}
+
+ParseResult DecimalAttr::parseDecimalString(
+    ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError, StringRef str,
+    DecimalType type, IntegerAttr &value) {
+  MLIRContext *context = type.getContext();
+
+  // Parse as two point-separated integers, ignoring irrelevant zeros.
+  static const llvm::Regex regex("^0*([0-9]+)\\.([0-9]*[1-9]|0)0*$");
+  SmallVector<StringRef> matches;
+  regex.match(str, &matches);
+
+  if (matches.size() != 3)
+    return emitError() << "'" << str << "' is not a valid decimal number";
+
+  StringRef integralPart = matches[1];
+  StringRef fractionalPart = matches[2];
+
+  // Normalize corner cases where a part only consists of a zero.
+  if (integralPart == "0")
+    integralPart = "";
+  if (fractionalPart == "0")
+    fractionalPart = "";
+
+  // Verify scale.
+  size_t detectedScale = fractionalPart.size();
+  if (detectedScale > type.getScale()) {
+    return emitError()
+           << "decimal value has too many digits after the decimal point ("
+           << detectedScale << "). Expected <=" << type.getScale()
+           << " as per the type " << type;
+  }
+
+  // Verify precision.
+  size_t precision = type.getPrecision();
+  size_t numDigits = detectedScale + integralPart.size();
+  if (numDigits > precision)
+    return emitError() << "decimal value has too many digits (" << numDigits
+                       << "). Expected <=" << precision << " as per the type "
+                       << type;
+
+  // Concatenate parts to normalized string. Add trailing zeros if necessary
+  // (detectedScale != type.getScale()). This is required to be able to
+  // represent values where the number of digits after the decimal point is less
+  // than the scale.
+  std::string trailingZeros(type.getScale() - detectedScale, '0');
+  std::string normalizedStr =
+      (Twine(integralPart) + fractionalPart + trailingZeros).str();
+
+  // Parse into APInt and create IntegerAttr.
+  APInt intValue(128, normalizedStr, 10);
+  auto intType = IntegerType::get(context, 128);
+  value = IntegerAttr::get(intType, intValue);
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
 // Substrait enums
 //===----------------------------------------------------------------------===//
 
@@ -134,6 +275,46 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   }
   // Normal integer.
   printer << count.getValue();
+}
+
+ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
+                               IntegerAttr &value) {
+  llvm::SMLoc loc = parser.getCurrentLocation();
+
+  // Parse decimal value as quoted string.
+  std::string valueStr;
+  if (parser.parseString(&valueStr))
+    return failure();
+
+  // Parse `P = <precision>`.
+  uint32_t precision;
+  if (parser.parseComma() || parser.parseKeyword("P") || parser.parseEqual() ||
+      parser.parseInteger(precision))
+    return failure();
+
+  // Parse `S = <scale>`.
+  uint32_t scale;
+  if (parser.parseComma() || parser.parseKeyword("S") || parser.parseEqual() ||
+      parser.parseInteger(scale))
+    return failure();
+
+  // Create `DecimalType`.
+  auto emitError = [&]() { return parser.emitError(loc); };
+  if (!(type = DecimalType::getChecked(emitError, parser.getContext(),
+                                       precision, scale)))
+    return failure();
+
+  // Parse value as the given type.
+  if (failed(DecimalAttr::parseDecimalString(emitError, valueStr, type, value)))
+    return failure();
+
+  return success();
+}
+
+void printDecimalNumber(AsmPrinter &printer, DecimalType type,
+                        IntegerAttr value) {
+  printer << "\"" << DecimalAttr::toDecimalString(type, value) << "\", ";
+  printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
 }
 
 //===----------------------------------------------------------------------===//

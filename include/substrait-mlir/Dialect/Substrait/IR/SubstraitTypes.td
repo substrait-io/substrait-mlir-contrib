@@ -84,6 +84,16 @@ def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
   }];
 }
 
+def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
+  let summary = "Substrait decimal type";
+  let description = [{
+    This type represents a substrait decimal type.
+  }];
+  let parameters = (ins "uint32_t":$precision, "uint32_t":$scale);
+  let assemblyFormat = "`<` $precision `,` $scale `>`";
+  let genVerifyDecl = 1;
+}
+
 /// Currently supported atomic types, listed in order of substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
@@ -105,6 +115,7 @@ def Substrait_AtomicTypes {
     Substrait_IntervalYearMonthType, // IntervalYear
     Substrait_IntervalDaySecondType, // IntervalDay
     Substrait_UUIDType, // UUID
+    Substrait_DecimalType, // Decimal
   ];
 }
 
