@@ -120,6 +120,7 @@ tools = [
     substrait_to_json,
     'substrait-opt',
     ToolSubst('%mlir_lib_dir', config.mlir_lib_dir),
+    ToolSubst('diff', 'diff', extra_args=[] if os.name == 'nt' else ['-u']),
 ]
 
 llvm_config.add_tool_substitutions(tools, tool_dirs)

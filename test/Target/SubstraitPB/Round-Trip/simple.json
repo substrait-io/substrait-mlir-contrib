@@ -2,7 +2,7 @@
 // RUN: normalize-json -i %s | \
 // RUN:   json-to-substrait | substrait-to-json | \
 // RUN:   normalize-json > %{t:stem}.mlir.json
-// RUN: diff -pu %{t:stem}.orig.json %{t:stem}.mlir.json
+// RUN: diff %{t:stem}.orig.json %{t:stem}.mlir.json
 {
   "version": {
     "minorNumber": 42,
