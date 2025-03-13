@@ -91,14 +91,14 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK:      substrait.plan
 // CHECK-SAME:   advanced_extension
-// CHECK-SAME:     optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
-// CHECK-SAME:     enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+// CHECK-SAME:     optimization = "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+// CHECK-SAME:     enhancement = "\08\01" : !substrait.any<"type.googleapis.com/google.protobuf.BoolValue">
 // CHECK-NEXT: }
 
 substrait.plan version 0 : 42 : 1
     advanced_extension
-      optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
-      enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+      optimization = "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+      enhancement = "\08\01" : !substrait.any<"type.googleapis.com/google.protobuf.BoolValue">
 {}
 
 // -----

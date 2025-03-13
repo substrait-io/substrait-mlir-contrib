@@ -609,7 +609,7 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table"> {
 
     ```mlir
     %0 = extension_table
-           "some detail" : !substrait.any<"some url">
+           "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
            as ["a"] : tuple<si32>
     ```
   }];

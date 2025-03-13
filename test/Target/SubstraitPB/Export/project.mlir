@@ -49,8 +49,8 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:             input {
 // CHECK:             advanced_extension {
 // CHECK-NEXT:        optimization {
-// CHECK-NEXT:          type_url: "bar"
-// CHECK-NEXT:          value: "foo"
+// CHECK-NEXT:          type_url: "type.googleapis.com/google.protobuf.Int32Value"
+// CHECK-NEXT:          value: "\010*"
 // CHECK-NEXT:        }
 // CHECK-NEXT:      }
 
@@ -58,7 +58,8 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
     %1 = project %0
-            advanced_extension optimization = "foo" : !substrait.any<"bar">
+            advanced_extension optimization = "\08*"
+              : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : tuple<si32> -> tuple<si32> {
     ^bb0(%arg0: tuple<si32>):
       yield
