@@ -52,6 +52,7 @@
 // CHECK-NEXT:       }
 // CHECK-NEXT:       measures {
 // CHECK-NEXT:         measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
 // CHECK-NEXT:           output_type {
 // CHECK-NEXT:             i32 {
 // CHECK-NEXT:               nullability: NULLABILITY_REQUIRED
@@ -67,26 +68,9 @@
 // CHECK:                }
 // CHECK:              }
 // CHECK:            }
-// CHECK:            measures {
-// CHECK-NEXT:         measure {
-// CHECK-NEXT:           output_type {
-// CHECK-NEXT:             bool {
-// CHECK-NEXT:               nullability: NULLABILITY_REQUIRED
-// CHECK-NEXT:             }
-// CHECK-NEXT:           }
-// CHECK-NEXT:           invocation: AGGREGATION_INVOCATION_ALL
-// CHECK-NEXT:           arguments {
-// CHECK-NEXT:             value {
-// CHECK-NEXT:               literal {
-// CHECK-NEXT:                 boolean: false
-// CHECK-NEXT:               }
-// CHECK-NEXT:             }
-// CHECK-NEXT:           }
-// CHECK-NEXT:         }
-// CHECK-NEXT:       }
-// CHECK-NEXT:     }
-// CHECK-NEXT:   }
-// CHECK-NEXT: }
+// CHECK:          }
+// CHECK:        }
+// CHECK:      }
 // CHECK:      version
 
 substrait.plan version 0 : 42 : 1 {
@@ -94,7 +78,7 @@ substrait.plan version 0 : 42 : 1 {
   extension_function @function at @extension["somefunc"]
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1, si32, si1, si32>
+    %1 = aggregate %0 : tuple<si32> -> tuple<si1, si1, si32, si32>
       groupings {
       ^bb0(%arg : tuple<si32>):
         %2 = literal 0 : si1
@@ -105,12 +89,10 @@ substrait.plan version 0 : 42 : 1 {
       measures {
       ^bb0(%arg : tuple<si32>):
         %2 = field_reference %arg[0] : tuple<si32>
-        %3 = literal 0 : si1
-        %4 = call @function(%2) aggregate : (si32) -> si32
-        %5 = call @function(%3) aggregate all : (si1) -> si1
-        yield %4, %5 : si32, si1
+        %3 = call @function(%2) aggregate : (si32) -> si32
+        yield %3 : si32
       }
-    yield %1 : tuple<si1, si1, si32, si1, si32>
+    yield %1 : tuple<si1, si1, si32, si32>
   }
 }
 
@@ -137,40 +119,6 @@ substrait.plan version 0 : 42 : 1 {
       }
       grouping_sets [[0]]
     yield %1 : tuple<si1>
-  }
-}
-
-// -----
-
-// Check op special invocation modes.
-
-// CHECK:      extension_uris {
-// CHECK:      relations {
-// CHECK-NEXT:   rel {
-// CHECK-NEXT:     aggregate {
-// CHECK:            measures {
-// CHECK-NEXT:        measure {
-// CHECK-NOT:           invocation:
-// CHECK:             measure {
-// CHECK-NOT:           measure
-// CHECK:               invocation: AGGREGATION_INVOCATION_DISTINCT
-// CHECK:      version
-
-substrait.plan version 0 : 42 : 1 {
-  extension_uri @extension at "http://some.url/with/extensions.yml"
-  extension_function @function at @extension["somefunc"]
-  relation {
-    %0 = named_table @t1 as ["a"] : tuple<si32>
-    %1 = aggregate %0 : tuple<si32> -> tuple<si32, si1>
-      measures {
-      ^bb0(%arg : tuple<si32>):
-        %2 = field_reference %arg[0] : tuple<si32>
-        %3 = literal 0 : si1
-        %4 = call @function(%2) aggregate unspecified : (si32) -> si32
-        %5 = call @function(%3) aggregate distinct : (si1) -> si1
-        yield %4, %5 : si32, si1
-      }
-    yield %1 : tuple<si32, si1>
   }
 }
 
@@ -226,5 +174,71 @@ substrait.plan version 0 : 42 : 1 {
         yield %4 : si32
       }
     yield %1 : tuple<si32>
+  }
+}
+
+// -----
+
+// Check combinations of aggregate details.
+
+
+// CHECK:      relations {
+// CHECK:            measures {
+// CHECK-NEXT:         measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INITIAL_TO_INTERMEDIATE
+// CHECK-NOT:            measure
+// CHECK:                invocation: AGGREGATION_INVOCATION_ALL
+// CHECK-NEXT:           arguments {
+// CHECK:              measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INTERMEDIATE_TO_INTERMEDIATE
+// CHECK-NOT:            measure
+// CHECK:                invocation: AGGREGATION_INVOCATION_ALL
+// CHECK-NEXT:           arguments {
+// CHECK:              measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INTERMEDIATE_TO_RESULT
+// CHECK-NOT:            measure
+// CHECK:                invocation: AGGREGATION_INVOCATION_ALL
+// CHECK-NEXT:           arguments {
+// CHECK:              measure {
+// CHECK-NOT:            phase
+// CHECK-NOT:            measure
+// CHECK:                invocation: AGGREGATION_INVOCATION_ALL
+// CHECK-NEXT:           arguments {
+// CHECK:              measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
+// CHECK-NOT:            measure
+// CHECK:                invocation: AGGREGATION_INVOCATION_ALL
+// CHECK-NEXT:           arguments {
+// CHECK:              measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
+// CHECK-NOT:            invocation
+// CHECK:              measure {
+// CHECK-NEXT:           phase: AGGREGATION_PHASE_INITIAL_TO_RESULT
+// CHECK-NOT:            measure
+// CHECK:                invocation: AGGREGATION_INVOCATION_DISTINCT
+// CHECK-NEXT:           arguments {
+// CHECK-NOT:            measure
+
+substrait.plan version 0 : 42 : 1 {
+  extension_uri @extension at "http://some.url/with/extensions.yml"
+  extension_function @function at @extension["somefunc"]
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si32>
+    %1 = aggregate %0 : tuple<si32>
+          -> tuple<si32, si32, si32, si32, si32, si32, si32>
+      measures {
+      ^bb0(%arg : tuple<si32>):
+        %2 = field_reference %arg[0] : tuple<si32>
+        %3 = call @function(%2) aggregate initial_to_intermediate all : (si32) -> si32
+        %4 = call @function(%2) aggregate intermediate_to_intermediate all : (si32) -> si32
+        %5 = call @function(%2) aggregate intermediate_to_result all : (si32) -> si32
+        %6 = call @function(%2) aggregate unspecified all : (si32) -> si32
+        %7 = call @function(%2) aggregate initial_to_result all : (si32) -> si32
+        %8 = call @function(%2) aggregate initial_to_result unspecified : (si32) -> si32
+        %9 = call @function(%2) aggregate initial_to_result distinct : (si32) -> si32
+        yield %3, %4, %5, %6, %7, %8, %9
+              : si32, si32, si32, si32, si32, si32, si32
+      }
+    yield %1 : tuple<si32, si32, si32, si32, si32, si32, si32>
   }
 }
