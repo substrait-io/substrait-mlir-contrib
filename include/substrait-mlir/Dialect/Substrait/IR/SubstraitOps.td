@@ -388,10 +388,10 @@ def Substrait_CallOp : Substrait_ExpressionOp<"call", [
 
     For aggregate functions, the aggregation phase is ommitted if it is set to
     `initial_to_result`; the invocation type is omitted from the custom assembly
-    if it is set to `all`. If only `unspecified` is provided, the aggregation
+    of it is set to `all`. If only `unspecified` is provided, the aggregation
     phase will be set to that value and the invocation type to `all`. The
     printer avoids that case by always printing the attribute value of the other
-    one of these two is `unspecified`.
+    if one of these two is `unspecified`.
 
     Currently, the specification of the function, which is in an external YAML
     file, is not taken into account, for example, to verify whether a matching
