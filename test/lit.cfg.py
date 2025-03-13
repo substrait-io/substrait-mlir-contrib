@@ -22,7 +22,7 @@ config.name = 'Substrait MLIR'
 config.test_format = lit.formats.ShTest(not llvm_config.use_lit_shell)
 
 # suffixes: A list of file extensions to treat as test files.
-config.suffixes = ['.mlir', '.textpb', '.py']
+config.suffixes = ['.json', '.mlir', '.textpb', '.py']
 
 # test_source_root: The root path where tests are located.
 config.test_source_root = os.path.dirname(__file__)
@@ -56,6 +56,10 @@ config.excludes = [
 
 # Tweak the PATH to include the tools dir.
 llvm_config.with_environment('PATH', config.llvm_tools_dir, append_path=True)
+llvm_config.with_environment('PATH',
+                             config.substrait_mlir_main_src_dir +
+                             "/tools/scripts/",
+                             append_path=True)
 
 
 # Copied from `third_party/llvm-project/mlir/test/lit.cfg.py`.
@@ -76,6 +80,32 @@ mlir_async_runtime = add_runtime("mlir_async_runtime")
 mlir_c_runner_utils = add_runtime("mlir_c_runner_utils")
 mlir_runner_utils = add_runtime("mlir_runner_utils")
 
+# Define substituations for round-trip tests.
+# TODO(ingomueller,mortbopet): Consider replacing these substitutions and the
+#   Python script with the ideas outlined in #111, which seem more robust.
+normalize_json = ToolSubst("normalize-json",
+                           sys.executable,
+                           extra_args=[
+                               config.substrait_mlir_main_src_dir +
+                               "/tools/scripts/normalize_json.py"
+                           ])
+json_to_substrait = ToolSubst("json-to-substrait",
+                              'substrait-translate',
+                              extra_args=[
+                                  "--split-input-file",
+                                  "--output-split-marker='// -----'",
+                                  "--protobuf-to-substrait",
+                                  "--substrait-protobuf-format=json"
+                              ])
+substrait_to_json = ToolSubst("substrait-to-json",
+                              'substrait-translate',
+                              extra_args=[
+                                  "--split-input-file",
+                                  "--output-split-marker='// -----'",
+                                  "--substrait-to-protobuf",
+                                  "--substrait-protobuf-format=pretty-json"
+                              ])
+
 config.environment['MLIR_ASYNC_RUNTIME_LIB'] = mlir_async_runtime.command
 config.environment['MLIR_C_RUNNER_UTILS_LIB'] = mlir_c_runner_utils.command
 config.environment['MLIR_RUNNER_UTILS_LIB'] = mlir_runner_utils.command
@@ -87,8 +117,12 @@ tools = [
     mlir_async_runtime,
     mlir_c_runner_utils,
     mlir_runner_utils,
+    normalize_json,
+    json_to_substrait,
+    substrait_to_json,
     'substrait-opt',
     ToolSubst('%mlir_lib_dir', config.mlir_lib_dir),
+    ToolSubst('diff', 'diff', extra_args=[] if os.name == 'nt' else ['-u']),
 ]
 
 llvm_config.add_tool_substitutions(tools, tool_dirs)
