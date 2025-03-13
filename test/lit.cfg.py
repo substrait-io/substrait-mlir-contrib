@@ -81,6 +81,8 @@ mlir_c_runner_utils = add_runtime("mlir_c_runner_utils")
 mlir_runner_utils = add_runtime("mlir_runner_utils")
 
 # Define substituations for round-trip tests.
+# TODO(ingomueller,mortbopet): Consider replacing these substitutions and the
+#   Python script with the ideas outlined in #111, which seem more robust.
 normalize_json = ToolSubst("normalize-json",
                            sys.executable,
                            extra_args=[
