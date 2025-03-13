@@ -1,11 +1,6 @@
 // RUN: normalize-json -i %s > %{t:stem}.orig.json
 // RUN: normalize-json -i %s | \
-// RUN:   substrait-translate \
-// RUN:     --split-input-file  --output-split-marker="// ""-----" \
-// RUN:     --protobuf-to-substrait --substrait-protobuf-format=json | \
-// RUN:   substrait-translate \
-// RUN:     --substrait-to-protobuf --substrait-protobuf-format=pretty-json \
-// RUN:     --split-input-file  --output-split-marker="// ""-----" | \
+// RUN:   json-to-substrait | substrait-to-json | \
 // RUN:   normalize-json > %{t:stem}.mlir.json
 // RUN: diff -pu %{t:stem}.orig.json %{t:stem}.mlir.json
 {

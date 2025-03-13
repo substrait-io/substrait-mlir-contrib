@@ -79,9 +79,27 @@ def add_runtime(name):
 mlir_async_runtime = add_runtime("mlir_async_runtime")
 mlir_c_runner_utils = add_runtime("mlir_c_runner_utils")
 mlir_runner_utils = add_runtime("mlir_runner_utils")
+
+# Define substituations for round-trip tests.
 normalize_json = ToolSubst(
     "normalize-json",
     config.substrait_mlir_main_src_dir + "/tools/scripts/normalize_json.py")
+json_to_substrait = ToolSubst("json-to-substrait",
+                              'substrait-translate',
+                              extra_args=[
+                                  "--split-input-file",
+                                  "--output-split-marker='// -----'",
+                                  "--protobuf-to-substrait",
+                                  "--substrait-protobuf-format=json"
+                              ])
+substrait_to_json = ToolSubst("substrait-to-json",
+                              'substrait-translate',
+                              extra_args=[
+                                  "--split-input-file",
+                                  "--output-split-marker='// -----'",
+                                  "--substrait-to-protobuf",
+                                  "--substrait-protobuf-format=pretty-json"
+                              ])
 
 config.environment['MLIR_ASYNC_RUNTIME_LIB'] = mlir_async_runtime.command
 config.environment['MLIR_C_RUNNER_UTILS_LIB'] = mlir_c_runner_utils.command
@@ -95,6 +113,8 @@ tools = [
     mlir_c_runner_utils,
     mlir_runner_utils,
     normalize_json,
+    json_to_substrait,
+    substrait_to_json,
     'substrait-opt',
     ToolSubst('%mlir_lib_dir', config.mlir_lib_dir),
 ]
