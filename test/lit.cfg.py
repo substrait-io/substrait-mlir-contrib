@@ -81,9 +81,12 @@ mlir_c_runner_utils = add_runtime("mlir_c_runner_utils")
 mlir_runner_utils = add_runtime("mlir_runner_utils")
 
 # Define substituations for round-trip tests.
-normalize_json = ToolSubst(
-    "normalize-json",
-    config.substrait_mlir_main_src_dir + "/tools/scripts/normalize_json.py")
+normalize_json = ToolSubst("normalize-json",
+                           sys.executable,
+                           extra_args=[
+                               config.substrait_mlir_main_src_dir +
+                               "/tools/scripts/normalize_json.py"
+                           ])
 json_to_substrait = ToolSubst("json-to-substrait",
                               'substrait-translate',
                               extra_args=[
