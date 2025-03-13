@@ -22,7 +22,7 @@ config.name = 'Substrait MLIR'
 config.test_format = lit.formats.ShTest(not llvm_config.use_lit_shell)
 
 # suffixes: A list of file extensions to treat as test files.
-config.suffixes = ['.mlir', '.textpb', '.py']
+config.suffixes = ['.json', '.mlir', '.textpb', '.py']
 
 # test_source_root: The root path where tests are located.
 config.test_source_root = os.path.dirname(__file__)
@@ -56,6 +56,10 @@ config.excludes = [
 
 # Tweak the PATH to include the tools dir.
 llvm_config.with_environment('PATH', config.llvm_tools_dir, append_path=True)
+llvm_config.with_environment('PATH',
+                             config.substrait_mlir_main_src_dir +
+                             "/tools/scripts/",
+                             append_path=True)
 
 
 # Copied from `third_party/llvm-project/mlir/test/lit.cfg.py`.
@@ -75,6 +79,9 @@ def add_runtime(name):
 mlir_async_runtime = add_runtime("mlir_async_runtime")
 mlir_c_runner_utils = add_runtime("mlir_c_runner_utils")
 mlir_runner_utils = add_runtime("mlir_runner_utils")
+normalize_json = ToolSubst(
+    "normalize-json",
+    config.substrait_mlir_main_src_dir + "/tools/scripts/normalize_json.py")
 
 config.environment['MLIR_ASYNC_RUNTIME_LIB'] = mlir_async_runtime.command
 config.environment['MLIR_C_RUNNER_UTILS_LIB'] = mlir_c_runner_utils.command
@@ -87,6 +94,7 @@ tools = [
     mlir_async_runtime,
     mlir_c_runner_utils,
     mlir_runner_utils,
+    normalize_json,
     'substrait-opt',
     ToolSubst('%mlir_lib_dir', config.mlir_lib_dir),
 ]

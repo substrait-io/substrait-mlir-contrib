@@ -8,6 +8,7 @@ fonttools==4.55.8
 ibis==3.3.0
 ibis-framework==8.0.0
 ibis-substrait==3.2.0
+json5==0.10.0
 kiwisolver==1.4.8
 markdown-it-py==3.0.0
 matplotlib==3.10.0

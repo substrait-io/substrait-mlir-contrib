@@ -1,0 +1,253 @@
+// RUN: normalize-json -i %s > %{t:stem}.orig.json
+// RUN: normalize-json -i %s | \
+// RUN:   substrait-translate \
+// RUN:     --split-input-file  --output-split-marker="// ""-----" \
+// RUN:     --protobuf-to-substrait --substrait-protobuf-format=json | \
+// RUN:   substrait-translate \
+// RUN:     --substrait-to-protobuf --substrait-protobuf-format=pretty-json \
+// RUN:     --split-input-file  --output-split-marker="// ""-----" | \
+// RUN:   normalize-json > %{t:stem}.mlir.json
+// RUN: diff -pu %{t:stem}.orig.json %{t:stem}.mlir.json
+{
+  "version": {
+    "minorNumber": 42,
+    "patchNumber": 1,
+    "gitHash": "hash",
+    "producer": "producer"
+  }
+}
+// -----
+{
+  "relations": [
+    {
+      "rel": {
+        "read": {
+          "common": {
+            "direct": {}
+          },
+          "baseSchema": {
+            "names": [
+              "a",
+              "b"
+            ],
+            "struct": {
+              "types": [
+                {
+                  "i32": {
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                },
+                {
+                  "i32": {
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                }
+              ],
+              "nullability": "NULLABILITY_REQUIRED"
+            }
+          },
+          "namedTable": {
+            "names": [
+              "foo",
+              "bar"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "version": {
+    "minorNumber": 42,
+    "patchNumber": 1
+  }
+}
+// -----
+{
+  "relations": [
+    {
+      "rel": {
+        "read": {
+          "common": {
+            "direct": {}
+          },
+          "baseSchema": {
+            "names": [
+              "a",
+              "b"
+            ],
+            "struct": {
+              "types": [
+                {
+                  "i32": {
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                },
+                {
+                  "i32": {
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                }
+              ],
+              "nullability": "NULLABILITY_REQUIRED"
+            }
+          },
+          "namedTable": {
+            "names": [
+              "foo",
+              "bar"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "rel": {
+        "read": {
+          "common": {
+            "direct": {}
+          },
+          "baseSchema": {
+            "names": [
+              "a",
+              "b"
+            ],
+            "struct": {
+              "types": [
+                {
+                  "i32": {
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                },
+                {
+                  "i32": {
+                    "nullability": "NULLABILITY_REQUIRED"
+                  }
+                }
+              ],
+              "nullability": "NULLABILITY_REQUIRED"
+            }
+          },
+          "namedTable": {
+            "names": [
+              "foo",
+              "bar"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "version": {
+    "minorNumber": 42,
+    "patchNumber": 1
+  }
+}
+// -----
+{
+  "relations": [
+    {
+      "root": {
+        "input": {
+          "read": {
+            "common": {
+              "direct": {}
+            },
+            "baseSchema": {
+              "names": [
+                "a",
+                "b",
+                "c"
+              ],
+              "struct": {
+                "types": [
+                  {
+                    "i32": {
+                      "nullability": "NULLABILITY_REQUIRED"
+                    }
+                  },
+                  {
+                    "struct": {
+                      "types": [
+                        {
+                          "i32": {
+                            "nullability": "NULLABILITY_REQUIRED"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "nullability": "NULLABILITY_REQUIRED"
+              }
+            },
+            "namedTable": {
+              "names": [
+                "t"
+              ]
+            }
+          }
+        },
+        "names": [
+          "x",
+          "y",
+          "z"
+        ]
+      }
+    }
+  ],
+  "version": {
+    "minorNumber": 42,
+    "patchNumber": 1
+  }
+}
+// -----
+{
+  "extensionUris": [
+    {
+      "uri": "http://some.url/with/extensions.yml"
+    },
+    {
+      "extensionUriAnchor": 1,
+      "uri": "http://other.url/with/more/extensions.yml"
+    }
+  ],
+  "extensions": [
+    {
+      "extensionFunction": {
+        "name": "somefunc"
+      }
+    },
+    {
+      "extensionType": {
+        "name": "sometype"
+      }
+    },
+    {
+      "extensionTypeVariation": {
+        "name": "sometypevar"
+      }
+    },
+    {
+      "extensionFunction": {
+        "extensionUriReference": 1,
+        "functionAnchor": 1,
+        "name": "someotherfunc"
+      }
+    }
+  ],
+  "version": {
+    "minorNumber": 42,
+    "patchNumber": 1
+  }
+}
+// -----
+{
+  "expectedTypeUrls": [
+    "http://some.url/with/type.proto",
+    "http://other.url/with/type.proto"
+  ],
+  "version": {
+    "minorNumber": 42,
+    "patchNumber": 1
+  }
+}
