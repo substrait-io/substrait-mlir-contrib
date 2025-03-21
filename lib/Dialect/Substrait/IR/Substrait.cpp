@@ -103,6 +103,19 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::VarCharAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    Type type) {
+  VarCharType varCharType = mlir::dyn_cast<VarCharType>(type);
+  if (varCharType == nullptr)
+    return emitError() << "expected a var char type";
+  int32_t value_length = value.size();
+  if (value_length > varCharType.getLength())
+    return emitError() << "value length must be at most"
+                       << varCharType.getLength() << "characters.";
+  return success();
+}
+
 //===----------------------------------------------------------------------===//
 // Substrait types
 //===----------------------------------------------------------------------===//

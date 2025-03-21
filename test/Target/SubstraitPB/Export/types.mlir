@@ -16,6 +16,32 @@
 // CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
+// CHECK-NEXT:              varchar {
+// CHECK-NEXT:                length: 6
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.var_char<6>>
+    yield %0 : tuple<!substrait.var_char<6>>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              uuid {
 // CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }

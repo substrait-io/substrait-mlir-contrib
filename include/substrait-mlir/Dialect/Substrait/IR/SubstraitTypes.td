@@ -94,6 +94,16 @@ def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
   }];
 }
 
+def Substrait_VarCharType : Substrait_Type<"VarChar", "var_char"> {
+  let summary = "Substrait variable-length char type";
+  let description = [{
+    This type represents a substrait variable-length unicode string of at most L
+    characters.
+  }];
+  let parameters = (ins "int32_t":$length);
+  let assemblyFormat = [{ `<` $length `>` }];
+}
+
 def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
   let summary = "Substrait decimal type";
   let description = [{
@@ -134,6 +144,7 @@ def Substrait_SimpleTypes {
 def Substrait_ParametrizedTypes {
   list<Type> types = [
     Substrait_FixedCharType, // FixedChar
+    Substrait_VarCharType, // VarChar
     Substrait_DecimalType, // Decimal
   ];
 }
