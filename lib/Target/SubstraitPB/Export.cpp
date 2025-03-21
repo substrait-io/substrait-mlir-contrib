@@ -391,6 +391,18 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle varchar.
+  if (mlir::isa<VarCharType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto varCharType = std::make_unique<proto::Type::VarChar>();
+    varCharType->set_length(mlir::cast<VarCharType>(mlirType).getLength());
+    varCharType->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_varchar(varCharType.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -1002,6 +1014,12 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     // `FixedCharType`.
   } else if (auto fixedCharType = dyn_cast<FixedCharType>(literalType)) {
     literal->set_fixed_char(mlir::cast<FixedCharAttr>(value).getValue().str());
+    // `VarCharType`.
+  } else if (auto varCharType = dyn_cast<VarCharType>(literalType)) {
+    auto varChar =
+        std::make_unique<::substrait::proto::Expression_Literal_VarChar>();
+    varChar->set_value(mlir::cast<VarCharAttr>(value).getValue().str());
+    literal->set_allocated_var_char(varChar.release());
   } // `DecimalType`.
   else if (auto decimalType = dyn_cast<DecimalType>(literalType)) {
     auto decimal =
