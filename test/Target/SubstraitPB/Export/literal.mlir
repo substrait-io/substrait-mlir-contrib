@@ -108,6 +108,37 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
+// CHECK-NEXT:           var_char {
+// CHECK-NEXT:            value: "hello"
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:       }
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.var_char<6>> {
+    ^bb0(%arg0: tuple<si1>):
+      %2 = literal #substrait.var_char<"hello"> : !substrait.var_char<6>
+      yield %2 : !substrait.var_char<6>
+    }
+    yield %1 : tuple<si1, !substrait.var_char<6>>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:          literal {
 // CHECK-NEXT:            fixed_char: "hello"
 // CHECK-NEXT:          }
 // CHECK-NEXT:        }
