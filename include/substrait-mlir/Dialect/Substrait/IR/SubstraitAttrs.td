@@ -120,6 +120,16 @@ def Substrait_FixedCharAttr
   }];
 }
 
+def Substrait_FixedBinaryAttr : Substrait_Attr<"FixedBinary", "fixed_binary",
+  [TypedAttrInterface ]> {
+  let summary = "Substrait fixed-length binary type";
+  let description = [{
+    This type represents a substrait binary string of L bytes.
+  }];
+  let parameters = (ins "StringAttr":$value, "FixedBinaryType":$type);
+  let assemblyFormat = "`<` custom<AddRemovePadding>($value, $type) `>`";
+}
+
 def Substrait_IntervalDaySecondAttr
     : Substrait_StaticallyTypedAttr<"IntervalDaySecond", "interval_day_second",
                                     "IntervalDaySecondType"> {
@@ -271,6 +281,7 @@ def Substrait_ParametrizedAttributes {
   list<Attr> attrs = [
     Substrait_FixedCharAttr, // FixedChar
     Substrait_VarCharAttr, // VarChar
+    Substrait_FixedBinaryAttr, // FixedBinary
     Substrait_DecimalAttr, // Decimal
   ];
 }

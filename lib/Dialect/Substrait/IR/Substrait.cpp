@@ -358,6 +358,42 @@ void printDecimalNumber(AsmPrinter &printer, DecimalType type,
   printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
 }
 
+ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value, FixedBinaryType &type) {
+  // Parse fixed binary value as quoted string.
+  std::string valueStr;
+  if (parser.parseString(&valueStr))
+    return failure();
+
+  // Parse `L = <length>`.
+  uint32_t length;
+  if (parser.parseComma()  || parser.parseInteger(length))
+    return failure();
+
+  // Create `FixedBinaryType`.
+  auto emitError = [&]() { return parser.emitError(parser.getCurrentLocation()); };
+  if (!(type = FixedBinaryType::getChecked(emitError, parser.getContext(), length)))
+    return failure();
+
+  // Pad or trim the value to match the fixed length.
+  if (valueStr.size() < length) {
+    valueStr.append(length - valueStr.size(), '\0');  // Pad with null characters (0x00).
+  } else if (valueStr.size() > length) {
+    valueStr.resize(length);  // Trim excess characters.
+  }
+
+  //  Set the processed value.
+  value = parser.getBuilder().getStringAttr(valueStr);
+
+  return success();
+}
+
+void printAddRemovePadding(AsmPrinter &printer, StringAttr value, FixedBinaryType type) {
+  printer << value;
+  printer << ", ";
+  printer << type.getLength();
+
+}
+
 //===----------------------------------------------------------------------===//
 // Substrait operations
 //===----------------------------------------------------------------------===//
