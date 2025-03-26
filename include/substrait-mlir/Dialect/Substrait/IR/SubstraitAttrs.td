@@ -70,6 +70,35 @@ def Substrait_DateAttr
   let assemblyFormat = [{ `<` $value `>` }];
 }
 
+def Substrait_DecimalAttr : Substrait_Attr<"Decimal", "decimal", [
+    TypeInferableAttrInterface
+  ]> {
+  let summary = "Substrait decimal type";
+  let description = [{
+    This type represents a substrait decimal attribute type. The attribute is
+    backed by an `IntegerAttr` that stores the 128-bit decimal value.
+  }];
+  let parameters = (ins "DecimalType":$type, "IntegerAttr":$value);
+  let genVerifyDecl = 1;
+  let assemblyFormat = "`<` custom<DecimalNumber>($type, $value) `>`";
+  let extraClassDeclaration = [{
+    // Returns a string representation of the decimal value.
+    std::string decimalStr() const {
+      return toDecimalString(getType(), getValue());
+    }
+
+    // Converts the given integer attribute to the string represation of a
+    // decimal attribute with that value and the given type.
+    static std::string toDecimalString(DecimalType type, IntegerAttr value);
+
+    // Parses the given string into the integer attribute underlying a decimal
+    // attribute of the given decimal type.
+    static ParseResult parseDecimalString(
+        ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError,
+        StringRef str, DecimalType type, IntegerAttr &value);
+  }];
+}
+
 def Substrait_FixedCharAttr
     : Substrait_Attr<"FixedChar", "fixed_char",
     [DeclareAttrInterfaceMethods<TypeInferableAttrInterface>,
@@ -195,35 +224,6 @@ def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
       return $_get($_ctxt, major, minor, patch, gitHashAttr, producerAttr);
     }]>,
   ];
-}
-
-def Substrait_DecimalAttr : Substrait_Attr<"Decimal", "decimal", [
-    TypeInferableAttrInterface
-  ]> {
-  let summary = "Substrait decimal type";
-  let description = [{
-    This type represents a substrait decimal attribute type. The attribute is
-    backed by an `IntegerAttr` that stores the 128-bit decimal value.
-  }];
-  let parameters = (ins "DecimalType":$type, "IntegerAttr":$value);
-  let genVerifyDecl = 1;
-  let assemblyFormat = "`<` custom<DecimalNumber>($type, $value) `>`";
-  let extraClassDeclaration = [{
-    // Returns a string representation of the decimal value.
-    std::string decimalStr() const {
-      return toDecimalString(getType(), getValue());
-    }
-
-    // Converts the given integer attribute to the string represation of a
-    // decimal attribute with that value and the given type.
-    static std::string toDecimalString(DecimalType type, IntegerAttr value);
-
-    // Parses the given string into the integer attribute underlying a decimal
-    // attribute of the given decimal type.
-    static ParseResult parseDecimalString(
-        ::llvm::function_ref<::mlir::InFlightDiagnostic()> emitError,
-        StringRef str, DecimalType type, IntegerAttr &value);
-  }];
 }
 
 //===----------------------------------------------------------------------===//

@@ -9,6 +9,27 @@
 // RUN:   --split-input-file --output-split-marker="# -----" \
 // RUN: | FileCheck %s
 
+// CHECK:       expressions {
+// CHECK-NEXT:         literal {
+// CHECK-NEXT:           decimal {
+// CHECK-NEXT:             value: "\005\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
+// CHECK-NEXT:             precision: 9
+// CHECK-NEXT:             scale: 2
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.decimal<9, 2>> {
+    ^bb0(%arg : tuple<si1>):
+      %hi = literal #substrait.decimal<"0.05", P = 9, S = 2>
+      yield %hi : !substrait.decimal<9, 2>
+    }
+    yield %1 : tuple<si1, !substrait.decimal<9, 2>>
+  }
+}
+
+// -----
+
 // CHECK-LABEL: relations {
 // CHECK-NEXT:    rel {
 // CHECK-NEXT:      project {
@@ -29,7 +50,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.fixed_char<5>> {
     ^bb0(%arg0: tuple<si1>):
-      %2 = literal #substrait.fixed_char<"hello"> 
+      %2 = literal #substrait.fixed_char<"hello">
       yield %2 : !substrait.fixed_char<5>
     }
     yield %1 : tuple<si1, !substrait.fixed_char<5>>
@@ -325,26 +346,5 @@ substrait.plan version 0 : 42 : 1 {
       yield %false, %2, %-1, %35, %42 : si1, si8, si16, si32, si64
     }
     yield %1 : tuple<si1, si1, si8, si16, si32, si64>
-  }
-}
-
-// -----
-
-// CHECK:       expressions {
-// CHECK-NEXT:         literal {
-// CHECK-NEXT:           decimal {
-// CHECK-NEXT:             value: "\005\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
-// CHECK-NEXT:             precision: 9
-// CHECK-NEXT:             scale: 2
-
-substrait.plan version 0 : 42 : 1 {
-  relation {
-    %0 = named_table @t1 as ["a"] : tuple<si1>
-    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.decimal<9, 2>> {
-    ^bb0(%arg : tuple<si1>):
-      %hi = literal #substrait.decimal<"0.05", P = 9, S = 2>
-      yield %hi : !substrait.decimal<9, 2>
-    }
-    yield %1 : tuple<si1, !substrait.decimal<9, 2>>
   }
 }

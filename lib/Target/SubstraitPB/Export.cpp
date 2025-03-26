@@ -391,6 +391,21 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
+  // Handle decimal.
+  if (auto decimalType = llvm::dyn_cast<DecimalType>(mlirType)) {
+    auto decimalTypeProto = std::make_unique<proto::Type::Decimal>();
+    decimalTypeProto->set_precision(decimalType.getPrecision());
+    decimalTypeProto->set_scale(decimalType.getScale());
+
+    // TODO(ingomueller): support other nullability modes.
+    decimalTypeProto->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_decimal(decimalTypeProto.release());
+    return std::move(type);
+  }
+
   // Handle tuple types.
   if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
@@ -404,21 +419,6 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_struct_(structType.release());
-    return std::move(type);
-  }
-
-  // Handle decimal types.
-  if (auto decimalType = llvm::dyn_cast<DecimalType>(mlirType)) {
-    auto decimalTypeProto = std::make_unique<proto::Type::Decimal>();
-    decimalTypeProto->set_precision(decimalType.getPrecision());
-    decimalTypeProto->set_scale(decimalType.getScale());
-
-    // TODO(ingomueller): support other nullability modes.
-    decimalTypeProto->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
-    auto type = std::make_unique<proto::Type>();
-    type->set_allocated_decimal(decimalTypeProto.release());
     return std::move(type);
   }
 

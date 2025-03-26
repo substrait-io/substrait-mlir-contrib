@@ -1,6 +1,36 @@
 // RUN: substrait-opt -split-input-file %s \
 // RUN: | FileCheck %s
 
+// CHECK:      = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 5, S = 3>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.012", P = 3, S = 3>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"12.0", P = 3, S = 0>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2", P = 38, S = 1>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.12", P = 3, S = 3>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"12.0345", P = 20, S = 10>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
+// CHECK-NEXT: = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
+
+%0 = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
+%1 = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
+%2 = substrait.literal #substrait.decimal<"0.123", P = 5, S = 3>
+%3 = substrait.literal #substrait.decimal<"000.123", P = 3, S = 3>
+%4 = substrait.literal #substrait.decimal<"0.012", P = 3, S = 3>
+%5 = substrait.literal #substrait.decimal<"012.0", P = 3, S = 0>
+%6 = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
+%7 = substrait.literal #substrait.decimal<"123.000", P = 3, S = 0>
+%8 = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2", P = 38, S = 1>
+%9 = substrait.literal #substrait.decimal<"0.12", P = 3, S = 3>
+%a = substrait.literal #substrait.decimal<"12.0345", P = 20, S = 10>
+%b = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
+%c = substrait.literal #substrait.decimal<"00001234.0000", P = 20, S = 10>
+
+// -----
+
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
@@ -251,32 +281,3 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : tuple<si1, si1, si8, si16, si32, si64>
   }
 }
-
-// -----
-
-// CHECK:      = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 5, S = 3>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.012", P = 3, S = 3>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"12.0", P = 3, S = 0>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2", P = 38, S = 1>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"0.12", P = 3, S = 3>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"12.0345", P = 20, S = 10>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
-// CHECK-NEXT: = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
-%0 = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
-%1 = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
-%2 = substrait.literal #substrait.decimal<"0.123", P = 5, S = 3>
-%3 = substrait.literal #substrait.decimal<"000.123", P = 3, S = 3>
-%4 = substrait.literal #substrait.decimal<"0.012", P = 3, S = 3>
-%5 = substrait.literal #substrait.decimal<"012.0", P = 3, S = 0>
-%6 = substrait.literal #substrait.decimal<"123.0", P = 3, S = 0>
-%7 = substrait.literal #substrait.decimal<"123.000", P = 3, S = 0>
-%8 = substrait.literal #substrait.decimal<"1111111111111111111111111111111111113.2", P = 38, S = 1>
-%9 = substrait.literal #substrait.decimal<"0.12", P = 3, S = 3>
-%a = substrait.literal #substrait.decimal<"12.0345", P = 20, S = 10>
-%b = substrait.literal #substrait.decimal<"1234.0", P = 20, S = 10>
-%c = substrait.literal #substrait.decimal<"00001234.0000", P = 20, S = 10>
