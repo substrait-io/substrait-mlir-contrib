@@ -105,14 +105,11 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
 
 LogicalResult mlir::substrait::VarCharAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
-    Type type) {
-  VarCharType varCharType = mlir::dyn_cast<VarCharType>(type);
-  if (varCharType == nullptr)
-    return emitError() << "expected a var char type";
+    VarCharType type) {
   int32_t value_length = value.size();
-  if (value_length > varCharType.getLength())
-    return emitError() << "value length must be at most"
-                       << varCharType.getLength() << "characters.";
+  if (value_length > type.getLength())
+    return emitError() << "value length must be at most" << type.getLength()
+                       << "characters.";
   return success();
 }
 
@@ -299,6 +296,23 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   }
   // Normal integer.
   printer << count.getValue();
+}
+
+ParseResult parseRemoveSymbols(AsmParser &parser, VarCharType &type) {
+  // remove `<` and `>` symbols
+  int64_t result;
+  if (parser.parseInteger(result)) {
+    return failure();
+  }
+  type = VarCharType::get(parser.getContext(), result);
+
+  // Error.
+  return success();
+}
+
+void printRemoveSymbols(AsmPrinter &printer, VarCharType type) {
+  // Normal integer.
+  printer << type.getLength();
 }
 
 ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,

@@ -31,7 +31,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.var_char<6>> {
     ^bb0(%arg0: tuple<si1>):
-      %2 = literal #substrait.var_char<"hello"> : !substrait.var_char<6>
+      %2 = literal #substrait.var_char<"hello", 6>
       yield %2 : !substrait.var_char<6>
     }
     yield %1 : tuple<si1, !substrait.var_char<6>>
@@ -60,7 +60,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.fixed_char<5>> {
     ^bb0(%arg0: tuple<si1>):
-      %2 = literal #substrait.fixed_char<"hello"> 
+      %2 = literal #substrait.fixed_char<"hello">
       yield %2 : !substrait.fixed_char<5>
     }
     yield %1 : tuple<si1, !substrait.fixed_char<5>>

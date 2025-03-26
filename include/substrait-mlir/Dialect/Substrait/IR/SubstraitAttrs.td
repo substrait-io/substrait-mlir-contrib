@@ -170,8 +170,8 @@ def Substrait_VarCharAttr
     This type represents a substrait varchar attribute type, namely a unicode
     string of at most L characters.
   }];
-  let parameters = (ins "StringAttr":$value, AttributeSelfTypeParameter<"VarCharType">:$type);
-  let assemblyFormat = [{ `<` $value `>` }];
+  let parameters = (ins "StringAttr":$value, "VarCharType":$type);
+  let assemblyFormat = [{ `<` $value `,` custom<RemoveSymbols>($type) `>` }];
   let genVerifyDecl = 1;
 }
 
