@@ -60,7 +60,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.var_char<6>> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.var_char<"hello"> : !substrait.var_char<6>
+// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.var_char<"hello", 6>
 // CHECK-NEXT:      yield %[[V2]] : !substrait.var_char<6>
 // CHECK-NEXT:    }
 // CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.var_char<6>
@@ -70,8 +70,8 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.var_char<6>> {
     ^bb0(%arg : tuple<si1>):
-      %fixed_char = literal #substrait.var_char<"hello"> : !substrait.var_char<6>
-      yield %fixed_char : !substrait.var_char<6>
+      %var_char = literal #substrait.var_char<"hello", 6>
+      yield %var_char : !substrait.var_char<6>
     }
     yield %1 : tuple<si1, !substrait.var_char<6>>
   }

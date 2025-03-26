@@ -129,7 +129,7 @@ version {
 # CHECK:         %[[V0:.*]] = named_table
 # CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.var_char<5>> {
 # CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.var_char<"hello"> : !substrait.var_char<5>
+# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.var_char<"hello", 5>
 # CHECK-NEXT:      yield %[[V2]] : !substrait.var_char<5>
 # CHECK-NEXT:    }
 # CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.var_char<5>
