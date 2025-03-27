@@ -81,14 +81,14 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:          literal {
-// CHECK-NEXT:            fixed_binary: "1838191\000\000\000"
+// CHECK-NEXT:            fixed_binary: "8181818181"
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.fixed_binary<10>> {
     ^bb0(%arg : tuple<si1>):
-      %fixed_binary = literal #substrait.fixed_binary<"1838191\00\00\00", 10>
+      %fixed_binary = literal #substrait.fixed_binary<"8181818181", 10>
       yield %fixed_binary : !substrait.fixed_binary<10>
     }
     yield %1 : tuple<si1, !substrait.fixed_binary<10>>

@@ -121,12 +121,13 @@ def Substrait_FixedCharAttr
 }
 
 def Substrait_FixedBinaryAttr : Substrait_Attr<"FixedBinary", "fixed_binary",
-  [TypedAttrInterface ]> {
+    [TypedAttrInterface]> {
   let summary = "Substrait fixed-length binary type";
   let description = [{
     This type represents a substrait binary string of L bytes.
   }];
   let parameters = (ins "StringAttr":$value, "FixedBinaryType":$type);
+  let genVerifyDecl = 1;
   let assemblyFormat = "`<` custom<AddRemovePadding>($value, $type) `>`";
 }
 

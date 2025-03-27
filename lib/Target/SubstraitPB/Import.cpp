@@ -715,10 +715,9 @@ importLiteral(ImplicitLocOpBuilder builder,
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kFixedBinary: {
-    StringAttr stringAttr =
-    StringAttr::get(context, message.fixed_binary());
+    StringAttr stringAttr = StringAttr::get(context, message.fixed_binary());
     FixedBinaryType fixedBinaryType =
-    FixedBinaryType::get(context, message.fixed_binary().size());
+        FixedBinaryType::get(context, message.fixed_binary().size());
     auto attr = FixedBinaryAttr::get(context, stringAttr, fixedBinaryType);
     return builder.create<LiteralOp>(attr);
   }

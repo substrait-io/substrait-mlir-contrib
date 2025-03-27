@@ -80,6 +80,17 @@ LogicalResult mlir::substrait::FixedCharAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::FixedBinaryAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    FixedBinaryType type) {
+  FixedBinaryType fixedBinaryType = mlir::dyn_cast<FixedBinaryType>(type);
+  int32_t value_length = value.size();
+  if (fixedBinaryType != nullptr && value_length != fixedBinaryType.getLength())
+    return emitError() << "value length must be " << fixedBinaryType.getLength()
+                       << " characters.";
+  return success();
+}
+
 LogicalResult mlir::substrait::IntervalYearMonthAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t year,
     int32_t month) {
@@ -358,28 +369,23 @@ void printDecimalNumber(AsmPrinter &printer, DecimalType type,
   printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
 }
 
-ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value, FixedBinaryType &type) {
-  // Parse fixed binary value as quoted string.
+ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value,
+                                  FixedBinaryType &type) {
   std::string valueStr;
-  if (parser.parseString(&valueStr))
-    return failure();
 
-  // Parse `L = <length>`.
+  // Parse fixed binary value as quoted string and  `L = <length>`.
   uint32_t length;
-  if (parser.parseComma()  || parser.parseInteger(length))
+  if (parser.parseString(&valueStr) || parser.parseComma() ||
+      parser.parseInteger(length))
     return failure();
 
   // Create `FixedBinaryType`.
-  auto emitError = [&]() { return parser.emitError(parser.getCurrentLocation()); };
-  if (!(type = FixedBinaryType::getChecked(emitError, parser.getContext(), length)))
+  auto emitError = [&]() {
+    return parser.emitError(parser.getCurrentLocation());
+  };
+  MLIRContext *context = parser.getContext();
+  if (!(type = FixedBinaryType::getChecked(emitError, context, length)))
     return failure();
-
-  // Pad or trim the value to match the fixed length.
-  if (valueStr.size() < length) {
-    valueStr.append(length - valueStr.size(), '\0');  // Pad with null characters (0x00).
-  } else if (valueStr.size() > length) {
-    valueStr.resize(length);  // Trim excess characters.
-  }
 
   //  Set the processed value.
   value = parser.getBuilder().getStringAttr(valueStr);
@@ -387,11 +393,11 @@ ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value, FixedBin
   return success();
 }
 
-void printAddRemovePadding(AsmPrinter &printer, StringAttr value, FixedBinaryType type) {
+void printAddRemovePadding(AsmPrinter &printer, StringAttr value,
+                           FixedBinaryType type) {
   printer << value;
   printer << ", ";
   printer << type.getLength();
-
 }
 
 //===----------------------------------------------------------------------===//
