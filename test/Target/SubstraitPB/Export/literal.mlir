@@ -9,7 +9,16 @@
 // RUN:   --split-input-file --output-split-marker="# -----" \
 // RUN: | FileCheck %s
 
-// CHECK:       expressions {
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
 // CHECK-NEXT:         literal {
 // CHECK-NEXT:           decimal {
 // CHECK-NEXT:             value: "\005\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
