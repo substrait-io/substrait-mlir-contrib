@@ -84,7 +84,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.fixed_binary<10>> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_binary<"1838191\00\00\00", 10>
+// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_binary<"8181818181", 10>
 // CHECK-NEXT:      yield %[[V2]] : !substrait.fixed_binary<10>
 // CHECK-NEXT:    }
 // CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.fixed_binary<10>
@@ -94,7 +94,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.fixed_binary<10>> {
     ^bb0(%arg : tuple<si1>):
-      %bytes = literal #substrait.fixed_binary<"1838191\00\00\00", 10>
+      %bytes = literal #substrait.fixed_binary<"8181818181", 10>
       yield %bytes : !substrait.fixed_binary<10>
     }
     yield %1 : tuple<si1, !substrait.fixed_binary<10>>
