@@ -171,7 +171,7 @@ def Substrait_VarCharAttr
     string of at most L characters.
   }];
   let parameters = (ins "StringAttr":$value, "VarCharType":$type);
-  let assemblyFormat = [{ `<` $value `,` custom<RemoveSymbols>($type) `>` }];
+  let assemblyFormat = [{ `<` $value `,` custom<VarCharTypeByLength>($type) `>` }];
   let genVerifyDecl = 1;
 }
 
