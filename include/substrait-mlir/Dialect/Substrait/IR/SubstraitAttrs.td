@@ -192,6 +192,18 @@ def Substrait_UUIDAttr
   let assemblyFormat = [{ `<` $value `>` }];
 }
 
+def Substrait_VarCharAttr
+    : Substrait_Attr<"VarChar", "var_char", [TypedAttrInterface]> {
+  let summary = "Substrait varchar type";
+  let description = [{
+    This type represents a substrait varchar attribute type, namely a unicode
+    string of at most L characters.
+  }];
+  let parameters = (ins "StringAttr":$value, "VarCharType":$type);
+  let assemblyFormat = [{ `<` $value `,` custom<VarCharTypeByLength>($type) `>` }];
+  let genVerifyDecl = 1;
+}
+
 def Substrait_VersionAttr : Substrait_Attr<"Version", "version"> {
   let summary = "Substrait version";
   let description = [{
@@ -258,6 +270,7 @@ def Substrait_SimpleAttributes {
 def Substrait_ParametrizedAttributes {
   list<Attr> attrs = [
     Substrait_FixedCharAttr, // FixedChar
+    Substrait_VarCharAttr, // VarChar
     Substrait_DecimalAttr, // Decimal
   ];
 }

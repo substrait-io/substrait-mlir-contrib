@@ -219,6 +219,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return UUIDType::get(context);
   case proto::Type::kFixedChar:
     return FixedCharType::get(context, type.fixed_char().length());
+  case proto::Type::kVarchar:
+    return VarCharType::get(context, type.varchar().length());
   case proto::Type::kDecimal: {
     const proto::Type::Decimal &decimalType = type.decimal();
     return mlir::substrait::DecimalType::get(context, decimalType.precision(),
@@ -700,6 +702,14 @@ importLiteral(ImplicitLocOpBuilder builder,
     FixedCharType fixedCharType =
         FixedCharType::get(context, message.fixed_char().size());
     auto attr = FixedCharAttr::get(context, stringAttr, fixedCharType);
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kVarChar: {
+    StringAttr stringAttr =
+        StringAttr::get(context, message.var_char().value());
+    VarCharType varCharType =
+        VarCharType::get(context, message.var_char().value().size());
+    auto attr = VarCharAttr::get(context, stringAttr, varCharType);
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kDecimal: {
