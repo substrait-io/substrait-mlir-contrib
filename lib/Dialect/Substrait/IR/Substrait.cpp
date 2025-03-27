@@ -103,6 +103,16 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::VarCharAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    VarCharType type) {
+  int32_t value_length = value.size();
+  if (value_length > type.getLength())
+    return emitError() << "value length must be at most " << type.getLength()
+                       << " characters.";
+  return success();
+}
+
 //===----------------------------------------------------------------------===//
 // Substrait types
 //===----------------------------------------------------------------------===//
@@ -286,6 +296,26 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   }
   // Normal integer.
   printer << count.getValue();
+}
+
+// Parses a VarCharType by extracting the length from the given parser. Assumes
+// the length is surrounded by `<` and `>` symbols, which are removed. On
+// success, assigns the parsed type to `type` and returns success.
+ParseResult parseVarCharTypeByLength(AsmParser &parser, VarCharType &type) {
+  // remove `<` and `>` symbols
+  int64_t result;
+  if (parser.parseInteger(result))
+    return failure();
+
+  type = VarCharType::get(parser.getContext(), result);
+
+  return success();
+}
+
+// Prints the VarCharType by outputting its length to the given printer.
+void printVarCharTypeByLength(AsmPrinter &printer, VarCharType type) {
+  // Normal integer.
+  printer << type.getLength();
 }
 
 ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
