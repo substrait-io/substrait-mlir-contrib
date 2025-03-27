@@ -48,6 +48,11 @@ version {
 
 # -----
 
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<!substrait.fixed_binary<5>>
+
 relations {
   rel {
     read {
