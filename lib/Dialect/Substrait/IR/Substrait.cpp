@@ -298,7 +298,6 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
   printer << count.getValue();
 }
 
-
 // Parses a VarCharType by extracting the length from the given parser. Assumes
 // the length is surrounded by `<` and `>` symbols, which are removed. On
 // success, assigns the parsed type to `type` and returns success.
