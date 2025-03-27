@@ -33,6 +33,16 @@ def Substrait_DateType : Substrait_Type<"Date", "date"> {
   }];
 }
 
+def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
+  let summary = "Substrait decimal type";
+  let description = [{
+    This type represents a substrait decimal type.
+  }];
+  let parameters = (ins "uint32_t":$precision, "uint32_t":$scale);
+  let assemblyFormat = "`<` $precision `,` $scale `>`";
+  let genVerifyDecl = 1;
+}
+
 def Substrait_FixedCharType : Substrait_Type<"FixedChar", "fixed_char"> {
   let summary = "Substrait fixed-length char type";
   let description = [{
@@ -92,16 +102,6 @@ def Substrait_UUIDType : Substrait_Type<"UUID", "uuid"> {
     This type represents a substrait uuid (universally-unique identifier) type.
     This is a 16-byte binary value.
   }];
-}
-
-def Substrait_DecimalType : Substrait_Type<"Decimal", "decimal"> {
-  let summary = "Substrait decimal type";
-  let description = [{
-    This type represents a substrait decimal type.
-  }];
-  let parameters = (ins "uint32_t":$precision, "uint32_t":$scale);
-  let assemblyFormat = "`<` $precision `,` $scale `>`";
-  let genVerifyDecl = 1;
 }
 
 /// Currently supported simple types, listed in order of the Substrait specification.
