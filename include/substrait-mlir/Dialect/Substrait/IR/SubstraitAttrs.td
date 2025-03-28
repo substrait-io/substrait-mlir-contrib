@@ -128,7 +128,7 @@ def Substrait_FixedBinaryAttr : Substrait_Attr<"FixedBinary", "fixed_binary",
   }];
   let parameters = (ins "StringAttr":$value, "FixedBinaryType":$type);
   let genVerifyDecl = 1;
-  let assemblyFormat = "`<` custom<AddRemovePadding>($value, $type) `>`";
+  let assemblyFormat = "`<` custom<FixedBinaryTypeRemoveLength>($value, $type) `>`";
 }
 
 def Substrait_IntervalDaySecondAttr

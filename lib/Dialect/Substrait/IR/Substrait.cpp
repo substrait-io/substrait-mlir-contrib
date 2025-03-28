@@ -85,7 +85,7 @@ LogicalResult mlir::substrait::FixedBinaryAttr::verify(
     FixedBinaryType type) {
   FixedBinaryType fixedBinaryType = mlir::dyn_cast<FixedBinaryType>(type);
   int32_t value_length = value.size();
-  if (fixedBinaryType != nullptr && value_length != fixedBinaryType.getLength())
+  if (fixedBinaryType == nullptr || value_length != fixedBinaryType.getLength())
     return emitError() << "value length must be " << fixedBinaryType.getLength()
                        << " characters.";
   return success();
@@ -369,14 +369,12 @@ void printDecimalNumber(AsmPrinter &printer, DecimalType type,
   printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
 }
 
-ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value,
+ParseResult parseFixedBinaryTypeRemoveLength(AsmParser &parser, StringAttr &value,
                                   FixedBinaryType &type) {
   std::string valueStr;
 
-  // Parse fixed binary value as quoted string and  `L = <length>`.
-  uint32_t length;
-  if (parser.parseString(&valueStr) || parser.parseComma() ||
-      parser.parseInteger(length))
+  // Parse fixed binary value as quoted string.
+  if (parser.parseString(&valueStr))
     return failure();
 
   // Create `FixedBinaryType`.
@@ -384,6 +382,7 @@ ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value,
     return parser.emitError(parser.getCurrentLocation());
   };
   MLIRContext *context = parser.getContext();
+  uint32_t length = valueStr.size();
   if (!(type = FixedBinaryType::getChecked(emitError, context, length)))
     return failure();
 
@@ -393,11 +392,9 @@ ParseResult parseAddRemovePadding(AsmParser &parser, StringAttr &value,
   return success();
 }
 
-void printAddRemovePadding(AsmPrinter &printer, StringAttr value,
+void printFixedBinaryTypeRemoveLength(AsmPrinter &printer, StringAttr value,
                            FixedBinaryType type) {
   printer << value;
-  printer << ", ";
-  printer << type.getLength();
 }
 
 //===----------------------------------------------------------------------===//
