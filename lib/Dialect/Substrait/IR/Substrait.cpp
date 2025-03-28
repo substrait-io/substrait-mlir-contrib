@@ -84,8 +84,10 @@ LogicalResult mlir::substrait::FixedBinaryAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
     FixedBinaryType type) {
   FixedBinaryType fixedBinaryType = mlir::dyn_cast<FixedBinaryType>(type);
+  if (fixedBinaryType == nullptr)
+    return emitError() << "expected a fixed binary type";
   int32_t value_length = value.size();
-  if (fixedBinaryType == nullptr || value_length != fixedBinaryType.getLength())
+  if (value_length != fixedBinaryType.getLength())
     return emitError() << "value length must be " << fixedBinaryType.getLength()
                        << " characters.";
   return success();
