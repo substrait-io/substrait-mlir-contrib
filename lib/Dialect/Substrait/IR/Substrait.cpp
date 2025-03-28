@@ -80,6 +80,19 @@ LogicalResult mlir::substrait::FixedCharAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::FixedBinaryAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
+    FixedBinaryType type) {
+  FixedBinaryType fixedBinaryType = mlir::dyn_cast<FixedBinaryType>(type);
+  if (fixedBinaryType == nullptr)
+    return emitError() << "expected a fixed binary type";
+  int32_t value_length = value.size();
+  if (value_length != fixedBinaryType.getLength())
+    return emitError() << "value length must be " << fixedBinaryType.getLength()
+                       << " characters.";
+  return success();
+}
+
 LogicalResult mlir::substrait::IntervalYearMonthAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, int32_t year,
     int32_t month) {
@@ -356,6 +369,32 @@ void printDecimalNumber(AsmPrinter &printer, DecimalType type,
                         IntegerAttr value) {
   printer << "\"" << DecimalAttr::toDecimalString(type, value) << "\", ";
   printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
+}
+
+ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
+                                    FixedBinaryType &type) {
+  std::string valueStr;
+  // Parse fixed binary value as quoted string.
+  if (parser.parseString(&valueStr))
+    return failure();
+
+  // Create `FixedBinaryType`.
+  auto emitError = [&]() {
+    return parser.emitError(parser.getCurrentLocation());
+  };
+  MLIRContext *context = parser.getContext();
+  uint32_t length = valueStr.size();
+  if (!(type = FixedBinaryType::getChecked(emitError, context, length)))
+    return failure();
+
+  value = parser.getBuilder().getStringAttr(valueStr);
+
+  return success();
+}
+
+void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
+                             FixedBinaryType type) {
+  printer << value;
 }
 
 //===----------------------------------------------------------------------===//

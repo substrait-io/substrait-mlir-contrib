@@ -221,6 +221,8 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return FixedCharType::get(context, type.fixed_char().length());
   case proto::Type::kVarchar:
     return VarCharType::get(context, type.varchar().length());
+  case proto::Type::kFixedBinary:
+    return FixedBinaryType::get(context, type.fixed_binary().length());
   case proto::Type::kDecimal: {
     const proto::Type::Decimal &decimalType = type.decimal();
     return mlir::substrait::DecimalType::get(context, decimalType.precision(),
@@ -710,6 +712,13 @@ importLiteral(ImplicitLocOpBuilder builder,
     VarCharType varCharType =
         VarCharType::get(context, message.var_char().value().size());
     auto attr = VarCharAttr::get(context, stringAttr, varCharType);
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kFixedBinary: {
+    StringAttr stringAttr = StringAttr::get(context, message.fixed_binary());
+    FixedBinaryType fixedBinaryType =
+        FixedBinaryType::get(context, message.fixed_binary().size());
+    auto attr = FixedBinaryAttr::get(context, stringAttr, fixedBinaryType);
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kDecimal: {
