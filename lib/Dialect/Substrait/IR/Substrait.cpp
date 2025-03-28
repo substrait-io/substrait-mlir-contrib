@@ -371,9 +371,8 @@ void printDecimalNumber(AsmPrinter &printer, DecimalType type,
   printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
 }
 
-ParseResult parseFixedBinaryLiteral(AsmParser &parser,
-                                             StringAttr &value,
-                                             FixedBinaryType &type) {
+ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
+                                    FixedBinaryType &type) {
   std::string valueStr;
   // Parse fixed binary value as quoted string.
   if (parser.parseString(&valueStr))
@@ -394,7 +393,7 @@ ParseResult parseFixedBinaryLiteral(AsmParser &parser,
 }
 
 void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
-                                      FixedBinaryType type) {
+                             FixedBinaryType type) {
   printer << value;
 }
 
