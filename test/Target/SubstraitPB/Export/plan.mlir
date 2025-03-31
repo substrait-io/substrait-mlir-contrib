@@ -143,20 +143,20 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK:       advanced_extensions {
 // CHECK-NEXT:    optimization {
-// CHECK-NEXT:      type_url: "http://some.url/with/type.proto"
-// CHECK-NEXT:      value: "protobuf message"
+// CHECK-NEXT:      type_url: "type.googleapis.com/google.protobuf.Int32Value"
+// CHECK-NEXT:      value: "\010*"
 // CHECK-NEXT:    }
 // CHECK-NEXT:    enhancement {
-// CHECK-NEXT:      type_url: "http://other.url/with/type.proto"
-// CHECK-NEXT:      value: "other protobuf message"
+// CHECK-NEXT:      type_url: "type.googleapis.com/google.protobuf.BoolValue"
+// CHECK-NEXT:      value: "\010\001"
 // CHECK-NEXT:    }
 // CHECK-NEXT:  }
 // CHECK-NEXT:  version
 
 substrait.plan version 0 : 42 : 1
     advanced_extension
-      optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
-      enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+      optimization = "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+      enhancement = "\08\01" : !substrait.any<"type.googleapis.com/google.protobuf.BoolValue">
 {}
 
 // -----
@@ -168,7 +168,7 @@ substrait.plan version 0 : 42 : 1
 
 substrait.plan version 0 : 42 : 1
     advanced_extension
-      optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+      optimization = "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
 {}
 
 // -----
@@ -180,7 +180,7 @@ substrait.plan version 0 : 42 : 1
 
 substrait.plan version 0 : 42 : 1
     advanced_extension
-      enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+      enhancement = "\08\01" : !substrait.any<"type.googleapis.com/google.protobuf.BoolValue">
 {}
 
 // -----

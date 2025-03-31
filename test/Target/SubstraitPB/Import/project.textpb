@@ -74,7 +74,7 @@ version {
 # CHECK-NEXT:   relation
 # CHECK:         %[[V0:.*]] = named_table
 # CHECK-NEXT:    %[[V1:.*]] = project %[[V0]]
-# CHECK-SAME:      advanced_extension optimization = "foo" : !substrait.any<"bar">
+# CHECK-SAME:      "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
 
 relations {
   rel {
@@ -107,8 +107,8 @@ relations {
       }
       advanced_extension {
         optimization {
-          type_url: "bar"
-          value: "foo"
+          type_url: "type.googleapis.com/google.protobuf.Int32Value"
+          value: "\010*"
         }
       }
     }

@@ -192,18 +192,18 @@ version {
 
 # CHECK-LABEL: substrait.plan
 # CHECK-SAME:   advanced_extension
-# CHECK-SAME:     optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
-# CHECK-SAME:     enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+# CHECK-SAME:     optimization = "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+# CHECK-SAME:     enhancement = "\08\01" : !substrait.any<"type.googleapis.com/google.protobuf.BoolValue">
 # CHECK-NEXT: }
 
 advanced_extensions {
   optimization {
-    type_url: "http://some.url/with/type.proto"
-    value: "protobuf message"
+    type_url: "type.googleapis.com/google.protobuf.Int32Value"
+    value: "\010*"
   }
   enhancement {
-    type_url: "http://other.url/with/type.proto"
-    value: "other protobuf message"
+    type_url: "type.googleapis.com/google.protobuf.BoolValue"
+    value: "\010\01"
   }
 }
 version {
@@ -214,14 +214,14 @@ version {
 # -----
 
 # CHECK-LABEL: substrait.plan
-# CHECK-SAME:   advanced_extension
-# CHECK-SAME:     optimization = "protobuf message" : !substrait.any<"http://some.url/with/type.proto">
+# CHECK-SAME:   advanced_extension optimization
+# CHECK-SAME:     "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
 # CHECK-NEXT: }
 
 advanced_extensions {
   optimization {
-    type_url: "http://some.url/with/type.proto"
-    value: "protobuf message"
+    type_url: "type.googleapis.com/google.protobuf.Int32Value"
+    value: "\010*"
   }
 }
 version {
@@ -232,14 +232,14 @@ version {
 # -----
 
 # CHECK-LABEL: substrait.plan
-# CHECK-SAME:   advanced_extension
-# CHECK-SAME:     enhancement = "other protobuf message" : !substrait.any<"http://other.url/with/type.proto">
+# CHECK-SAME:   advanced_extension enhancement
+# CHECK-SAME:     "\08\01" : !substrait.any<"type.googleapis.com/google.protobuf.BoolValue">
 # CHECK-NEXT: }
 
 advanced_extensions {
   enhancement {
-    type_url: "http://other.url/with/type.proto"
-    value: "other protobuf message"
+    type_url: "type.googleapis.com/google.protobuf.BoolValue"
+    value: "\010\01"
   }
 }
 version {
