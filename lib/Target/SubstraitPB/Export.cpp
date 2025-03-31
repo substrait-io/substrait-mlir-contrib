@@ -573,6 +573,9 @@ SubstraitExporter::exportOperation(AggregateOp op) {
     }
   }
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *aggregateRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_aggregate(aggregateRel.release());

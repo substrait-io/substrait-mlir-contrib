@@ -306,3 +306,28 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : tuple<si32, si32, si32, si32, si32, si32, si32, si32, si32, si32, si32, si32, si32>
   }
 }
+
+// -----
+
+// Check op with advanced extension.
+
+// CHECK-LABEL: substrait.plan
+// CHECK:           aggregate %{{.*}} advanced_extension optimization = "\08*"
+// CHECK-SAME:          : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+// CHECK-SAME:        : tuple
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si32>
+    %1 = aggregate %0
+            advanced_extension optimization = "\08*"
+              : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+            : tuple<si32> -> tuple<si1>
+      groupings {
+      ^bb0(%arg : tuple<si32>):
+        %2 = literal 0 : si1
+        yield %2 : si1
+      }
+    yield %1 : tuple<si1>
+  }
+}

@@ -468,8 +468,9 @@ class Substrait_RelOp<string mnemonic, list<Trait> traits = []> :
   ]>;
 
 def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
-    DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
+    DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     DeclareOpInterfaceMethods<InferTypeOpInterface>,
   ]> {
   let summary = "Aggregate operation";
@@ -512,7 +513,8 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
   }];
   let arguments = (ins
     Substrait_Relation:$input,
-    I64ArrayArrayAttr:$grouping_sets
+    I64ArrayArrayAttr:$grouping_sets,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let regions = (region
@@ -520,7 +522,8 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
     AnyRegion:$measures
   );
   let assemblyFormat = [{
-    $input attr-dict `:` type($input) `->` type($result)
+    $input (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($input) `->` type($result)
     custom<AggregateRegions>($groupings, $measures, $grouping_sets)
   }];
   let hasRegionVerifier = 1;

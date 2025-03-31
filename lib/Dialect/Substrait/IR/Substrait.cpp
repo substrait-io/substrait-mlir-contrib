@@ -724,7 +724,8 @@ void AggregateOp::build(OpBuilder &builder, OperationState &result, Value input,
                                       returnTypes);
 
   // Call existing `build` function and move bodies into the new regions.
-  AggregateOp::build(builder, result, returnTypes, input, groupingSets);
+  AggregateOp::build(builder, result, returnTypes, input, groupingSets,
+                     /*advanced_extension=*/{});
   result.regions[0]->takeBody(*groupings);
   result.regions[1]->takeBody(*measures);
 }

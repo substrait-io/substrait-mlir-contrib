@@ -404,6 +404,9 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   auto aggregateOp = builder.create<AggregateOp>(
       inputVal, groupingSets, groupingsRegion.get(), measuresRegion.get());
 
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, aggregateOp, aggregateRel);
+
   return aggregateOp;
 }
 
