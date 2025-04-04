@@ -228,6 +228,13 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return mlir::substrait::DecimalType::get(context, decimalType.precision(),
                                              decimalType.scale());
   }
+  case proto::Type::kList: {
+    const proto::Type::List &listType = type.list();
+    FailureOr<mlir::Type> elementType = importType(context, listType.type());
+    if (failed(elementType))
+      return failure();
+    return ListType::get(context, elementType.value());
+  }
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -752,6 +759,27 @@ importLiteral(ImplicitLocOpBuilder builder,
                                         message.decimal().scale());
     IntegerAttr value = IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = DecimalAttr::get(context, type, value);
+    return builder.create<LiteralOp>(attr);
+  }
+  case Expression::Literal::LiteralTypeCase::kList: {
+    const Expression::Literal::List &listType = message.list();
+    llvm::SmallVector<Attribute> listElements;
+    listElements.reserve(listType.values_size());
+    for (const Expression_Literal &element : listType.values()) {
+      // TODO: Create importAttribute function to avoid creating redundant
+      // 'LiteralOp's, as seen in test cases.
+      FailureOr<LiteralOp> elementOp = importLiteral(builder, element);
+      if (failed(elementOp))
+        return failure();
+      listElements.push_back(elementOp->getValue());
+    }
+    // Get the list type from the first element.
+    auto listElementType =
+        mlir::cast<TypedAttr>(listElements.front()).getType();
+    auto type = ListType::get(context, listElementType);
+    auto listAttr = ArrayAttr::get(context, listElements);
+    // TODO: Adjust when nullability is implemented. (List could be empty.)
+    auto attr = ListAttr::get(context, listAttr, type);
     return builder.create<LiteralOp>(attr);
   }
 

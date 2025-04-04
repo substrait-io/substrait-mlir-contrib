@@ -16,6 +16,37 @@
 // CHECK-NEXT:          names: "a"
 // CHECK-NEXT:          struct {
 // CHECK-NEXT:            types {
+// CHECK-NEXT:              list {
+// CHECK-NEXT:                type {
+// CHECK-NEXT:                  fixed_binary {
+// CHECK-NEXT:                    length: 4
+// CHECK-NEXT:                    nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:                  }
+// CHECK-NEXT:                }
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:              }
+// CHECK-NEXT:            }
+// CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        named_table {
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<!substrait.list<!substrait.fixed_binary<4>>>
+    yield %0 : tuple<!substrait.list<!substrait.fixed_binary<4>>>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      read {
+// CHECK:             base_schema {
+// CHECK-NEXT:          names: "a"
+// CHECK-NEXT:          struct {
+// CHECK-NEXT:            types {
 // CHECK-NEXT:              decimal {
 // CHECK-NEXT:                scale: 2
 // CHECK-NEXT:                precision: 12

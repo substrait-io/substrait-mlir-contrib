@@ -1,6 +1,37 @@
 // RUN: substrait-opt -split-input-file %s \
 // RUN: | FileCheck %s
 
+// CHECK:      substrait.plan version 0 : 42 : 1 {
+// CHECK-NEXT:   relation
+// CHECK:         %[[V0:.*]] = named_table
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.list<!substrait.fixed_binary<4>>> {
+// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
+// CHECK-NEXT:      %[[V2:.*]] = literal #substrait.list<[
+// CHECK-SAME:        #substrait.fixed_binary<"8181">
+// CHECK-SAME:        #substrait.fixed_binary<"8181">
+// CHECK-SAME:        #substrait.fixed_binary<"8181">
+// CHECK-SAME:        ], <!substrait.fixed_binary<4>>>
+// CHECK-NEXT:      yield %[[V2]] : !substrait.list<!substrait.fixed_binary<4>>
+// CHECK-NEXT:    }
+// CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.list<!substrait.fixed_binary<4>>>
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.list<!substrait.fixed_binary<4>>> {
+    ^bb0(%arg : tuple<si1>):
+      %bytes = literal #substrait.list<[
+                        #substrait.fixed_binary<"8181">,
+                        #substrait.fixed_binary<"8181">,
+                        #substrait.fixed_binary<"8181">], !substrait.list<!substrait.fixed_binary<4>>>
+      yield %bytes : !substrait.list<!substrait.fixed_binary<4>>
+    }
+    yield %1 : tuple<si1, !substrait.list<!substrait.fixed_binary<4>>>
+  }
+}
+
+// -----
+
 // CHECK:      = substrait.literal #substrait.decimal<"1234567.89", P = 9, S = 2>
 // CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 3, S = 3>
 // CHECK-NEXT: = substrait.literal #substrait.decimal<"0.123", P = 5, S = 3>
