@@ -180,14 +180,32 @@ def Substrait_AtomicTypes {
 /// One of the currently supported atomic types.
 def Substrait_AtomicType :
   AnyTypeOf<Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types>;
+  
+def Substrait_ListType : Substrait_Type<"List", "list"> {
+  let summary = "Substrait list type";
+  let description = [{
+    This type represents a list type.
+  }];
+  let parameters = (ins Substrait_AtomicType:$type);
+  let assemblyFormat = [{ `<` $type `>` }];
+  let genVerifyDecl = 1;
+}
+
+def Substrait_ContainerTypes {
+  list<Type> types = [
+    Substrait_ListType, // List
+  ];
+}
 
 /// Any container type, i.e., structs, maps, lists, and nestings thereof.
-def Substrait_ContainerType : NestedTupleOf<Substrait_AtomicTypes.types>;
+def Substrait_ContainerType : AnyTypeOf<
+  Substrait_ContainerTypes.types # [NestedTupleOf<Substrait_AtomicTypes.types>]
+>;
 
 /// Currently supported expression types.
 def Substrait_ExpressionTypes {
   list<Type> types =
-  Substrait_AtomicTypes.types;
+  Substrait_AtomicTypes.types#Substrait_ContainerTypes.types;
   // TODO: add container types here once we have them.
 }
 

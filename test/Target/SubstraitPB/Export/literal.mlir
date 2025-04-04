@@ -20,6 +20,50 @@
 // CHECK-NEXT:          read {
 // CHECK:             expressions {
 // CHECK-NEXT:         literal {
+// CHECK-NEXT:           list {
+// CHECK-NEXT:             values {
+// CHECK-NEXT:               fixed_binary: "8181"
+// CHECK-NEXT:             }
+// CHECK-NEXT:             values {
+// CHECK-NEXT:               fixed_binary: "8181"
+// CHECK-NEXT:             }
+// CHECK-NEXT:             values {
+// CHECK-NEXT:               fixed_binary: "8181"
+// CHECK-NEXT:             }
+// CHECK-NEXT:           }
+// CHECK-NEXT:         }
+// CHECK-NEXT:       }
+// CHECK-NEXT:     }
+// CHECK-NEXT:   }
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : tuple<si1>
+    %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.list<!substrait.fixed_binary<4>>> {
+    ^bb0(%arg : tuple<si1>):
+      %bytes = literal #substrait.list<[
+                        #substrait.fixed_binary<"8181">,
+                        #substrait.fixed_binary<"8181">,
+                        #substrait.fixed_binary<"8181">], !substrait.list<!substrait.fixed_binary<4>>>
+      yield %bytes : !substrait.list<!substrait.fixed_binary<4>>
+    }
+    yield %1 : tuple<si1, !substrait.list<!substrait.fixed_binary<4>>>
+  }
+}
+
+// -----
+
+// CHECK-LABEL: relations {
+// CHECK-NEXT:    rel {
+// CHECK-NEXT:      project {
+// CHECK-NEXT:        common {
+// CHECK-NEXT:          direct {
+// CHECK-NEXT:          }
+// CHECK-NEXT:        }
+// CHECK-NEXT:        input {
+// CHECK-NEXT:          read {
+// CHECK:             expressions {
+// CHECK-NEXT:         literal {
 // CHECK-NEXT:           decimal {
 // CHECK-NEXT:             value: "\005\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
 // CHECK-NEXT:             precision: 9
