@@ -1153,6 +1153,9 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   readRel->set_allocated_base_schema(baseSchema->release());
   readRel->set_allocated_named_table(namedTable.release());
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *readRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_read(readRel.release());

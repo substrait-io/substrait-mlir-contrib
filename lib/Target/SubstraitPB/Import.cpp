@@ -875,6 +875,9 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
   auto namedTableOp =
       builder.create<NamedTableOp>(resultType, tableName, fieldNamesAttr);
 
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, namedTableOp, readRel);
+
   return namedTableOp;
 }
 

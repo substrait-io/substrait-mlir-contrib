@@ -751,6 +751,7 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [
 }
 
 def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
   ]> {
   let summary = "Read operation of a named table";
   let description = [{
@@ -767,13 +768,23 @@ def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
   //                    `NamedStruct` type?
   let arguments = (ins
     SymbolRefAttr:$table_name,
-    StringArrayAttr:$field_names
+    StringArrayAttr:$field_names,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $table_name `as` $field_names attr-dict `:` type($result)
+    $table_name `as` $field_names
+    (`advanced_extension` `` $advanced_extension^)? attr-dict `:` type($result)
   }];
   let hasVerifier = true;
+  let builders = [
+      OpBuilder<(ins "::mlir::Type":$result_type,
+                     "::mlir::SymbolRefAttr":$table_name,
+                     "::mlir::ArrayAttr":$field_names), [{
+        build($_builder, $_state, result_type, table_name, field_names,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_ProjectOp : Substrait_RelOp<"project", [
