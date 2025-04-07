@@ -839,7 +839,8 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
 
  //TODO(daliashaaban): Change type inference logic once nullability is supported.
 def Substrait_SetOp : Substrait_RelOp<"set", [
-    SameOperandsAndResultType
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+    SameOperandsAndResultType,
   ]> {
   let summary = "set operation";
   let description = [{
@@ -851,13 +852,20 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
 
   let arguments = (ins
     Variadic<Substrait_Relation>:$inputs,
-    SetOpKind:$kind
+    SetOpKind:$kind,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind $inputs attr-dict `:` type($result)
+    $kind $inputs (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($result)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::ValueRange":$inputs, "SetOpKind":$kind), [{
+        build($_builder, $_state, inputs, kind, /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITOPS

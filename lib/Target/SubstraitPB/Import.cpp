@@ -484,7 +484,12 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   if (!kind)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  return builder.create<SetOp>(inputsVal, *kind);
+  auto setOp = builder.create<SetOp>(inputsVal, *kind);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, setOp, setRel);
+
+  return setOp;
 }
 
 static mlir::FailureOr<ExpressionOpInterface>

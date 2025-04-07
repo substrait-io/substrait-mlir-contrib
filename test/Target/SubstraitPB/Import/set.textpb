@@ -489,3 +489,77 @@ version {
   minor_number: 42
   patch_number: 1
 }
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:           set union_all %{{.*}}, %{{[^ ]*}}
+# CHECK-SAME:        advanced_extension optimization = "\08*"
+# CHECK-SAME:          : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+# CHECK-SAME:        : tuple<si32>
+
+relations {
+  rel {
+    set {
+      common {
+        direct {
+        }
+      }
+      inputs {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      inputs {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "b"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t2"
+          }
+        }
+      }
+      op: SET_OP_UNION_ALL
+      advanced_extension {
+        optimization {
+          type_url: "type.googleapis.com/google.protobuf.Int32Value"
+          value: "\010*"
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
