@@ -793,6 +793,9 @@ SubstraitExporter::exportOperation(ExtensionTableOp op) {
   readRel->set_allocated_extension_table(extensionTable.release());
   readRel->set_allocated_base_schema(baseSchema->release());
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *readRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_read(readRel.release());

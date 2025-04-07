@@ -534,6 +534,9 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
   auto extensionTableOp =
       builder.create<ExtensionTableOp>(resultType, fieldNamesAttr, detailAttr);
 
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, extensionTableOp, readRel);
+
   return extensionTableOp;
 }
 

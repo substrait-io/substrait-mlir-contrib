@@ -610,7 +610,9 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
   }];
 }
 
-def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table"> {
+def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table", [
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+  ]> {
   let summary = "Extension table operation (i.e., a `ReadRel` case)";
   let description = [{
     Represents a `ExtensionTable` message together with the `ReadRel` and `Rel`
@@ -626,11 +628,22 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table"> {
   }];
   let arguments = (ins
     StringArrayAttr:$field_names,
-    Substrait_AnyAttr:$detail
+    Substrait_AnyAttr:$detail,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
-  let assemblyFormat = "$detail `as` $field_names attr-dict `:` type($result)";
+  let assemblyFormat = [{
+    $detail `as` $field_names (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($result)
+  }];
   let hasVerifier = true;
+  let builders = [
+      OpBuilder<(ins "::mlir::Type":$result, "::mlir::ArrayAttr":$field_names,
+                     "::mlir::StringAttr":$detail), [{
+        build($_builder, $_state, result, field_names, detail,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_FetchOp : Substrait_RelOp<"fetch", [
