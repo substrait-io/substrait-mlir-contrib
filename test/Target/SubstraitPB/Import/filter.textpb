@@ -1,9 +1,13 @@
 # RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
 # RUN: | FileCheck %s
 
 # RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
 # RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | FileCheck %s
 
 # CHECK-LABEL: substrait.plan
@@ -48,6 +52,61 @@ relations {
       condition {
         literal {
           boolean: true
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         filter {{.*}} advanced_extension optimization = "\08*"
+# CHECK-SAME:          : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+# CHECK-SAME:        : tuple<si32> {
+
+relations {
+  rel {
+    filter {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      condition {
+        literal {
+          boolean: true
+        }
+      }
+      advanced_extension {
+        optimization {
+          type_url: "type.googleapis.com/google.protobuf.Int32Value"
+          value: "\010*"
         }
       }
     }

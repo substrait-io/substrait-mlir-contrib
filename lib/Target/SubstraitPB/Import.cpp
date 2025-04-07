@@ -804,6 +804,9 @@ static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
     builder.create<YieldOp>(conditionOp.value()->getResult(0));
   }
 
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, filterOp, filterRel);
+
   return filterOp;
 }
 

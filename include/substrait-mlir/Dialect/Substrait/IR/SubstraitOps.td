@@ -678,6 +678,7 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
 def Substrait_FilterOp : Substrait_RelOp<"filter", [
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     SameOperandsAndResultType
   ]> {
   let summary = "Filter operation";
@@ -696,14 +697,18 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
     }
     ```
   }];
-  let arguments = (ins Substrait_Relation:$input);
+  let arguments = (ins
+    Substrait_Relation:$input,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+  );
   let regions = (region AnyRegion:$condition);
   let results = (outs Substrait_Relation:$result);
   // TODO(ingomueller): We could elide/shorten the block argument from the
   //                    assembly by writing custom printers/parsers similar to
   //                    `scf.for` etc.
   let assemblyFormat = [{
-    $input attr-dict `:` type($input) $condition
+    $input (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($input) $condition
   }];
   let hasRegionVerifier = 1;
   let extraClassDefinition = [{
