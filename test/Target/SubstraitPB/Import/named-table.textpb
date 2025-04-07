@@ -1,0 +1,201 @@
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" \
+# RUN: | FileCheck %s
+
+# RUN: substrait-translate -protobuf-to-substrait %s \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | substrait-translate -substrait-to-protobuf \
+# RUN:   --split-input-file --output-split-marker="# ""-----" \
+# RUN: | substrait-translate -protobuf-to-substrait \
+# RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
+# RUN: | FileCheck %s
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation
+# CHECK:         %[[V0:.*]] = named_table @t1 as [] : tuple<>
+# CHECK-NEXT:    yield %[[V0]] :
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        struct {
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation
+# CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : tuple<si32>
+# CHECK-NEXT:    yield %[[V0]] :
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation
+# CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : tuple<si32, si32>
+# CHECK-NEXT:    yield %[[V0]] :
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        names: "b"
+        struct {
+          types {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          types {
+            i32 {
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation
+# CHECK:         %[[V0:.*]] = named_table @t1
+# CHECK-SAME:      as ["outer", "inner"] : tuple<tuple<si32>>
+# CHECK-NEXT:    yield %[[V0]] :
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "outer"
+        names: "inner"
+        struct {
+          types {
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK:         relation
+# CHECK:         %[[V0:.*]] = named_table @t1
+# CHECK-SAME:      as ["a", "a"] : tuple<tuple<si32>>
+# CHECK-NEXT:    yield %[[V0]] :
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        names: "a"
+        struct {
+          types {
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
