@@ -647,7 +647,8 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table", [
 }
 
 def Substrait_FetchOp : Substrait_RelOp<"fetch", [
-    SameOperandsAndResultType
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+    SameOperandsAndResultType,
   ]> {
   let summary = "Fetch operation";
   let description = [{
@@ -657,13 +658,21 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   let arguments = (ins
     Substrait_Relation:$input,
     DefaultValuedAttr<ConfinedAttr<I64Attr, [IntNonNegative]>, "0">: $offset,
-    ConfinedAttr<I64Attr, [IntMinValue<-1>]>: $count
+    ConfinedAttr<I64Attr, [IntMinValue<-1>]>: $count,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     custom<CountAsAll>($count) (`offset` $offset^)? `from` $input
-        attr-dict `:` type($input)
+    (`advanced_extension` `` $advanced_extension^)? attr-dict `:` type($input)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$input, "int64_t":$offset,
+                      "int64_t":$count), [{
+        build($_builder, $_state, input, offset, count,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_FilterOp : Substrait_RelOp<"filter", [

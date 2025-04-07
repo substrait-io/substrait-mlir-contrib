@@ -764,7 +764,13 @@ static mlir::FailureOr<FetchOp> importFetchRel(ImplicitLocOpBuilder builder,
 
   // Build `FetchOp`.
   Value inputVal = inputOp.value()->getResult(0);
-  return builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
+  auto fetchOp =
+      builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, fetchOp, fetchRel);
+
+  return fetchOp;
 }
 
 static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,

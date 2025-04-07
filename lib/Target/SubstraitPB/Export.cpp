@@ -885,6 +885,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(FetchOp op) {
   fetchRel->set_offset(op.getOffset());
   fetchRel->set_count(op.getCount());
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *fetchRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_fetch(fetchRel.release());
