@@ -747,6 +747,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(JoinOp op) {
   joinRel->set_allocated_right(rightRel->release());
   joinRel->set_type(static_cast<JoinRel::JoinType>(op.getJoinType()));
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *joinRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_join(joinRel.release());

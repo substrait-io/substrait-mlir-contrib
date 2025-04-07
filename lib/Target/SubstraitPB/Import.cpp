@@ -620,7 +620,12 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   if (!join_type)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  return builder.create<JoinOp>(leftVal, rightVal, *join_type);
+  auto joinOp = builder.create<JoinOp>(leftVal, rightVal, *join_type);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, joinOp, joinRel);
+
+  return joinOp;
 }
 
 static mlir::FailureOr<LiteralOp>

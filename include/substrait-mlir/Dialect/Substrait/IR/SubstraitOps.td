@@ -719,7 +719,10 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   }];
 }
 
-def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferTypeOpInterface>]> {
+def Substrait_JoinOp : Substrait_RelOp<"join", [
+    DeclareOpInterfaceMethods<InferTypeOpInterface>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+  ]> {
   let summary = "join operation";
   let description = [{
     Represents a `JoinRel` message together with the `RelCommon`, left and
@@ -730,12 +733,21 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferT
   let arguments = (ins
     Substrait_Relation:$left,
     Substrait_Relation:$right,
-    JoinType:$join_type
+    JoinType:$join_type,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $join_type $left `,` $right attr-dict `:` type($left) `,` type($right) `->` type($result)
+    $join_type $left `,` $right (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($left) `,` type($right) `->` type($result)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
+                     "JoinType":$join_type), [{
+        build($_builder, $_state, left, right, join_type,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
