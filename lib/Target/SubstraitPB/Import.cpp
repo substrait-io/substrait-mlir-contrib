@@ -453,7 +453,12 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  return builder.create<CrossOp>(leftVal, rightVal);
+  auto crossOp = builder.create<CrossOp>(leftVal, rightVal);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, crossOp, crossRel);
+
+  return crossOp;
 }
 
 static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,

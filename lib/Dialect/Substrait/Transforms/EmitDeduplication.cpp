@@ -351,7 +351,8 @@ struct PushDuplicatesThroughCrossPattern : public OpRewritePattern<CrossOp> {
 
     // Create new cross op with the two deduplicated inputs.
     auto newOp =
-        rewriter.create<CrossOp>(op.getLoc(), newLeftInput, newRightInput);
+        rewriter.create<CrossOp>(op.getLoc(), newLeftInput, newRightInput,
+                                 op.getAdvancedExtensionAttr());
 
     // Replace old cross op with emit op that maps back to old emit order.
     ArrayAttr reverseMappingAttr = rewriter.getI64ArrayAttr(reverseMapping);

@@ -542,7 +542,8 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
 }
 
 def Substrait_CrossOp : Substrait_RelOp<"cross", [
-    DeclareOpInterfaceMethods<InferTypeOpInterface>
+    DeclareOpInterfaceMethods<InferTypeOpInterface>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
   ]> {
   let summary = "Cross product operation";
   let description = [{
@@ -559,12 +560,19 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   }];
   let arguments = (ins
     Substrait_Relation:$left,
-    Substrait_Relation:$right
+    Substrait_Relation:$right,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $left `x` $right attr-dict `:` type($left) `x` type($right)
+    $left `x` $right (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($left) `x` type($right)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right), [{
+        build($_builder, $_state, left, right, /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_EmitOp : Substrait_RelOp<"emit", [

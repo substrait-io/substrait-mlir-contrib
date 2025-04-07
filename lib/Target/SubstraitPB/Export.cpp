@@ -666,6 +666,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(CrossOp op) {
   crossRel->set_allocated_left(leftRel->release());
   crossRel->set_allocated_right(rightRel->release());
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *crossRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_cross(crossRel.release());
