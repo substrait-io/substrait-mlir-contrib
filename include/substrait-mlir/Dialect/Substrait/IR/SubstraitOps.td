@@ -468,8 +468,9 @@ class Substrait_RelOp<string mnemonic, list<Trait> traits = []> :
   ]>;
 
 def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
-    DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
+    DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     DeclareOpInterfaceMethods<InferTypeOpInterface>,
   ]> {
   let summary = "Aggregate operation";
@@ -512,7 +513,8 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
   }];
   let arguments = (ins
     Substrait_Relation:$input,
-    I64ArrayArrayAttr:$grouping_sets
+    I64ArrayArrayAttr:$grouping_sets,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let regions = (region
@@ -520,7 +522,8 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
     AnyRegion:$measures
   );
   let assemblyFormat = [{
-    $input attr-dict `:` type($input) `->` type($result)
+    $input (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($input) `->` type($result)
     custom<AggregateRegions>($groupings, $measures, $grouping_sets)
   }];
   let hasRegionVerifier = 1;
@@ -539,7 +542,8 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
 }
 
 def Substrait_CrossOp : Substrait_RelOp<"cross", [
-    DeclareOpInterfaceMethods<InferTypeOpInterface>
+    DeclareOpInterfaceMethods<InferTypeOpInterface>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
   ]> {
   let summary = "Cross product operation";
   let description = [{
@@ -556,12 +560,19 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   }];
   let arguments = (ins
     Substrait_Relation:$left,
-    Substrait_Relation:$right
+    Substrait_Relation:$right,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $left `x` $right attr-dict `:` type($left) `x` type($right)
+    $left `x` $right (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($left) `x` type($right)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right), [{
+        build($_builder, $_state, left, right, /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_EmitOp : Substrait_RelOp<"emit", [
@@ -599,7 +610,9 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
   }];
 }
 
-def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table"> {
+def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table", [
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+  ]> {
   let summary = "Extension table operation (i.e., a `ReadRel` case)";
   let description = [{
     Represents a `ExtensionTable` message together with the `ReadRel` and `Rel`
@@ -615,15 +628,27 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table"> {
   }];
   let arguments = (ins
     StringArrayAttr:$field_names,
-    Substrait_AnyAttr:$detail
+    Substrait_AnyAttr:$detail,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
-  let assemblyFormat = "$detail `as` $field_names attr-dict `:` type($result)";
+  let assemblyFormat = [{
+    $detail `as` $field_names (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($result)
+  }];
   let hasVerifier = true;
+  let builders = [
+      OpBuilder<(ins "::mlir::Type":$result, "::mlir::ArrayAttr":$field_names,
+                     "::mlir::StringAttr":$detail), [{
+        build($_builder, $_state, result, field_names, detail,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_FetchOp : Substrait_RelOp<"fetch", [
-    SameOperandsAndResultType
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+    SameOperandsAndResultType,
   ]> {
   let summary = "Fetch operation";
   let description = [{
@@ -633,18 +658,27 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   let arguments = (ins
     Substrait_Relation:$input,
     DefaultValuedAttr<ConfinedAttr<I64Attr, [IntNonNegative]>, "0">: $offset,
-    ConfinedAttr<I64Attr, [IntMinValue<-1>]>: $count
+    ConfinedAttr<I64Attr, [IntMinValue<-1>]>: $count,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     custom<CountAsAll>($count) (`offset` $offset^)? `from` $input
-        attr-dict `:` type($input)
+    (`advanced_extension` `` $advanced_extension^)? attr-dict `:` type($input)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$input, "int64_t":$offset,
+                      "int64_t":$count), [{
+        build($_builder, $_state, input, offset, count,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_FilterOp : Substrait_RelOp<"filter", [
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     SameOperandsAndResultType
   ]> {
   let summary = "Filter operation";
@@ -663,14 +697,18 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
     }
     ```
   }];
-  let arguments = (ins Substrait_Relation:$input);
+  let arguments = (ins
+    Substrait_Relation:$input,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+  );
   let regions = (region AnyRegion:$condition);
   let results = (outs Substrait_Relation:$result);
   // TODO(ingomueller): We could elide/shorten the block argument from the
   //                    assembly by writing custom printers/parsers similar to
   //                    `scf.for` etc.
   let assemblyFormat = [{
-    $input attr-dict `:` type($input) $condition
+    $input (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($input) $condition
   }];
   let hasRegionVerifier = 1;
   let extraClassDefinition = [{
@@ -681,7 +719,10 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   }];
 }
 
-def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferTypeOpInterface>]> {
+def Substrait_JoinOp : Substrait_RelOp<"join", [
+    DeclareOpInterfaceMethods<InferTypeOpInterface>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+  ]> {
   let summary = "join operation";
   let description = [{
     Represents a `JoinRel` message together with the `RelCommon`, left and
@@ -692,15 +733,25 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [DeclareOpInterfaceMethods<InferT
   let arguments = (ins
     Substrait_Relation:$left,
     Substrait_Relation:$right,
-    JoinType:$join_type
+    JoinType:$join_type,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $join_type $left `,` $right attr-dict `:` type($left) `,` type($right) `->` type($result)
+    $join_type $left `,` $right (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($left) `,` type($right) `->` type($result)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
+                     "JoinType":$join_type), [{
+        build($_builder, $_state, left, right, join_type,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
   ]> {
   let summary = "Read operation of a named table";
   let description = [{
@@ -717,13 +768,23 @@ def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
   //                    `NamedStruct` type?
   let arguments = (ins
     SymbolRefAttr:$table_name,
-    StringArrayAttr:$field_names
+    StringArrayAttr:$field_names,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $table_name `as` $field_names attr-dict `:` type($result)
+    $table_name `as` $field_names
+    (`advanced_extension` `` $advanced_extension^)? attr-dict `:` type($result)
   }];
   let hasVerifier = true;
+  let builders = [
+      OpBuilder<(ins "::mlir::Type":$result_type,
+                     "::mlir::SymbolRefAttr":$table_name,
+                     "::mlir::ArrayAttr":$field_names), [{
+        build($_builder, $_state, result_type, table_name, field_names,
+              /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 def Substrait_ProjectOp : Substrait_RelOp<"project", [
@@ -778,7 +839,8 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
 
  //TODO(daliashaaban): Change type inference logic once nullability is supported.
 def Substrait_SetOp : Substrait_RelOp<"set", [
-    SameOperandsAndResultType
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+    SameOperandsAndResultType,
   ]> {
   let summary = "set operation";
   let description = [{
@@ -790,13 +852,20 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
 
   let arguments = (ins
     Variadic<Substrait_Relation>:$inputs,
-    SetOpKind:$kind
+    SetOpKind:$kind,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind $inputs attr-dict `:` type($result)
+    $kind $inputs (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($result)
   }];
+  let builders = [
+      OpBuilder<(ins "::mlir::ValueRange":$inputs, "SetOpKind":$kind), [{
+        build($_builder, $_state, inputs, kind, /*advanced_extension=*/{});
+      }]>,
+    ];
 }
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITOPS

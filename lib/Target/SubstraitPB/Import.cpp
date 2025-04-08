@@ -404,6 +404,9 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   auto aggregateOp = builder.create<AggregateOp>(
       inputVal, groupingSets, groupingsRegion.get(), measuresRegion.get());
 
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, aggregateOp, aggregateRel);
+
   return aggregateOp;
 }
 
@@ -450,7 +453,12 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  return builder.create<CrossOp>(leftVal, rightVal);
+  auto crossOp = builder.create<CrossOp>(leftVal, rightVal);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, crossOp, crossRel);
+
+  return crossOp;
 }
 
 static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
@@ -476,7 +484,12 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   if (!kind)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  return builder.create<SetOp>(inputsVal, *kind);
+  auto setOp = builder.create<SetOp>(inputsVal, *kind);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, setOp, setRel);
+
+  return setOp;
 }
 
 static mlir::FailureOr<ExpressionOpInterface>
@@ -525,6 +538,9 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
   // Assemble final op.
   auto extensionTableOp =
       builder.create<ExtensionTableOp>(resultType, fieldNamesAttr, detailAttr);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, extensionTableOp, readRel);
 
   return extensionTableOp;
 }
@@ -609,7 +625,12 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   if (!join_type)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  return builder.create<JoinOp>(leftVal, rightVal, *join_type);
+  auto joinOp = builder.create<JoinOp>(leftVal, rightVal, *join_type);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, joinOp, joinRel);
+
+  return joinOp;
 }
 
 static mlir::FailureOr<LiteralOp>
@@ -753,7 +774,13 @@ static mlir::FailureOr<FetchOp> importFetchRel(ImplicitLocOpBuilder builder,
 
   // Build `FetchOp`.
   Value inputVal = inputOp.value()->getResult(0);
-  return builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
+  auto fetchOp =
+      builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, fetchOp, fetchRel);
+
+  return fetchOp;
 }
 
 static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
@@ -786,6 +813,9 @@ static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
 
     builder.create<YieldOp>(conditionOp.value()->getResult(0));
   }
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, filterOp, filterRel);
 
   return filterOp;
 }
@@ -849,6 +879,9 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
   // Assemble final op.
   auto namedTableOp =
       builder.create<NamedTableOp>(resultType, tableName, fieldNamesAttr);
+
+  // Import advanced extension if it is present.
+  importAdvancedExtension(builder, namedTableOp, readRel);
 
   return namedTableOp;
 }

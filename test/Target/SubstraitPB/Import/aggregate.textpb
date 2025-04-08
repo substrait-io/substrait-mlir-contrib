@@ -581,3 +581,62 @@ version {
   minor_number: 42
   patch_number: 1
 }
+
+# -----
+
+# Check op with advanced extension.
+
+# CHECK-LABEL: substrait.plan
+# CHECK:           aggregate %{{.*}} advanced_extension optimization = "\08*"
+# CHECK-SAME:          : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+# CHECK-SAME:        : tuple
+
+relations {
+  rel {
+    aggregate {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      groupings {
+        grouping_expressions {
+          literal {
+            boolean: false
+          }
+        }
+      }
+      advanced_extension {
+        optimization {
+          type_url: "type.googleapis.com/google.protobuf.Int32Value"
+          value: "\010*"
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}

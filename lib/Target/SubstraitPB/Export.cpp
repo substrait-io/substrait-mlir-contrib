@@ -573,6 +573,9 @@ SubstraitExporter::exportOperation(AggregateOp op) {
     }
   }
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *aggregateRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_aggregate(aggregateRel.release());
@@ -663,6 +666,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(CrossOp op) {
   crossRel->set_allocated_left(leftRel->release());
   crossRel->set_allocated_right(rightRel->release());
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *crossRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_cross(crossRel.release());
@@ -741,6 +747,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(JoinOp op) {
   joinRel->set_allocated_right(rightRel->release());
   joinRel->set_type(static_cast<JoinRel::JoinType>(op.getJoinType()));
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *joinRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_join(joinRel.release());
@@ -786,6 +795,9 @@ SubstraitExporter::exportOperation(ExtensionTableOp op) {
   readRel->set_allocated_common(relCommon.release());
   readRel->set_allocated_extension_table(extensionTable.release());
   readRel->set_allocated_base_schema(baseSchema->release());
+
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *readRel);
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
@@ -876,6 +888,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(FetchOp op) {
   fetchRel->set_offset(op.getOffset());
   fetchRel->set_count(op.getCount());
 
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *fetchRel);
+
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_fetch(fetchRel.release());
@@ -921,6 +936,9 @@ SubstraitExporter::exportOperation(FilterOp op) {
   filterRel->set_allocated_common(relCommon.release());
   filterRel->set_allocated_input(inputRel->release());
   filterRel->set_allocated_condition(condition->release());
+
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *filterRel);
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
@@ -1134,6 +1152,9 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   readRel->set_allocated_common(relCommon.release());
   readRel->set_allocated_base_schema(baseSchema->release());
   readRel->set_allocated_named_table(namedTable.release());
+
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *readRel);
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
@@ -1531,6 +1552,9 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
       return failure();
     setRel->add_inputs()->CopyFrom(*inputRel->get());
   }
+
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *setRel);
 
   // Build `Rel` message.
   auto rel = std::make_unique<Rel>();
