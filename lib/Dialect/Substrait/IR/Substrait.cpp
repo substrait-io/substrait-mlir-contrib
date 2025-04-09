@@ -127,14 +127,15 @@ LogicalResult mlir::substrait::ListAttr::verify(
     auto typedAttr = mlir::dyn_cast<mlir::TypedAttr>(attr);
     if (!typedAttr) {
       return emitError()
-             << "ListAttr values must be typed attributes, but got: " << attr;
+             << "'ListAttr' values must be typed attributes, but got: " << attr;
     }
 
     if (typedAttr.getType() != expectedType) {
-      return emitError() << "Mismatched element type in ListAttr: expected "
+      return emitError() << "mismatched element type in 'ListAttr': expected "
                          << expectedType << ", but got " << typedAttr.getType();
     }
   }
+
   return success();
 }
 
@@ -178,7 +179,7 @@ LogicalResult mlir::substrait::ListType::verify(
                  substrait::FixedCharType, substrait::VarCharType,
                  substrait::FixedBinaryType, substrait::DecimalType>(type))
     return emitError()
-           << "ListType must be parameterized with an atomic type, but got: "
+           << "'ListType' must be parameterized with an atomic type, but got: "
            << type;
 
   return mlir::success();
