@@ -184,8 +184,9 @@ def Substrait_AtomicType :
 def Substrait_ListType : Substrait_Type<"List", "list"> {
   let summary = "Substrait list type";
   let description = [{
-    This type represents a list type.
+    This type represents a list type, where type is atomic.
   }];
+  // TODO: Extend to list of container attributes.
   let parameters = (ins Substrait_AtomicType:$type);
   let assemblyFormat = [{ `<` $type `>` }];
   let genVerifyDecl = 1;

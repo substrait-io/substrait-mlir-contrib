@@ -41,11 +41,11 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : tuple<si1>
     %1 = project %0 : tuple<si1> -> tuple<si1, !substrait.list<!substrait.fixed_binary<4>>> {
     ^bb0(%arg : tuple<si1>):
-      %bytes = literal #substrait.list<[
+      %list = literal #substrait.list<[
                         #substrait.fixed_binary<"8181">,
                         #substrait.fixed_binary<"8181">,
                         #substrait.fixed_binary<"8181">], !substrait.list<!substrait.fixed_binary<4>>>
-      yield %bytes : !substrait.list<!substrait.fixed_binary<4>>
+      yield %list : !substrait.list<!substrait.fixed_binary<4>>
     }
     yield %1 : tuple<si1, !substrait.list<!substrait.fixed_binary<4>>>
   }
