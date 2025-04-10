@@ -883,7 +883,8 @@ OpFoldResult EmitOp::fold(FoldAdaptor adaptor) {
   Type i64 = IntegerType::get(context, 64);
 
   // If the input is also an `emit`, fold it into this op.
-  if (auto previousEmit = dyn_cast<EmitOp>(getInput().getDefiningOp())) {
+  if (auto previousEmit =
+          dyn_cast_or_null<EmitOp>(getInput().getDefiningOp())) {
     // Compute new mapping.
     ArrayAttr previousMapping = previousEmit.getMapping();
     SmallVector<Attribute> newMapping;
