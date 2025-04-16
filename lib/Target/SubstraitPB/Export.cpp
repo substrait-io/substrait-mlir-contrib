@@ -90,6 +90,8 @@ public:
   std::unique_ptr<pb::Any> exportAny(StringAttr attr);
   FailureOr<std::unique_ptr<NamedStruct>>
   exportNamedStruct(Location loc, ArrayAttr fieldNames, TupleType relationType);
+  FailureOr<std::unique_ptr<Expression::Literal>>
+  exportAttribute(Attribute value);
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
                                                      mlir::Type mlirType);
@@ -428,6 +430,20 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
 
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_decimal(decimalTypeProto.release());
+    return std::move(type);
+  }
+
+  // Handle list type.
+  if (auto listType = llvm::dyn_cast<ListType>(mlirType)) {
+    // TODO(ingomueller): support other nullability modes.
+    auto listTypeProto = std::make_unique<proto::Type::List>();
+    listTypeProto->set_nullability(
+        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    listTypeProto->set_allocated_type(
+        exportType(loc, listType.getType()).value().release());
+
+    auto type = std::make_unique<proto::Type>();
+    type->set_allocated_list(listTypeProto.release());
     return std::move(type);
   }
 
@@ -947,17 +963,17 @@ SubstraitExporter::exportOperation(FilterOp op) {
   return rel;
 }
 
-FailureOr<std::unique_ptr<Expression>>
-SubstraitExporter::exportOperation(LiteralOp op) {
+FailureOr<std::unique_ptr<Expression::Literal>>
+SubstraitExporter::exportAttribute(Attribute value) {
   // Build `Literal` message depending on type.
-  Attribute value = op.getValue();
   mlir::Type literalType = getAttrType(value);
   auto literal = std::make_unique<Expression::Literal>();
 
   // `IntegerType`s.
   if (auto intType = dyn_cast<IntegerType>(literalType)) {
     if (!intType.isSigned())
-      op->emitOpError("has integer value with unsupported signedness");
+      // has integer value with unsupported signedness
+      return failure();
     switch (intType.getWidth()) {
     case 1:
       literal->set_boolean(mlir::cast<IntegerAttr>(value).getSInt());
@@ -976,7 +992,8 @@ SubstraitExporter::exportOperation(LiteralOp op) {
       literal->set_i64(mlir::cast<IntegerAttr>(value).getSInt());
       break;
     default:
-      op->emitOpError("has integer value with unsupported width");
+      // has integer value with unsupported width
+      return failure();
     }
   }
   // `FloatType`s.
@@ -990,7 +1007,8 @@ SubstraitExporter::exportOperation(LiteralOp op) {
       literal->set_fp64(mlir::cast<FloatAttr>(value).getValueAsDouble());
       break;
     default:
-      op->emitOpError("has float value with unsupported width");
+      // has float value with unsupported width
+      return failure();
     }
   }
   // `StringType`.
@@ -1067,12 +1085,43 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     decimal->set_precision(decimalType.getPrecision());
     decimal->set_value(res);
     literal->set_allocated_decimal(decimal.release());
-  } else
-    op->emitOpError("has unsupported value");
+  } // `ListType`.
+  else if (auto listType = dyn_cast<ListType>(literalType)) {
+    auto list = std::make_unique<::substrait::proto::Expression_Literal_List>();
+    auto listAttr = mlir::cast<ListAttr>(value);
+    for (mlir::Attribute attr : listAttr.getValue()) {
+
+      FailureOr<std::unique_ptr<Expression::Literal>> listElement =
+          exportAttribute(attr);
+      if (failed(listElement))
+        return failure();
+
+      auto *literalExpr = dyn_cast<Expression_Literal>(listElement->get());
+      if (!literalExpr)
+        return failure();
+
+      list->add_values()->CopyFrom(*literalExpr);
+    }
+    literal->set_allocated_list(list.release());
+  } else {
+    // has unsupported value
+    return failure();
+  }
+  return literal;
+}
+
+FailureOr<std::unique_ptr<Expression>>
+SubstraitExporter::exportOperation(LiteralOp op) {
+  // Build `Literal` message depending on type.
+  Attribute value = op.getValue();
+  auto literal = exportAttribute(value);
+
+  if (failed(literal))
+    return op->emitOpError("has unsupported value");
 
   // Build `Expression` message.
   auto expression = std::make_unique<Expression>();
-  expression->set_allocated_literal(literal.release());
+  expression->set_allocated_literal(literal->release());
 
   return expression;
 }
