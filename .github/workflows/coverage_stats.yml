@@ -1,0 +1,42 @@
+name: Coverage stats
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  coverage-stats:
+    name: Ensure coverage stats are up-to-date
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Compute substrait-mlir base path
+      run: |
+        echo "SUBSTRAIT_MLIR_MAIN_SRC_DIR=${GITHUB_WORKSPACE}/substrait-mlir" | tee -a $GITHUB_ENV
+        echo "SUBSTRAIT_MLIR_MAIN_BINARY_DIR=${GITHUB_WORKSPACE}/substrait-mlir/build" | tee -a $GITHUB_ENV
+        echo "LLVM_SYSPATH=${GITHUB_WORKSPACE}/substrait-mlir/build" | tee -a $GITHUB_ENV
+        echo "MLIR_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_runner_utils.so" | tee -a $GITHUB_ENV
+        echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_c_runner_utils.so" | tee -a $GITHUB_ENV
+
+    - name: Set up Python
+      uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
+      with:
+        python-version: 3.11
+
+    - name: Checkout project
+      uses: actions/checkout@v3
+
+    - name: Install Python depends
+      run: |
+        python -m pip install -v -r requirements.txt
+
+    - name: Recompute coverage stats
+      run: |
+        make -C docs/stats
+
+    - name: Ensure stats are up-to-date
+      run: git diff --exit-code || (echo "Please update the coverage status using `make -C docs/stats`, add them to this PR, and run CI again."; false)

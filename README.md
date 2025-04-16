@@ -15,6 +15,14 @@ optimizers, and transpilers of Substrait; the more transcending goal is to study
 the viability of using modern, general-purpose compiler infrastructure to
 implement database query compilers.
 
+## Status
+
+The project is work in progress with no stability guarantees. The coverage of
+the Substrait specification is tracked [here](docs/stats.md) and current and
+future work is tracked in the Github
+[issues](https://github.com/substrait-io/substrait-mlir-contrib/issues) and
+[milestones](https://github.com/substrait-io/substrait-mlir-contrib/milestones).
+
 ## License
 
 Licensed under the Apache license with LLVM Exceptions. See [LICENSE](LICENSE)
