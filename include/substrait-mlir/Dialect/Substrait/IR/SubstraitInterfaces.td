@@ -71,4 +71,11 @@ def Substrait_RelOpInterface : OpInterface<"RelOpInterface"> {
   let cppNamespace = "::mlir::substrait";
 }
 
+def Substrait_PlanBodyOpInterface : OpInterface<"PlanBodyOpInterface"> {
+  let description = [{
+    Interface for any operation that can be used in a plan body.
+  }];
+  let cppNamespace = "::mlir::substrait";
+}
+
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITINTERFACES

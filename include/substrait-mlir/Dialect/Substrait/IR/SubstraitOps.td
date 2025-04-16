@@ -63,7 +63,8 @@ def StringArrayAttr :
 //===----------------------------------------------------------------------===//
 
 def Substrait_ExtensionUriOp : Substrait_Op<"extension_uri", [
-    Symbol
+    Symbol,
+    Substrait_PlanBodyOpInterface
   ]> {
   let summary = "Declares a simple extension URI";
   let description = [{
@@ -91,7 +92,8 @@ def Substrait_ExtensionUriOp : Substrait_Op<"extension_uri", [
 class Substrait_ExtensionOp<string mnemonic, list<Trait> traits = []> :
   Substrait_Op<"extension_" # mnemonic, traits # [
     DeclareOpInterfaceMethods<SymbolUserOpInterface>,
-    DeclareOpInterfaceMethods<Symbol>
+    DeclareOpInterfaceMethods<Symbol>,
+    Substrait_PlanBodyOpInterface
   ]> {
   let description = [{
       This op represents the `SimpleExtensionDeclaration` message type of
@@ -142,13 +144,7 @@ def Substrait_ExtensionTypeVariationOp :
 // https://github.com/substrait-io/substrait/blob/main/proto/substrait/plan.proto.
 //===----------------------------------------------------------------------===//
 
-def PlanBodyOp : AnyOf<[
-    IsOp<"::mlir::substrait::PlanRelOp">,
-    IsOp<"::mlir::substrait::ExtensionUriOp">,
-    IsOp<"::mlir::substrait::ExtensionFunctionOp">,
-    IsOp<"::mlir::substrait::ExtensionTypeOp">,
-    IsOp<"::mlir::substrait::ExtensionTypeVariationOp">,
-  ]>;
+def PlanBodyOp : IsOp<"::mlir::substrait::PlanBodyOpInterface">;
 
 def Substrait_PlanVersionOp : Substrait_Op<"plan_version"> {
   let summary = "Represents a stand-alone plan version";
@@ -228,7 +224,8 @@ def Substrait_PlanRelOp : Substrait_Op<"relation", [
     DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
     HasParent<"::mlir::substrait::PlanOp">,
     SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
-    NoRegionArguments
+    NoRegionArguments,
+    Substrait_PlanBodyOpInterface
   ]> {
   let summary = "Represents a query tree in a Substrait plan";
   let description = [{
