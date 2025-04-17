@@ -716,6 +716,84 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   }];
 }
 
+def Substrait_HashJoinOp : Substrait_RelOp<"hash_join", [
+  DeclareOpInterfaceMethods<InferTypeOpInterface>,
+  DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+  SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
+  DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>
+  ]> {
+  let summary = "hash join operation";
+  let description = [{
+  Represents a `HashJoinRel` message together with the `RelCommon`, left and
+  right `Rel` messages and `JoinType` enumeration it contains. The join condition
+  is represented as a region where expressions can compare fields from both sides.
+  Join keys are stored as field references used for the hash join implementation.
+
+  Example:
+
+  ```mlir
+  %0 = ...
+  %1 = ...
+  %2 = hash_join inner %0, %1 on {
+  ^bb0(%arg0: tuple<si32, si32>, %arg1: tuple<si32, si32, si32>):
+    %3 = field_reference %arg0[0] : tuple<si32, si32>
+    %4 = field_reference %arg1[0] : tuple<si32, si32, si32>
+    %5 = compare not_distinct_from %3, %4 : (si32, si32) -> si1
+    // or depending if custom function is provided.
+    //TODO: the custom function is not yet supported.
+    %5 = call @cmp(%3, %4) : (si32, si32) -> si1
+    yield %5 : si1
+  }
+  ```
+  }];
+  let arguments = (ins
+    Substrait_Relation:$left,
+    Substrait_Relation:$right,
+    JoinType:$join_type,
+    OptionalAttr<SimpleComparisonType>:$simple_comparison_type,
+    OptionalAttr<UI32Attr>:$custom_function_id,
+    Substrait_ExpressionType:$left_keys,
+    Substrait_ExpressionType:$right_keys,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+  );
+  let regions = (region AnyRegion:$condition);
+  let hasRegionVerifier = 1;
+  let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = [{
+    $join_type $left `,` $right `on`
+    `left_keys` `` $left_keys `:` type($left_keys) `,` `right_keys` `` $right_keys `:` type($right_keys)
+    (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($left) `,` type($right) `->` type($result) $condition
+  }];
+  let builders = [    
+    OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
+          "JoinType":$join_type,
+          "::mlir::substrait::SimpleComparisonTypeAttr":$simple_comparison_type,
+          "::mlir::Value":$left_keys,
+          "::mlir::Value":$right_keys,
+          "::mlir::substrait::AdvancedExtensionAttr":$advanced_extension), [{
+    build($_builder, $_state, left, right, join_type, simple_comparison_type,
+        /*custom_function_id=*/{}, left_keys, right_keys, advanced_extension);
+    }]>,
+    // Without advanced extension.
+    OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
+          "JoinType":$join_type,
+          "::mlir::substrait::SimpleComparisonTypeAttr":$simple_comparison_type,
+          "::mlir::Value":$left_keys,
+          "::mlir::Value":$right_keys), [{
+    build($_builder, $_state, left, right, join_type, simple_comparison_type,
+        /*custom_function_id=*/{}, left_keys, right_keys, /*advanced_extension=*/{});
+    }]>,
+    // TODO: Add support for custom function id.
+  ];
+  let extraClassDefinition = [{
+    /// Implement OpAsmOpInterface.
+    ::llvm::StringRef $cppClass::getDefaultDialect() {
+      return SubstraitDialect::getDialectNamespace();
+    }
+  }];
+}
+
 def Substrait_JoinOp : Substrait_RelOp<"join", [
     DeclareOpInterfaceMethods<InferTypeOpInterface>,
     DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,

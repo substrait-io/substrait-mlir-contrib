@@ -1036,6 +1036,107 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 }
 
 LogicalResult
+HashJoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
+                             ValueRange operands, DictionaryAttr attributes,
+                             OpaqueProperties properties, RegionRange regions,
+                             llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
+  Value leftInput = operands[0];
+  Value rightInput = operands[1];
+
+  TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
+  TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
+
+  // Get accessor to `join_type`.
+  Adaptor adaptor(operands, attributes, properties, regions);
+  JoinType join_type = adaptor.getJoinType();
+
+  SmallVector<mlir::Type> fieldTypes;
+
+  switch (join_type) {
+  case JoinType::unspecified:
+  case JoinType::inner:
+  case JoinType::outer:
+  case JoinType::right:
+  case JoinType::left:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  case JoinType::semi:
+  case JoinType::anti:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    break;
+  case JoinType::single:
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  }
+
+  auto resultType = TupleType::get(context, fieldTypes);
+
+  inferredReturnTypes = SmallVector<Type>{resultType};
+
+  return success();
+}
+
+LogicalResult HashJoinOp::verifyRegions() {
+  if (getCondition().empty())
+    return success();
+
+  // Verify that we have exactly two arguments in the region, matching the left
+  // and right relations
+  Block &block = getCondition().front();
+  if (block.getNumArguments() != 2)
+    return emitOpError() << "condition region must have exactly two arguments";
+
+  // Verify block argument types match input relation types
+  if (block.getArgument(0).getType() != getLeft().getType())
+    return emitOpError()
+           << "first block argument type must match left relation type";
+  if (block.getArgument(1).getType() != getRight().getType())
+    return emitOpError()
+           << "second block argument type must match right relation type";
+
+  // Verify the condition region yields a boolean (si1) value
+  auto yieldOp = cast<YieldOp>(block.getTerminator());
+  if (yieldOp.getValue().size() != 1)
+    return emitOpError() << "condition region must yield exactly one value";
+
+  Type yieldedType = yieldOp.getValue()[0].getType();
+  MLIRContext *context = getContext();
+  Type si1Type = IntegerType::get(context, 1, IntegerType::Signed);
+  if (yieldedType != si1Type)
+    return emitOpError() << "condition region must yield a boolean (si1) value";
+
+  // Verify join keys
+  if (!getLeftKeys() || !getRightKeys())
+    return emitOpError() << "must specify both left_keys and right_keys";
+
+  // Verify that left_keys references fields from left relation
+  Value leftKeys = getLeftKeys();
+  Value leftContainer = leftKeys.getDefiningOp()->getOperand(0);
+  if (leftContainer != block.getArgument(0))
+    return emitOpError()
+           << "left_keys must reference fields from the left relation";
+
+  // Verify that right_keys references fields from right relation
+  Value rightKeys = getRightKeys();
+  Value rightContainer = rightKeys.getDefiningOp()->getOperand(0);
+  if (rightContainer != block.getArgument(1))
+    return emitOpError()
+           << "right_keys must reference fields from the right relation";
+
+  // Verify the keys are compatible (if a simple comparison type is provided)
+  if (getSimpleComparisonType()) {
+    Type leftKeyType = leftKeys.getType();
+    Type rightKeyType = rightKeys.getType();
+    if (leftKeyType != rightKeyType)
+      return emitOpError() << "join keys must have the same type when using "
+                              "simple comparison";
+  }
+
+  return success();
+}
+
+LogicalResult
 JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                          ValueRange operands, DictionaryAttr attributes,
                          OpaqueProperties properties, RegionRange regions,
