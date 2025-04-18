@@ -716,6 +716,50 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   }];
 }
 
+def Substrait_KeyComparisonOp : Substrait_ExpressionOp<"compare", [
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
+  let summary = "Key comparison expression";
+  let description = [{
+    Represents a comparison between two field references or expressions
+    used in join conditions.
+    
+    Example:
+    
+    ```mlir
+    %3 = field_reference %arg0[0] : tuple<si32, si32>
+    %4 = field_reference %arg1[0] : tuple<si32, si32, si32>
+    %5 = compare not_distinct_from %3, %4 : (si32, si32) -> si1
+    ```
+  }];
+  
+  let arguments = (ins
+    Substrait_ExpressionType:$lhs,
+    Substrait_ExpressionType:$rhs,
+    OptionalAttr<SimpleComparisonType>:$comparison_type,
+    OptionalAttr<UI32Attr>:$custom_function_id
+  );
+  
+  let results = (outs I1:$result);
+  
+  let assemblyFormat = [{
+    $comparison_type $lhs `,` $rhs attr-dict `:` `(` type($lhs) `,` type($rhs) `)` `->` type($result)
+  }];
+  
+  let builders = [
+    OpBuilder<(ins 
+      "::mlir::Value":$lhs,
+      "::mlir::Value":$rhs,
+      "SimpleComparisonType":$comparison_type), [{
+      // Convert SimpleComparisonType to SimpleComparisonTypeAttr
+      auto comparisonAttr = ::mlir::substrait::SimpleComparisonTypeAttr::get($_builder.getContext(), comparison_type);
+      build($_builder, $_state, $_builder.getI1Type(), lhs, rhs, comparisonAttr, {});
+    }]>
+  ];
+
+  let hasVerifier = 1;
+}
+
 def Substrait_HashJoinOp : Substrait_RelOp<"hash_join", [
   DeclareOpInterfaceMethods<InferTypeOpInterface>,
   DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
@@ -750,41 +794,21 @@ def Substrait_HashJoinOp : Substrait_RelOp<"hash_join", [
     Substrait_Relation:$left,
     Substrait_Relation:$right,
     JoinType:$join_type,
-    OptionalAttr<SimpleComparisonType>:$simple_comparison_type,
-    OptionalAttr<UI32Attr>:$custom_function_id,
-    Substrait_ExpressionType:$left_keys,
-    Substrait_ExpressionType:$right_keys,
     OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
   );
   let regions = (region AnyRegion:$condition);
   let hasRegionVerifier = 1;
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $join_type $left `,` $right `on`
-    `left_keys` `` $left_keys `:` type($left_keys) `,` `right_keys` `` $right_keys `:` type($right_keys)
+    $join_type $left `,` $right
     (`advanced_extension` `` $advanced_extension^)?
     attr-dict `:` type($left) `,` type($right) `->` type($result) $condition
   }];
   let builders = [    
     OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
-          "JoinType":$join_type,
-          "::mlir::substrait::SimpleComparisonTypeAttr":$simple_comparison_type,
-          "::mlir::Value":$left_keys,
-          "::mlir::Value":$right_keys,
-          "::mlir::substrait::AdvancedExtensionAttr":$advanced_extension), [{
-    build($_builder, $_state, left, right, join_type, simple_comparison_type,
-        /*custom_function_id=*/{}, left_keys, right_keys, advanced_extension);
+          "JoinType":$join_type), [{
+    build($_builder, $_state, left, right, join_type, /*advanced_extension=*/{});
     }]>,
-    // Without advanced extension.
-    OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
-          "JoinType":$join_type,
-          "::mlir::substrait::SimpleComparisonTypeAttr":$simple_comparison_type,
-          "::mlir::Value":$left_keys,
-          "::mlir::Value":$right_keys), [{
-    build($_builder, $_state, left, right, join_type, simple_comparison_type,
-        /*custom_function_id=*/{}, left_keys, right_keys, /*advanced_extension=*/{});
-    }]>,
-    // TODO: Add support for custom function id.
   ];
   let extraClassDefinition = [{
     /// Implement OpAsmOpInterface.

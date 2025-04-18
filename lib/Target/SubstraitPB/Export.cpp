@@ -790,25 +790,38 @@ SubstraitExporter::exportOperation(HashJoinOp op) {
   hashJoinRel->set_allocated_right(rightRel->release());
   hashJoinRel->set_type(static_cast<HashJoinRel::JoinType>(op.getJoinType()));
 
-  Value leftKeys = op.getLeftKeys();
-  FailureOr<std::unique_ptr<Expression>> leftKeyExpr =
-      exportOperation(cast<ExpressionOpInterface>(leftKeys.getDefiningOp()));
-  if (failed(leftKeyExpr))
-    return failure();
-  if (!leftKeyExpr->get()->has_selection()) {
-    return op->emitOpError("left key must be a field reference");
+  if (op.getCondition().empty()) {
+    return op->emitOpError("missing join condition");
   }
 
-  Value rightKeys = op.getRightKeys();
-  FailureOr<std::unique_ptr<Expression>> rightKeyExpr =
-      exportOperation(cast<ExpressionOpInterface>(rightKeys.getDefiningOp()));
-  if (failed(rightKeyExpr))
-    return failure();
-  if (!rightKeyExpr->get()->has_selection()) {
-    return op->emitOpError("left key must be a field reference");
+  Block &conditionBlock = op.getCondition().front();
+  Operation *terminator = conditionBlock.getTerminator();
+  Value conditionValue = cast<YieldOp>(terminator).getValue()[0];
+
+  auto compareOp =
+      dyn_cast_or_null<KeyComparisonOp>(conditionValue.getDefiningOp());
+  if (!compareOp) {
+    return op->emitOpError("join condition must be a KeyComparisonOp");
   }
 
-  // Create ComparisonJoinKey for key_comparisons
+  Value leftKey = compareOp.getLhs();
+  Value rightKey = compareOp.getRhs();
+  FailureOr<std::unique_ptr<Expression>> leftKeyExpr;
+  if (auto leftFieldRef =
+          dyn_cast_or_null<FieldReferenceOp>(leftKey.getDefiningOp())) {
+    leftKeyExpr = exportOperation(leftFieldRef);
+  } else {
+    return op->emitOpError() << "left key must be a field reference";
+  }
+
+  FailureOr<std::unique_ptr<Expression>> rightKeyExpr;
+  if (auto rightFieldRef =
+          dyn_cast_or_null<FieldReferenceOp>(rightKey.getDefiningOp())) {
+    rightKeyExpr = exportOperation(rightFieldRef);
+  } else {
+    return op->emitOpError() << "right key must be a field reference";
+  }
+
   auto keyComparison = hashJoinRel->add_keys();
   keyComparison->set_allocated_left(leftKeyExpr->get()->release_selection());
   keyComparison->set_allocated_right(rightKeyExpr->get()->release_selection());
@@ -816,9 +829,8 @@ SubstraitExporter::exportOperation(HashJoinOp op) {
   // TODO(trion): support custom function comparison types.
   keyComparison->mutable_comparison()->set_simple(
       static_cast<ComparisonJoinKey_SimpleComparisonType>(
-          op.getSimpleComparisonTypeAttr().getValue()));
+          compareOp.getComparisonType().value()));
 
-  // Attach the `AdvancedExtension` message if the attribute exists.
   exportAdvancedExtension(op, *hashJoinRel);
 
   auto rel = std::make_unique<Rel>();

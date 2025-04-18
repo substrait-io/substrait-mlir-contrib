@@ -1077,9 +1077,21 @@ HashJoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
   return success();
 }
 
+LogicalResult KeyComparisonOp::verify() {
+  Type lhsType = getLhs().getType();
+  Type rhsType = getRhs().getType();
+
+  if (lhsType != rhsType) {
+    return emitOpError() << "operands must have the same type but got "
+                         << lhsType << " and " << rhsType;
+  }
+
+  return success();
+}
+
 LogicalResult HashJoinOp::verifyRegions() {
   if (getCondition().empty())
-    return success();
+    return emitOpError() << "hash join must have a condition region";
 
   // Verify that we have exactly two arguments in the region, matching the left
   // and right relations
@@ -1087,7 +1099,6 @@ LogicalResult HashJoinOp::verifyRegions() {
   if (block.getNumArguments() != 2)
     return emitOpError() << "condition region must have exactly two arguments";
 
-  // Verify block argument types match input relation types
   if (block.getArgument(0).getType() != getLeft().getType())
     return emitOpError()
            << "first block argument type must match left relation type";
@@ -1095,7 +1106,6 @@ LogicalResult HashJoinOp::verifyRegions() {
     return emitOpError()
            << "second block argument type must match right relation type";
 
-  // Verify the condition region yields a boolean (si1) value
   auto yieldOp = cast<YieldOp>(block.getTerminator());
   if (yieldOp.getValue().size() != 1)
     return emitOpError() << "condition region must yield exactly one value";
@@ -1106,31 +1116,9 @@ LogicalResult HashJoinOp::verifyRegions() {
   if (yieldedType != si1Type)
     return emitOpError() << "condition region must yield a boolean (si1) value";
 
-  // Verify join keys
-  if (!getLeftKeys() || !getRightKeys())
-    return emitOpError() << "must specify both left_keys and right_keys";
-
-  // Verify that left_keys references fields from left relation
-  Value leftKeys = getLeftKeys();
-  Value leftContainer = leftKeys.getDefiningOp()->getOperand(0);
-  if (leftContainer != block.getArgument(0))
-    return emitOpError()
-           << "left_keys must reference fields from the left relation";
-
-  // Verify that right_keys references fields from right relation
-  Value rightKeys = getRightKeys();
-  Value rightContainer = rightKeys.getDefiningOp()->getOperand(0);
-  if (rightContainer != block.getArgument(1))
-    return emitOpError()
-           << "right_keys must reference fields from the right relation";
-
-  // Verify the keys are compatible (if a simple comparison type is provided)
-  if (getSimpleComparisonType()) {
-    Type leftKeyType = leftKeys.getType();
-    Type rightKeyType = rightKeys.getType();
-    if (leftKeyType != rightKeyType)
-      return emitOpError() << "join keys must have the same type when using "
-                              "simple comparison";
+  Value conditionValue = yieldOp.getValue()[0];
+  if (!isa<KeyComparisonOp>(conditionValue.getDefiningOp())) {
+    return emitOpError() << "condition must be produced by a comparison";
   }
 
   return success();

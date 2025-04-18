@@ -689,33 +689,54 @@ importHashJoinRel(ImplicitLocOpBuilder builder, const Rel &message) {
 
   std::optional<JoinType> join_type = static_cast<JoinType>(hashJoinRel.type());
 
-  FailureOr<ExpressionOpInterface> leftKeysExpr =
-      importFieldReference(builder, hashJoinRel.keys()[0].left());
-  if (failed(leftKeysExpr))
-    return failure();
-
-  FailureOr<ExpressionOpInterface> rightKeysExpr =
-      importFieldReference(builder, hashJoinRel.keys()[0].right());
-  if (failed(rightKeysExpr))
-    return failure();
-
   // Check for unsupported set operations.
   if (!join_type)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  auto simpleComparisonType = static_cast<SimpleComparisonType>(
-      hashJoinRel.keys()[0].comparison().simple());
-
-  auto simpleComparisonTypeAttr =
-      SimpleComparisonTypeAttr::get(builder.getContext(), simpleComparisonType);
-
-  mlir::FailureOr<HashJoinOp> hashJoinOp = builder.create<HashJoinOp>(
-      leftVal, rightVal, *join_type, simpleComparisonTypeAttr,
-      leftKeysExpr.value()->getResult(0), rightKeysExpr.value()->getResult(0));
+  mlir::FailureOr<HashJoinOp> hashJoinOp =
+      builder.create<HashJoinOp>(leftVal, rightVal, *join_type);
 
   if (failed(hashJoinOp)) {
     return failure();
   }
+
+  hashJoinOp->getCondition().push_back(new Block);
+  Block &conditionBlock = hashJoinOp->getCondition().front();
+  conditionBlock.addArgument(leftVal.getType(), hashJoinOp->getLoc());
+  conditionBlock.addArgument(rightVal.getType(), hashJoinOp->getLoc());
+
+  OpBuilder::InsertionGuard guard(builder);
+  builder.setInsertionPointToEnd(&conditionBlock);
+
+  FailureOr<FieldReferenceOp> leftKeyOp =
+      importFieldReference(builder, hashJoinRel.keys()[0].left());
+  if (failed(leftKeyOp))
+    return failure();
+
+  FailureOr<FieldReferenceOp> rightKeyOp =
+      importFieldReference(builder, hashJoinRel.keys()[0].right());
+  if (failed(rightKeyOp))
+    return failure();
+
+  // Create the comparison operation
+  Value condition;
+  if (hashJoinRel.keys()[0].comparison().has_simple()) {
+    auto simpleComparisonType = static_cast<SimpleComparisonType>(
+        hashJoinRel.keys()[0].comparison().simple());
+
+    Value leftKey = leftKeyOp.value();
+    Value rightKey = rightKeyOp.value();
+
+    condition = builder.create<KeyComparisonOp>(leftKey, rightKey,
+                                                simpleComparisonType);
+  } else {
+    // TODO(trion): Handle custom function if present
+    return mlir::emitError(builder.getLoc(),
+                           "custom comparison functions not yet supported");
+  }
+
+  // Yield the condition from the region
+  builder.create<YieldOp>(condition);
 
   // Import advanced extension if it is present.
   if (auto extensibleOp =
