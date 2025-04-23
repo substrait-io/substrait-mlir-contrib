@@ -260,7 +260,8 @@ def Substrait_YieldOp : Substrait_Op<"yield", [
       "::mlir::substrait::AggregateOp",
       "::mlir::substrait::FilterOp",
       "::mlir::substrait::PlanRelOp",
-      "::mlir::substrait::ProjectOp"
+      "::mlir::substrait::ProjectOp",
+      "::mlir::substrait::HashJoinOp"
     ]>
   ]> {
   let summary = "Yields the result of a `PlanRelOp`";
@@ -740,7 +741,7 @@ def Substrait_KeyComparisonOp : Substrait_ExpressionOp<"compare", [
     OptionalAttr<UI32Attr>:$custom_function_id
   );
   
-  let results = (outs I1:$result);
+  let results = (outs SI1:$result);
   
   let assemblyFormat = [{
     $comparison_type $lhs `,` $rhs attr-dict `:` `(` type($lhs) `,` type($rhs) `)` `->` type($result)
@@ -753,7 +754,8 @@ def Substrait_KeyComparisonOp : Substrait_ExpressionOp<"compare", [
       "SimpleComparisonType":$comparison_type), [{
       // Convert SimpleComparisonType to SimpleComparisonTypeAttr
       auto comparisonAttr = ::mlir::substrait::SimpleComparisonTypeAttr::get($_builder.getContext(), comparison_type);
-      build($_builder, $_state, $_builder.getI1Type(), lhs, rhs, comparisonAttr, {});
+      auto si1Type = ::mlir::IntegerType::get($_builder.getContext(), 1, ::mlir::IntegerType::Signed);
+      build($_builder, $_state, si1Type, lhs, rhs, comparisonAttr, {});
     }]>
   ];
 

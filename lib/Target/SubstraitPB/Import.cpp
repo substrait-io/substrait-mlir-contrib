@@ -586,7 +586,10 @@ importFieldReference(ImplicitLocOpBuilder builder,
     // For the `root_reference` case, that's the current block argument.
     mlir::Block::BlockArgListType blockArgs =
         builder.getInsertionBlock()->getArguments();
-    assert(blockArgs.size() == 1 && "expected a single block argument");
+    if (blockArgs.empty()) {
+      return emitError(loc)
+             << "root reference requires at least one block argument";
+    }
     container = blockArgs.front();
   } else if (message.has_expression()) {
     // For the `expression` case, recursively import the expression.
