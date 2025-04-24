@@ -1,5 +1,6 @@
 # MLIR dependencies.
 -r third_party/llvm-project/mlir/python/requirements.txt
+nanobind>=2.7.0
 
 # Testing.
 datafusion==32.0.0
