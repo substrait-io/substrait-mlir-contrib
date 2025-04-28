@@ -675,8 +675,6 @@ wrapFilterOnJoin(ImplicitLocOpBuilder builder, RelOpInterface hashJoin,
 static mlir::FailureOr<RelOpInterface>
 importHashJoinRel(ImplicitLocOpBuilder builder, const Rel &message) {
   const HashJoinRel &hashJoinRel = message.hash_join();
-
-  // Import left and right inputs.
   const Rel &leftRel = hashJoinRel.left();
   const Rel &rightRel = hashJoinRel.right();
 
@@ -686,13 +684,11 @@ importHashJoinRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(leftOp) || failed(rightOp))
     return failure();
 
-  // Build `HashJoinOp`.
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
   std::optional<JoinType> join_type = static_cast<JoinType>(hashJoinRel.type());
 
-  // Check for unsupported set operations.
   if (!join_type)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 

@@ -1078,13 +1078,25 @@ HashJoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 }
 
 LogicalResult KeyComparisonOp::verify() {
-  Type lhsType = getLhs().getType();
-  Type rhsType = getRhs().getType();
-
-  if (lhsType != rhsType) {
-    return emitOpError() << "operands must have the same type but got "
-                         << lhsType << " and " << rhsType;
-  }
+  auto &res =
+      llvm::TypeSwitch<mlir::Type, LogicalResult>(getLhs().getType())
+          .Case<substrait::VarCharType, substrait::StringType>([&](auto) {
+            if (!mlir::isa<substrait::VarCharType, substrait::StringType>(
+                    getRhs()))
+              return this->emitError("Invalid rhs type for string comparison, "
+                                     "expected string-like type but got")
+                     << getRhs().getType();
+            return success();
+          })
+          .Case<IntegerType>([&](auto) {
+            if (!mlir::isa<IntegerType, substrait::DecimalType>(getRhs()))
+              return this->emitError("Invalid rhs type for integer comparison, "
+                                     "expected integer-like type but got")
+                     << getRhs().getType();
+            return success();
+          });
+  if (failed(res))
+    return res;
 
   return success();
 }
