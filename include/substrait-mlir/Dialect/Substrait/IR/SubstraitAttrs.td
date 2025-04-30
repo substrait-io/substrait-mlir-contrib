@@ -296,6 +296,7 @@ def Substrait_ListAttr : Substrait_Attr<"List", "list", [TypedAttrInterface]> {
     This attribute represents a list of atomic attributes, parameterized with a ListType.
   }];
   // TODO: Extend to list of container attributes.
+  // TODO: Implement custom parser and printer.
   let parameters = (ins "mlir::ArrayAttr":$value, "ListType":$type);
   let assemblyFormat = [{ `<` $value `,` $type `>` }];
   let genVerifyDecl = 1;
