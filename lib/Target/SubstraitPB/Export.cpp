@@ -91,7 +91,7 @@ public:
   FailureOr<std::unique_ptr<NamedStruct>>
   exportNamedStruct(Location loc, ArrayAttr fieldNames, TupleType relationType);
   FailureOr<std::unique_ptr<Expression::Literal>>
-  exportAttribute(Attribute value);
+  exportAttribute(Attribute value, std::function<InFlightDiagnostic()> emitError);
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
                                                      mlir::Type mlirType);
@@ -964,7 +964,7 @@ SubstraitExporter::exportOperation(FilterOp op) {
 }
 
 FailureOr<std::unique_ptr<Expression::Literal>>
-SubstraitExporter::exportAttribute(Attribute value) {
+SubstraitExporter::exportAttribute(Attribute value, std::function<InFlightDiagnostic()> emitError) {
   // Build `Literal` message depending on type.
   mlir::Type literalType = getAttrType(value);
   auto literal = std::make_unique<Expression::Literal>();
@@ -973,7 +973,7 @@ SubstraitExporter::exportAttribute(Attribute value) {
   if (auto intType = dyn_cast<IntegerType>(literalType)) {
     if (!intType.isSigned())
       // has integer value with unsupported signedness
-      return failure();
+      return emitError() << " has integer value with unsupported signedness";
     switch (intType.getWidth()) {
     case 1:
       literal->set_boolean(mlir::cast<IntegerAttr>(value).getSInt());
@@ -993,7 +993,7 @@ SubstraitExporter::exportAttribute(Attribute value) {
       break;
     default:
       // has integer value with unsupported width
-      return failure();
+      return emitError() << " has integer value with unsupported width";
     }
   }
   // `FloatType`s.
@@ -1007,8 +1007,7 @@ SubstraitExporter::exportAttribute(Attribute value) {
       literal->set_fp64(mlir::cast<FloatAttr>(value).getValueAsDouble());
       break;
     default:
-      // has float value with unsupported width
-      return failure();
+      return emitError() << " float value with unsupported width";
     }
   }
   // `StringType`.
@@ -1092,20 +1091,19 @@ SubstraitExporter::exportAttribute(Attribute value) {
     for (mlir::Attribute attr : listAttr.getValue()) {
 
       FailureOr<std::unique_ptr<Expression::Literal>> listElement =
-          exportAttribute(attr);
+          exportAttribute(attr, emitError);
       if (failed(listElement))
-        return failure();
+        return emitError() << "Failed to export list element attribute: " << attr;
 
       auto *literalExpr = dyn_cast<Expression_Literal>(listElement->get());
       if (!literalExpr)
-        return failure();
+        return emitError() << "Exported list element is not a valid Expression_Literal: " << attr;
 
       list->add_values()->CopyFrom(*literalExpr);
     }
     literal->set_allocated_list(list.release());
   } else {
-    // has unsupported value
-    return failure();
+    return emitError() << " has unsupported value";
   }
   return literal;
 }
@@ -1114,7 +1112,7 @@ FailureOr<std::unique_ptr<Expression>>
 SubstraitExporter::exportOperation(LiteralOp op) {
   // Build `Literal` message depending on type.
   Attribute value = op.getValue();
-  auto literal = exportAttribute(value);
+  auto literal = exportAttribute(value, [&]() { return op->emitOpError();});
 
   if (failed(literal))
     return op->emitOpError("has unsupported value");
