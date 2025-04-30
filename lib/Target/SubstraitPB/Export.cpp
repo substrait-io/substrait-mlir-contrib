@@ -91,7 +91,8 @@ public:
   FailureOr<std::unique_ptr<NamedStruct>>
   exportNamedStruct(Location loc, ArrayAttr fieldNames, TupleType relationType);
   FailureOr<std::unique_ptr<Expression::Literal>>
-  exportAttribute(Attribute value, std::function<InFlightDiagnostic()> emitError);
+  exportAttribute(Attribute value,
+                  std::function<InFlightDiagnostic()> emitError);
   FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
                                                      mlir::Type mlirType);
@@ -964,7 +965,8 @@ SubstraitExporter::exportOperation(FilterOp op) {
 }
 
 FailureOr<std::unique_ptr<Expression::Literal>>
-SubstraitExporter::exportAttribute(Attribute value, std::function<InFlightDiagnostic()> emitError) {
+SubstraitExporter::exportAttribute(
+    Attribute value, std::function<InFlightDiagnostic()> emitError) {
   // Build `Literal` message depending on type.
   mlir::Type literalType = getAttrType(value);
   auto literal = std::make_unique<Expression::Literal>();
@@ -1093,11 +1095,14 @@ SubstraitExporter::exportAttribute(Attribute value, std::function<InFlightDiagno
       FailureOr<std::unique_ptr<Expression::Literal>> listElement =
           exportAttribute(attr, emitError);
       if (failed(listElement))
-        return emitError() << "Failed to export list element attribute: " << attr;
+        return emitError() << "Failed to export list element attribute: "
+                           << attr;
 
       auto *literalExpr = dyn_cast<Expression_Literal>(listElement->get());
       if (!literalExpr)
-        return emitError() << "Exported list element is not a valid Expression_Literal: " << attr;
+        return emitError()
+               << "Exported list element is not a valid Expression_Literal: "
+               << attr;
 
       list->add_values()->CopyFrom(*literalExpr);
     }
@@ -1112,7 +1117,7 @@ FailureOr<std::unique_ptr<Expression>>
 SubstraitExporter::exportOperation(LiteralOp op) {
   // Build `Literal` message depending on type.
   Attribute value = op.getValue();
-  auto literal = exportAttribute(value, [&]() { return op->emitOpError();});
+  auto literal = exportAttribute(value, [&]() { return op->emitOpError(); });
 
   if (failed(literal))
     return op->emitOpError("has unsupported value");
