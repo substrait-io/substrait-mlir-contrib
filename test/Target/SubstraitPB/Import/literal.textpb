@@ -15,11 +15,8 @@
 # CHECK-NEXT:    %[[V0:.*]] = named_table
 # CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : tuple<si1> -> tuple<si1, !substrait.list<!substrait.fixed_binary<4>>> {
 # CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
-# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>
-# CHECK-NEXT:      %[[V3:.*]] = literal #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>
-# CHECK-NEXT:      %[[V4:.*]] = literal #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>
-# CHECK-NEXT:      %[[V5:.*]] = literal #substrait.list<[#substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>, #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>, #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>], <!substrait.fixed_binary<4>>> : !substrait.list<!substrait.fixed_binary<4>>
-# CHECK-NEXT:      yield %[[V5]] : !substrait.list<!substrait.fixed_binary<4>>
+# CHECK-NEXT:      %[[V2:.*]] = literal #substrait.list<[#substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>, #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>, #substrait.fixed_binary<"8181"> : !substrait.fixed_binary<4>], <!substrait.fixed_binary<4>>> : !substrait.list<!substrait.fixed_binary<4>>
+# CHECK-NEXT:      yield %[[V2]] : !substrait.list<!substrait.fixed_binary<4>>
 # CHECK-NEXT:    }
 # CHECK-NEXT:    yield %[[V1]] : tuple<si1, !substrait.list<!substrait.fixed_binary<4>>>
 
