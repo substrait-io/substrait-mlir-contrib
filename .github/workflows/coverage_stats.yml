@@ -39,4 +39,4 @@ jobs:
         make -C docs/stats
 
     - name: Ensure stats are up-to-date
-      run: git diff --exit-code || (echo "Please update the coverage status using `make -C docs/stats`, add them to this PR, and run CI again."; false)
+      run: git diff --exit-code || (echo 'Please update the coverage status using `make -C docs/stats`, add them to this PR, and run CI again.'; false)
