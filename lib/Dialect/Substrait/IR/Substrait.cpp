@@ -25,51 +25,6 @@ using namespace mlir::substrait;
 
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc"
 
-namespace mlir::substrait::detail {
-
-/// Storage class for Substrait's `RelationType`.
-///
-/// This is a copy of the upstream `TupleTypeStorage`, which we can't reuse
-/// because it is in a private header.
-struct RelationTypeStorage final
-    : public TypeStorage,
-      public llvm::TrailingObjects<RelationTypeStorage, Type> {
-  using KeyTy = TypeRange;
-
-  RelationTypeStorage(unsigned numTypes) : numElements(numTypes) {}
-
-  /// Construction.
-  static RelationTypeStorage *construct(TypeStorageAllocator &allocator,
-                                        TypeRange key) {
-    // Allocate a new storage instance.
-    auto byteSize = RelationTypeStorage::totalSizeToAlloc<Type>(key.size());
-    auto *rawMem = allocator.allocate(byteSize, alignof(RelationTypeStorage));
-    auto *result = ::new (rawMem) RelationTypeStorage(key.size());
-
-    // Copy in the element types into the trailing storage.
-    std::uninitialized_copy(key.begin(), key.end(),
-                            result->getTrailingObjects<Type>());
-    return result;
-  }
-
-  bool operator==(const KeyTy &key) const { return key == getTypes(); }
-
-  /// Return the number of held types.
-  unsigned size() const { return numElements; }
-
-  /// Return the held types.
-  ArrayRef<Type> getTypes() const {
-    return {getTrailingObjects<Type>(), size()};
-  }
-
-  KeyTy getAsKey() const { return getTypes(); }
-
-  /// The number of tuple elements.
-  unsigned numElements;
-};
-
-} // namespace mlir::substrait::detail
-
 void SubstraitDialect::initialize() {
 #define GET_OP_LIST
   addOperations<
