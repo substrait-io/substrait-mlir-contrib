@@ -208,25 +208,24 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
   let description = [{
   }];
   // XXX: decide if we want to restrict the types that can be used for fields
-  let parameters = (ins "ArrayRef<Type>":$fieldTypes);
+  let parameters = (ins AnyTuple:$structType);
   let builders = [
     TypeBuilder<(ins "TypeRange":$fieldTypes), [{
-      return $_get($_ctxt, fieldTypes);
+      return $_get($_ctxt, ::mlir::TupleType::get($_ctxt, fieldTypes));
     }]>,
     TypeBuilder<(ins), [{
-      return $_get($_ctxt, TypeRange());
+      return $_get($_ctxt, ::mlir::TupleType::get($_ctxt));
     }]>,
   ];
   let skipDefaultBuilders = 1;
-  let genStorageClass = 0;
   let hasCustomAssemblyFormat = 1;
   let extraClassDeclaration = [{
     // XXX: document
-    TupleType getStructType() {
-      return TupleType::get(getContext(), getFieldTypes());
+    ArrayRef<Type> getFieldTypes() const {
+      return getStructType().getTypes();
     }
 
-    ArrayRef<Type> getTypes() { return getFieldTypes(); }
+    ArrayRef<Type> getTypes() const { return getFieldTypes(); }
 
     /// Return the number of held types.
     size_t size() const { return getFieldTypes().size(); }
@@ -235,11 +234,6 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
     using iterator = ArrayRef<Type>::iterator;
     iterator begin() const { return getFieldTypes().begin(); }
     iterator end() const { return getFieldTypes().end(); }
-  }];
-  let extraClassDefinition = [{
-    ArrayRef<Type> $cppClass::getFieldTypes() const {
-      return getImpl()->getTypes();
-    }
   }];
 }
 
