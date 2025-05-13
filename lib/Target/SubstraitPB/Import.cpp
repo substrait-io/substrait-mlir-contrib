@@ -228,6 +228,13 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     return mlir::substrait::DecimalType::get(context, decimalType.precision(),
                                              decimalType.scale());
   }
+  case proto::Type::kList: {
+    const proto::Type::List &listType = type.list();
+    FailureOr<mlir::Type> elementType = importType(context, listType.type());
+    if (failed(elementType))
+      return failure();
+    return ListType::get(context, elementType.value());
+  }
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
     llvm::SmallVector<mlir::Type> fieldTypes;
@@ -633,83 +640,84 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   return joinOp;
 }
 
-static mlir::FailureOr<LiteralOp>
-importLiteral(ImplicitLocOpBuilder builder,
-              const Expression::Literal &message) {
+static mlir::FailureOr<mlir::Attribute>
+importAttribute(ImplicitLocOpBuilder builder,
+                const Expression::Literal &message) {
   MLIRContext *context = builder.getContext();
   Location loc = builder.getLoc();
 
   Expression::Literal::LiteralTypeCase literalType =
       message.literal_type_case();
+
   switch (literalType) {
   case Expression::Literal::LiteralTypeCase::kBoolean: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 1, IntegerType::Signed), message.boolean());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kI8: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 8, IntegerType::Signed), message.i8());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kI16: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 16, IntegerType::Signed), message.i16());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kI32: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 32, IntegerType::Signed), message.i32());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kI64: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 64, IntegerType::Signed), message.i64());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kFp32: {
     auto attr = FloatAttr::get(Float32Type::get(context), message.fp32());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kFp64: {
     auto attr = FloatAttr::get(Float64Type::get(context), message.fp64());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kString: {
     auto attr = StringAttr::get(message.string(), StringType::get(context));
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kBinary: {
     auto attr = StringAttr::get(message.binary(), BinaryType::get(context));
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kTimestamp: {
     auto attr = TimestampAttr::get(context, message.timestamp());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kTimestampTz: {
     auto attr = TimestampTzAttr::get(context, message.timestamp_tz());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kDate: {
     auto attr = DateAttr::get(context, message.date());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kTime: {
     auto attr = TimeAttr::get(context, message.time());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kIntervalYearToMonth: {
     auto attr = IntervalYearMonthAttr::get(
         context, message.interval_year_to_month().years(),
         message.interval_year_to_month().months());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kIntervalDayToSecond: {
     auto attr = IntervalDaySecondAttr::get(
         context, message.interval_day_to_second().days(),
         message.interval_day_to_second().seconds());
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kUuid: {
     APInt var(128, 0);
@@ -718,14 +726,14 @@ importLiteral(ImplicitLocOpBuilder builder,
     IntegerAttr integer_attr =
         IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = UUIDAttr::get(context, integer_attr);
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kFixedChar: {
     StringAttr stringAttr = StringAttr::get(context, message.fixed_char());
     FixedCharType fixedCharType =
         FixedCharType::get(context, message.fixed_char().size());
     auto attr = FixedCharAttr::get(context, stringAttr, fixedCharType);
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kVarChar: {
     StringAttr stringAttr =
@@ -733,14 +741,14 @@ importLiteral(ImplicitLocOpBuilder builder,
     VarCharType varCharType =
         VarCharType::get(context, message.var_char().value().size());
     auto attr = VarCharAttr::get(context, stringAttr, varCharType);
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kFixedBinary: {
     StringAttr stringAttr = StringAttr::get(context, message.fixed_binary());
     FixedBinaryType fixedBinaryType =
         FixedBinaryType::get(context, message.fixed_binary().size());
     auto attr = FixedBinaryAttr::get(context, stringAttr, fixedBinaryType);
-    return builder.create<LiteralOp>(attr);
+    return attr;
   }
   case Expression::Literal::LiteralTypeCase::kDecimal: {
     APInt var(128, 0);
@@ -752,7 +760,27 @@ importLiteral(ImplicitLocOpBuilder builder,
                                         message.decimal().scale());
     IntegerAttr value = IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = DecimalAttr::get(context, type, value);
-    return builder.create<LiteralOp>(attr);
+    return attr;
+  }
+  case Expression::Literal::LiteralTypeCase::kList: {
+    const Expression::Literal::List &listType = message.list();
+    llvm::SmallVector<Attribute> listElements;
+    listElements.reserve(listType.values_size());
+    for (const Expression_Literal &element : listType.values()) {
+      mlir::FailureOr<mlir::Attribute> elementAttr =
+          importAttribute(builder, element);
+      if (failed(elementAttr))
+        return failure();
+      listElements.push_back(*elementAttr);
+    }
+    // Get the list type from the first element.
+    auto listElementType =
+        mlir::cast<TypedAttr>(listElements.front()).getType();
+    auto type = ListType::get(context, listElementType);
+    auto listAttr = ArrayAttr::get(context, listElements);
+    // TODO: Adjust when nullability is implemented. (List could be empty.)
+    auto attr = ListAttr::get(context, listAttr, type);
+    return attr;
   }
 
   // TODO(ingomueller): Support more types.
@@ -762,6 +790,15 @@ importLiteral(ImplicitLocOpBuilder builder,
     return emitError(loc) << Twine("unsupported Literal type: ") + desc->name();
   }
   }
+}
+
+static mlir::FailureOr<LiteralOp>
+importLiteral(ImplicitLocOpBuilder builder,
+              const Expression::Literal &message) {
+  mlir::FailureOr<mlir::Attribute> attr = importAttribute(builder, message);
+  if (failed(attr))
+    return failure();
+  return builder.create<LiteralOp>(*attr);
 }
 
 static mlir::FailureOr<FetchOp> importFetchRel(ImplicitLocOpBuilder builder,

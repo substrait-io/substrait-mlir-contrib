@@ -290,10 +290,30 @@ def Substrait_ParametrizedAttributes {
 /// Attribute of one of the currently supported atomic types.
 def Substrait_AtomicAttribute : AnyAttrOf<Substrait_SimpleAttributes.attrs#Substrait_ParametrizedAttributes.attrs>;
 
+def Substrait_ListAttr : Substrait_Attr<"List", "list", [TypedAttrInterface]> {
+  let summary = "Substrait list attribute";
+  let description = [{
+    This attribute represents a list of atomic attributes, parameterized with a ListType.
+  }];
+  // TODO: Extend to list of container attributes.
+  // TODO: Implement custom parser and printer.
+  let parameters = (ins "mlir::ArrayAttr":$value, "ListType":$type);
+  let assemblyFormat = [{ `<` $value `,` $type `>` }];
+  let genVerifyDecl = 1;
+}
+
+def Substrait_ContainerAttributes {
+  list<Attr> attrs = [
+    Substrait_ListAttr, // List
+  ];
+}
+
+def Substrait_ContainerAttribute : AnyAttrOf<Substrait_ContainerAttributes.attrs>;
+
 /// Attribute of one of the currently supported atomic or container types.
 def Substrait_ExpressionAttribute :
   AnyAttrOf<[
-    // TODO: add container attributes here once we have them.
+    Substrait_ContainerAttribute,
     Substrait_AtomicAttribute,
   ]>;
 
