@@ -401,9 +401,8 @@ void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
 static StringRef getTypeKeyword(Type type) {
   return TypeSwitch<Type, StringRef>(type)
       .Case<RelationType>([&](Type) { return "rel"; })
-      .Default([](Type) -> StringRef {
-        llvm_unreachable("unexpected 'llvm' type kind");
-      });
+      .Case<TimestampType>([&](Type) { return "timestamp"; })
+      .Default([](Type) -> StringRef { return ""; });
 }
 
 ParseResult parseSubstraitType(AsmParser &parser, Type &type) {
@@ -423,8 +422,10 @@ ParseResult parseSubstraitType(AsmParser &parser, Type &type) {
     return failure();
 
   // Dispatch parsing to type class depending on keyword.
+  MLIRContext *context = parser.getContext();
   type = StringSwitch<function_ref<Type()>>(keyword)
              .Case("rel", [&] { return RelationType::parse(parser); })
+             .Case("timestamp", [&] { return TimestampType::get(context); })
              .Default([&] {
                parser.emitError(loc) << "unknown Substrait type: " << keyword;
                return Type();
@@ -433,6 +434,14 @@ ParseResult parseSubstraitType(AsmParser &parser, Type &type) {
 }
 
 void printSubstraitType(AsmPrinter &printer, Operation *op, Type type) {
+  // Check if we have a short-hand form of this type. Print full form otherwise.
+  StringRef keyword = getTypeKeyword(type);
+  if (keyword.empty()) {
+    printer << type;
+    return;
+  }
+
+  // Print short-hand form.
   printer << getTypeKeyword(type);
   llvm::TypeSwitch<Type>(type).Case<RelationType>(
       [&](auto type) { type.print(printer); });
@@ -451,7 +460,7 @@ Type RelationType::parse(AsmParser &parser) {
   SmallVector<Type> fieldTypes;
   if (failed(parser.parseCommaSeparatedList([&]() {
         Type type;
-        if (failed(parser.parseType(type)))
+        if (failed(parseSubstraitType(parser, type)))
           return failure();
         fieldTypes.push_back(type);
         return success();
@@ -467,7 +476,9 @@ Type RelationType::parse(AsmParser &parser) {
 
 void RelationType::print(AsmPrinter &printer) const {
   printer << "<";
-  llvm::interleaveComma(getFieldTypes(), printer);
+  llvm::interleaveComma(getFieldTypes(), printer, [&](Type type) {
+    printSubstraitType(printer, nullptr, type);
+  });
   printer << ">";
 }
 

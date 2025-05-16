@@ -115,13 +115,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : <!substrait.timestamp, !substrait.timestamp_tz>
-// CHECK-NEXT:    yield %[[V0]] : !substrait.relation<!substrait.timestamp, !substrait.timestamp_tz>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : <timestamp, !substrait.timestamp_tz>
+// CHECK-NEXT:    yield %[[V0]] : !substrait.relation<timestamp, !substrait.timestamp_tz>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : <!substrait.timestamp, !substrait.timestamp_tz>
-    yield %0 : !substrait.relation<!substrait.timestamp, !substrait.timestamp_tz>
+    yield %0 : !substrait.relation<timestamp, !substrait.timestamp_tz>
   }
 }
 
