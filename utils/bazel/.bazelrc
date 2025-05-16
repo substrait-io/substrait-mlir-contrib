@@ -10,4 +10,4 @@ build --cxxopt=-D_GLIBCXX_USE_CXX11_ABI=0
 build --cxxopt=-U__GXX_ABI_VERSION
 build --cxxopt=-D__GXX_ABI_VERSION=1011
 build --cxxopt=-DPYBIND11_COMPILER_TYPE=\"_gcc\"
-build --cxxopt=-DMLIR_PYTHON_PACKAGE_PREFIX=torch_mlir.
+build --cxxopt=-DMLIR_PYTHON_PACKAGE_PREFIX=substrait_mlir.

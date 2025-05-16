@@ -2,16 +2,16 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-"""Helper macros to configure torch-mlir overlay project."""
+"""Helper macros to configure substrait-mlir overlay project."""
 
 # This is adapted from llvm-project's utils/bazel/configure.bzl
 
-DEFAULT_OVERLAY_PATH = "torch-mlir-overlay"
+DEFAULT_OVERLAY_PATH = "substrait-mlir-overlay"
 
 def _overlay_directories(repository_ctx):
     src_path = repository_ctx.path(Label("//:WORKSPACE")).dirname
     bazel_path = src_path.get_child("utils").get_child("bazel")
-    overlay_path = bazel_path.get_child("torch-mlir-overlay")
+    overlay_path = bazel_path.get_child("substrait-mlir-overlay")
     script_path = bazel_path.get_child("overlay_directories.py")
 
     python_bin = repository_ctx.which("python3")
@@ -46,11 +46,11 @@ def _overlay_directories(repository_ctx):
             stderr = exec_result.stderr,
         ))
 
-def _torch_mlir_configure_impl(repository_ctx):
+def _substrait_mlir_configure_impl(repository_ctx):
     _overlay_directories(repository_ctx)
 
-torch_mlir_configure = repository_rule(
-    implementation = _torch_mlir_configure_impl,
+substrait_mlir_configure = repository_rule(
+    implementation = _substrait_mlir_configure_impl,
     local = True,
     configure = True,
 )

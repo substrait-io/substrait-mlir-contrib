@@ -21,7 +21,7 @@ bazel_skylib_workspace()
 new_local_repository(
     name = "llvm-raw",
     build_file_content = "# empty",
-    path = "../../externals/llvm-project",
+    path = "../../third_party/llvm-project",
 )
 
 load("@llvm-raw//utils/bazel:configure.bzl", "llvm_configure")
@@ -40,21 +40,16 @@ llvm_configure(
     ],
 )
 
-local_repository(
-    name = "stablehlo",
-    path = "../../externals/stablehlo/",
-)
-
 new_local_repository(
-    name = "torch-mlir-raw",
+    name = "substrait-mlir-raw",
     build_file_content = "# empty",
     path = "../../",
 )
 
-load("@torch-mlir-raw//utils/bazel:configure.bzl", "torch_mlir_configure")
+load("@substrait-mlir-raw//utils/bazel:configure.bzl", "substrait_mlir_configure")
 
-torch_mlir_configure(
-    name = "torch-mlir",
+substrait_mlir_configure(
+    name = "substrait-mlir",
 )
 
 ####### Buildifier Deps

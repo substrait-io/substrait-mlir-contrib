@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 docker build -f utils/bazel/docker/Dockerfile \
-             -t torch-mlir:dev \
+             -t substrait-mlir:dev \
              .
 
 docker run -it \
-           -v "$(pwd)":"/opt/src/torch-mlir" \
+           -v "$(pwd)":"/opt/src/substrait-mlir" \
            -v "${HOME}/.cache/bazel":"/root/.cache/bazel" \
-           torch-mlir:dev
+           substrait-mlir:dev
