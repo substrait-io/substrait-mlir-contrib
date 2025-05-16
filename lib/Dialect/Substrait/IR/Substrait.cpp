@@ -613,7 +613,8 @@ void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
 StringRef getTypeKeyword(Type type) {
   return TypeSwitch<Type, StringRef>(type)
       .Case<RelationType>([&](Type) { return "rel"; })
-      .Default([](Type t) -> StringRef { return ""; });
+      .Case<TimestampType>([&](Type) { return "timestamp"; })
+      .Default([](Type) -> StringRef { return ""; });
 }
 
 ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
@@ -633,13 +634,15 @@ ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
     return failure();
 
   // Dispatch parsing to type class depending on keyword.
-  valueType = StringSwitch<function_ref<Type()>>(keyword)
-                  .Case("rel", [&] { return RelationType::parse(parser); })
-                  .Default([&] {
-                    parser.emitError(loc)
-                        << "unknown Substrait type: " << keyword;
-                    return Type();
-                  })();
+  MLIRContext *context = parser.getContext();
+  valueType =
+      StringSwitch<function_ref<Type()>>(keyword)
+          .Case("rel", [&] { return RelationType::parse(parser); })
+          .Case("timestamp", [&] { return TimestampType::get(context); })
+          .Default([&] {
+            parser.emitError(loc) << "unknown Substrait type: " << keyword;
+            return Type();
+          })();
   return success(valueType != Type());
 }
 
@@ -1277,7 +1280,7 @@ Type RelationType::parse(AsmParser &parser) {
   SmallVector<Type> fieldTypes;
   if (failed(parser.parseCommaSeparatedList([&]() {
         Type type;
-        if (failed(parser.parseType(type)))
+        if (failed(parseSubstraitType(parser, type)))
           return failure();
         fieldTypes.push_back(type);
         return success();
@@ -1293,7 +1296,9 @@ Type RelationType::parse(AsmParser &parser) {
 
 void RelationType::print(AsmPrinter &printer) const {
   printer << "<";
-  llvm::interleaveComma(getFieldTypes(), printer);
+  llvm::interleaveComma(getFieldTypes(), printer, [&](Type type) {
+    printSubstraitType(printer, nullptr, type);
+  });
   printer << ">";
 }
 
