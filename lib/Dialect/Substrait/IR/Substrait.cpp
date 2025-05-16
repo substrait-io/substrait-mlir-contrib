@@ -398,6 +398,46 @@ void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
   printer << value;
 }
 
+static StringRef getTypeKeyword(Type type) {
+  return TypeSwitch<Type, StringRef>(type)
+      .Case<RelationType>([&](Type) { return "rel"; })
+      .Default([](Type) -> StringRef {
+        llvm_unreachable("unexpected 'llvm' type kind");
+      });
+}
+
+ParseResult parseSubstraitType(AsmParser &parser, Type &type) {
+  SMLoc loc = parser.getCurrentLocation();
+
+  // Try parsing any MLIR type in full form.
+  OptionalParseResult result = parser.parseOptionalType(type);
+  if (result.has_value()) {
+    if (failed(result.value()))
+      return failure();
+    return success();
+  }
+
+  // If no type is found, expect a short Substrait type keyword.
+  StringRef keyword;
+  if (failed(parser.parseKeyword(&keyword)))
+    return failure();
+
+  // Dispatch parsing to type class depending on keyword.
+  type = StringSwitch<function_ref<Type()>>(keyword)
+             .Case("rel", [&] { return RelationType::parse(parser); })
+             .Default([&] {
+               parser.emitError(loc) << "unknown Substrait type: " << keyword;
+               return Type();
+             })();
+  return success(type != Type());
+}
+
+void printSubstraitType(AsmPrinter &printer, Operation *op, Type type) {
+  printer << getTypeKeyword(type);
+  llvm::TypeSwitch<Type>(type).Case<RelationType>(
+      [&](auto type) { type.print(printer); });
+}
+
 Type RelationType::parse(AsmParser &parser) {
   // Parse `<` literal.
   if (failed(parser.parseLess()))

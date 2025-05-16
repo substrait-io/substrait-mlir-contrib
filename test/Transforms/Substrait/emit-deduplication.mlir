@@ -16,7 +16,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 1, 0, 0, 1] from %0 : <si1, si32> -> <si32, si32, si1, si1, si32>
-    %2 = cross %1 x %0 : <si32, si32, si1, si1, si32> x <si1, si32>
+    %2 = cross %1 x %0 : rel<si32, si32, si1, si1, si32> x rel<si1, si32>
     yield %2 : !substrait.relation<si32, si32, si1, si1, si32, si1, si32>
   }
 }
@@ -36,7 +36,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 0] from %0 : <si1, si32> -> <si32, si1>
-    %2 = cross %0 x %1 : <si1, si32> x <si32, si1>
+    %2 = cross %0 x %1 : rel<si1, si32> x rel<si32, si1>
     yield %2 : !substrait.relation<si1,si32, si32, si1>
   }
 }
@@ -57,7 +57,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 1, 0, 0, 1] from %0 : <si1, si32> -> <si32, si32, si1, si1, si32>
-    %2 = cross %0 x %1 : <si1, si32> x <si32, si32, si1, si1, si32>
+    %2 = cross %0 x %1 : rel<si1, si32> x rel<si32, si32, si1, si1, si32>
     yield %2 : !substrait.relation<si1, si32, si32, si32, si1, si1, si32>
   }
 }
@@ -77,7 +77,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 0] from %0 : <si1, si32> -> <si32, si1>
-    %2 = cross %1 x %0 : <si32, si1> x <si1, si32>
+    %2 = cross %1 x %0 : rel<si32, si1> x rel<si1, si32>
     yield %2 : !substrait.relation<si32, si1, si1, si32>
   }
 }
@@ -100,7 +100,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 1] from %0 : <si1, si32> -> <si32, si32>
     %2 = emit [0, 0] from %0 : <si1, si32> -> <si1, si1>
-    %3 = cross %1 x %2 : <si32, si32> x <si1, si1>
+    %3 = cross %1 x %2 : rel<si32, si32> x rel<si1, si1>
     yield %3 : !substrait.relation<si32, si32, si1, si1>
   }
 }
@@ -123,7 +123,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 0] from %0 : <si1, si32> -> <si32, si1>
     %2 = emit [0, 0] from %0 : <si1, si32> -> <si1, si1>
-    %3 = cross %1 x %2 : <si32, si1> x <si1, si1>
+    %3 = cross %1 x %2 : rel<si32, si1> x rel<si1, si1>
     yield %3 : !substrait.relation<si32, si1, si1, si1>
   }
 }
@@ -146,7 +146,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a", "b"] : <si1, si32>
     %1 = emit [1, 1] from %0 : <si1, si32> -> <si32, si32>
     %2 = emit [1, 0] from %0 : <si1, si32> -> <si32, si1>
-    %3 = cross %1 x %2 : <si32, si32> x <si32, si1>
+    %3 = cross %1 x %2 : rel<si32, si32> x rel<si32, si1>
     yield %3 : !substrait.relation<si32, si32, si32, si1>
   }
 }
