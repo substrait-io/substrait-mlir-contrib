@@ -319,7 +319,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.timestamp, !substrait.timestamp_tz>
+# CHECK-SAME:       : rel<timestamp, !substrait.timestamp_tz>
 
 relations {
   rel {
