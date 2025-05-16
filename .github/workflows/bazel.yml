@@ -1,0 +1,56 @@
+name: Bazel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  bazel-build:
+    name: Bazel build
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Set up bazel
+      uses: bazel-contrib/setup-bazel@e8776f58fb6a6e9055cbaf1b38c52ccc5247e9c4 # v0.14.0
+      with:
+        # Avoid downloading Bazel every time.
+        bazelisk-cache: true
+        # Store build cache per workflow.
+        disk-cache: ${{ github.workflow }}
+        # Share repository cache between workflows.
+        repository-cache: true
+        external-cache: true
+
+    - name: Cache git folder
+      uses: actions/cache@v4
+      with:
+        path: substrait-mlir/.git
+        key: git-folder
+
+    - name: Checkout project
+      uses: actions/checkout@v3
+      with:
+        path: substrait-mlir
+        submodules: recursive
+
+    - name: Lint bazel files
+      run: |
+        cd substrait-mlir
+        bazel run @substrait_mlir//:buildifier
+        git submodule foreach --recursive git reset --hard  # undo changes in submodules
+        git diff --exit-code || (echo 'Please reformat the bazel files, add them to this PR, and run CI again.'; false)
+
+    - name: Compile
+      run: |
+        cd substrait-mlir
+        bazel build @substrait_mlir//...
+
+    - name: Smoke test
+      run: |
+        cd substrait-mlir
+        bazel run @substrait_mlir//:substrait-lsp-server -- --version
+        bazel run @substrait_mlir//:substrait-opt -- --version
+        bazel run @substrait_mlir//:substrait-translate -- --version

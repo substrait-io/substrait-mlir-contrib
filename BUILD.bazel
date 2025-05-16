@@ -1,0 +1,448 @@
+# ===-- BUILD.bazel - Main BUILD file for Substrait MLIR ------------------=== #
+#
+# This file is licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# ===----------------------------------------------------------------------=== #
+
+load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "gentbl_filegroup", "td_library")
+load("@llvm-project//mlir:build_defs.bzl", "mlir_c_api_cc_library")
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+load("@rules_license//rules:license.bzl", "license")
+
+package(
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:public"],
+    features = [
+        "layering_check",
+        "parse_headers",
+    ],
+)
+
+license(
+    name = "license",
+    package_name = "substrait_mlir",
+)
+
+licenses(["notice"])
+
+exports_files(["LICENSE"])
+
+# Format bazel BUILD and .bzl files with a standard convention
+# Invoke as `bazel run @substrait-mlir//:buildifier`
+buildifier(
+    name = "buildifier",
+)
+
+##---------------------------------------------------------------------------##
+# Substrait dialect: IR
+##---------------------------------------------------------------------------##
+
+td_library(
+    name = "MLIRSubstraitOpsIncGenTdFiles",
+    srcs = glob([
+        "include/substrait-mlir/Dialect/Substrait/IR/*.td",
+    ]),
+    includes = ["include"],
+    deps = [
+        "@llvm-project//mlir:AttrTdFiles",
+        "@llvm-project//mlir:BuiltinDialectTdFiles",
+        "@llvm-project//mlir:InferTypeOpInterfaceTdFiles",
+        "@llvm-project//mlir:OpBaseTdFiles",
+        "@llvm-project//mlir:SideEffectInterfacesTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitAttrsIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-attrdef-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.h.inc",
+        ),
+        (
+            ["-gen-attrdef-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrs.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitEnumsIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-enum-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.h.inc",
+        ),
+        (
+            ["-gen-enum-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitInterfacesIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-attr-interface-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.h.inc",
+        ),
+        (
+            ["-gen-attr-interface-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc",
+        ),
+        (
+            ["-gen-op-interface-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc",
+        ),
+        (
+            ["-gen-op-interface-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc",
+        ),
+        (
+            ["-gen-type-interface-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc",
+        ),
+        (
+            ["-gen-type-interface-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td",
+    deps = [
+        "@llvm-project//mlir:OpBaseTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitOpsIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-op-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc",
+        ),
+        (
+            ["-gen-op-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc",
+        ),
+        (
+            [
+                "-gen-dialect-decls",
+                "-dialect=substrait",
+            ],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc",
+        ),
+        (
+            [
+                "-gen-dialect-defs",
+                "-dialect=substrait",
+            ],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitTypesIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-typedef-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc",
+        ),
+        (
+            ["-gen-typedef-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypes.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
+cc_library(
+    name = "MLIRSubstraitDialect",
+    srcs = [
+        "lib/Dialect/Substrait/IR/Substrait.cpp",
+    ],
+    hdrs = glob([
+        "include/substrait-mlir/Dialect/Substrait/IR/*.h",
+    ]),
+    includes = ["include"],
+    deps = [
+        ":MLIRSubstraitAttrsIncGen",
+        ":MLIRSubstraitEnumsIncGen",
+        ":MLIRSubstraitInterfacesIncGen",
+        ":MLIRSubstraitOpsIncGen",
+        ":MLIRSubstraitTypesIncGen",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:CastInterfaces",
+        "@llvm-project//mlir:FuncDialect",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:Support",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Substrait dialect: transforms
+##---------------------------------------------------------------------------##
+
+td_library(
+    name = "MLIRSubstraitTransformsIncGenTdFiles",
+    srcs = glob([
+        "include/substrait-mlir/Dialect/Substrait/Transforms/*.td",
+    ]),
+    includes = ["include"],
+    deps = [
+        "@llvm-project//mlir:PassBaseTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitTransformsIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            [
+                "-gen-pass-decls",
+                "-name=Substrait",
+            ],
+            "include/substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/Transforms/Passes.td",
+    deps = [
+        ":MLIRSubstraitTransformsIncGenTdFiles",
+    ],
+)
+
+cc_library(
+    name = "MLIRSubstraitTransforms",
+    srcs = [
+        "lib/Dialect/Substrait/Transforms/EmitDeduplication.cpp",
+    ],
+    hdrs = glob([
+        "include/substrait-mlir/Dialect/Substrait/Transforms/*.h",
+    ]),
+    includes = ["include"],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRSubstraitTransformsIncGen",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
+        "@llvm-project//mlir:Rewrite",
+        "@llvm-project//mlir:TransformUtils",
+        "@llvm-project//mlir:Transforms",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# SubstraitPB target
+##---------------------------------------------------------------------------##
+
+cc_library(
+    name = "MLIRTargetSubstraitPB",
+    srcs = [
+        "lib/Target/SubstraitPB/Export.cpp",
+        "lib/Target/SubstraitPB/Import.cpp",
+        "lib/Target/SubstraitPB/ProtobufUtils.cpp",
+        "lib/Target/SubstraitPB/ProtobufUtils.h",
+    ],
+    hdrs = glob([
+        "include/substrait-mlir/Target/SubstraitPB/*.h",
+    ]),
+    features = ["-layering_check"],  # False positive due to cc_proto_library.
+    includes = ["include"],
+    deps = [
+        ":MLIRSubstraitDialect",
+        "@com_google_protobuf//:json_util",
+        "@com_google_protobuf//:protobuf",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
+        "@llvm-project//mlir:Transforms",
+        "@llvm-project//mlir:TranslateLib",
+        "@substrait-cpp//:substrait_cc_proto",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Substrait CAPI
+##---------------------------------------------------------------------------##
+
+mlir_c_api_cc_library(
+    name = "MLIRSubstraitCAPI",
+    srcs = [
+        "lib/CAPI/Dialects.cpp",
+    ],
+    hdrs = [
+        "include/substrait-mlir-c/Dialects.h",
+    ],
+    capi_deps = [
+        "@llvm-project//mlir:CAPIIR",
+    ],
+    includes = ["include"],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRTargetSubstraitPB",
+        "@llvm-project//mlir:IR",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Tools
+##---------------------------------------------------------------------------##
+
+cc_binary(
+    name = "substrait-lsp-server",
+    srcs = [
+        "tools/substrait-lsp-server/substrait-lsp-server.cpp",
+    ],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRSubstraitTransforms",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:AllExtensions",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:MlirLspServerLib",
+        "@llvm-project//mlir:Support",
+    ],
+)
+
+cc_binary(
+    name = "substrait-opt",
+    srcs = [
+        "tools/substrait-opt/substrait-opt.cpp",
+    ],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRSubstraitTransforms",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:AllExtensions",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:MlirOptLib",
+    ],
+)
+
+cc_binary(
+    name = "substrait-translate",
+    srcs = [
+        "tools/substrait-translate/substrait-translate.cpp",
+    ],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRTargetSubstraitPB",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:AllExtensions",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:AllTranslations",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:TranslateLib",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Basic ingredients for Python bindings
+##---------------------------------------------------------------------------##
+
+# Unfortunately, this isn't fully functional and only consists of some basic
+# ingredients.
+
+exports_files(
+    glob([
+        "python/*.cpp",
+        "python/**/*.cpp",
+    ]),
+)
+
+td_library(
+    name = "SubstraitOpsPyTdFiles",
+    srcs = [
+        "python/substrait_mlir/dialects/SubstraitOps.td",
+    ],
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+        "@llvm-project//mlir:OpBaseTdFiles",
+    ],
+)
+
+gentbl_filegroup(
+    name = "SubstraitOpsPyGen",
+    tbl_outs = [
+        (
+            [
+                "-gen-python-op-bindings",
+                "-bind-dialect=substrait",
+            ],
+            "python/substrait_mlir/dialects/_substrait_ops_gen.py",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "python/substrait_mlir/dialects/SubstraitOps.td",
+    deps = [
+        ":SubstraitOpsPyTdFiles",
+    ],
+)
+
+filegroup(
+    name = "SubstraitOpsPyFiles",
+    srcs = [
+        "python/substrait_mlir/dialects/substrait.py",
+        ":SubstraitOpsPyGen",
+    ],
+)
+
+# These flags are needed for pybind11 to work.
+PYBIND11_COPTS = [
+    "-fexceptions",
+    "-frtti",
+]
+
+PYBIND11_FEATURES = [
+    # Cannot use header_modules (parse_headers feature fails).
+    "-use_header_modules",
+]
+
+cc_binary(
+    name = "_substraitDialects.so",
+    srcs = ["python/SubstraitDialects.cpp"],
+    copts = PYBIND11_COPTS,
+    features = PYBIND11_FEATURES,
+    linkshared = 1,
+    linkstatic = 0,
+    deps = [
+        ":MLIRSubstraitCAPI",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:CAPIIR",
+        "@llvm-project//mlir:MLIRBindingsPythonNanobindHeadersAndDeps",
+        "@nanobind",
+    ],
+)
