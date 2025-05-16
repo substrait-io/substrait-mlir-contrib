@@ -23,7 +23,7 @@
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : <si32>
-    %1 = cross %0 x %0 : <si32> x <si32>
+    %1 = cross %0 x %0 : rel<si32> x rel<si32>
     %2 = emit [1, 0] from %1 : <si32, si32> -> <si32, si32>
     yield %2 : !substrait.relation<si32, si32>
   }
