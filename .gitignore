@@ -33,3 +33,7 @@ compile_commands.json
 # lit files
 .lit_test_times.txt
 Output/
+
+# Bazel files
+bazel-*
+.bazelrc.user
