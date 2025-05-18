@@ -1,6 +1,11 @@
+# ===-- BUILD.bazel - Main BUILD file for Substrait MLIR ------------------=== #
+#
 # This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# ===----------------------------------------------------------------------=== #
+
 
 load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "td_library")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
@@ -17,7 +22,45 @@ buildifier(
     name = "buildifier",
 )
 
-# Substrait Dialect/IR
+# ############################################################################ #
+# Substrait Dialect/IR                                                         #
+# ############################################################################ #
+
+td_library(
+    name = "MLIRSubstraitOpsIncGenTdFiles",
+    srcs = glob([
+        "include/substrait-mlir/Dialect/Substrait/IR/*.td",
+    ]),
+    includes = ["include"],
+    deps = [
+        "@llvm-project//mlir:AttrTdFiles",
+        "@llvm-project//mlir:BuiltinDialectTdFiles",
+        "@llvm-project//mlir:InferTypeOpInterfaceTdFiles",
+        "@llvm-project//mlir:OpBaseTdFiles",
+        "@llvm-project//mlir:SideEffectInterfacesTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitAttrsIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-attrdef-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.h.inc",
+        ),
+        (
+            ["-gen-attrdef-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrs.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
 gentbl_cc_library(
     name = "MLIRSubstraitEnumsIncGen",
     strip_include_prefix = "include",
@@ -33,21 +76,119 @@ gentbl_cc_library(
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
 )
 
 gentbl_cc_library(
-    name = "MLIRSubstraitAttrsIncGen",
+    name = "MLIRSubstraitInterfacesIncGen",
     strip_include_prefix = "include",
     tbl_outs = [
         (
-            ["-gen-attrdef-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrs.h.inc",
+            ["-gen-attr-interface-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.h.inc",
         ),
         (
-            ["-gen-attrdef-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrs.cpp.inc",
+            ["-gen-attr-interface-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc",
+        ),
+        (
+            ["-gen-op-interface-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc",
+        ),
+        (
+            ["-gen-op-interface-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc",
+        ),
+        (
+            ["-gen-type-interface-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc",
+        ),
+        (
+            ["-gen-type-interface-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrs.td",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td",
+    deps = [
+        "@llvm-project//mlir:OpBaseTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitOpsIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-op-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc",
+        ),
+        (
+            ["-gen-op-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc",
+        ),
+        (
+            [
+                "-gen-dialect-decls",
+                "-dialect=substrait",
+            ],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc",
+        ),
+        (
+            [
+                "-gen-dialect-defs",
+                "-dialect=substrait",
+            ],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
+gentbl_cc_library(
+    name = "MLIRSubstraitTypesIncGen",
+    strip_include_prefix = "include",
+    tbl_outs = [
+        (
+            ["-gen-typedef-decls"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc",
+        ),
+        (
+            ["-gen-typedef-defs"],
+            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypes.td",
+    deps = [
+        ":MLIRSubstraitOpsIncGenTdFiles",
+    ],
+)
+
+cc_library(
+    name = "MLIRSubstraitDialect",
+    srcs = [
+        "lib/Dialect/Substrait/IR/Substrait.cpp",
+    ],
+    hdrs = glob([
+        "include/substrait-mlir/Dialect/Substrait/IR/*.h",
+    ]),
+    includes = ["include"],
+    deps = [
+        ":MLIRSubstraitAttrsIncGen",
+        ":MLIRSubstraitEnumsIncGen",
+        ":MLIRSubstraitInterfacesIncGen",
+        ":MLIRSubstraitOpsIncGen",
+        ":MLIRSubstraitTypesIncGen",
+        "@llvm-project//mlir:FuncDialect",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:CastInterfaces",
+    ],
 )
