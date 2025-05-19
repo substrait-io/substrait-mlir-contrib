@@ -6,7 +6,6 @@
 #
 # ===----------------------------------------------------------------------=== #
 
-
 load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "td_library")
 load("@llvm-project//mlir:build_defs.bzl", "mlir_c_api_cc_library")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
@@ -187,10 +186,10 @@ cc_library(
         ":MLIRSubstraitInterfacesIncGen",
         ":MLIRSubstraitOpsIncGen",
         ":MLIRSubstraitTypesIncGen",
+        "@llvm-project//mlir:CastInterfaces",
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:InferTypeOpInterface",
-        "@llvm-project//mlir:CastInterfaces",
     ],
 )
 
@@ -214,7 +213,10 @@ gentbl_cc_library(
     strip_include_prefix = "include",
     tbl_outs = [
         (
-            ["-gen-pass-decls", "-name=Substrait"],
+            [
+                "-gen-pass-decls",
+                "-name=Substrait",
+            ],
             "include/substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc",
         ),
     ],
@@ -237,11 +239,11 @@ cc_library(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRSubstraitTransformsIncGen",
-        "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:Rewrite",
-        "@llvm-project//mlir:Transforms",
         "@llvm-project//mlir:TransformUtils",
+        "@llvm-project//mlir:Transforms",
     ],
 )
 
@@ -263,10 +265,10 @@ cc_library(
     includes = ["include"],
     deps = [
         ":MLIRSubstraitDialect",
-        "@llvm-project//mlir:Support",
         "@llvm-project//mlir:IR",
-        "@llvm-project//mlir:TranslateLib",
+        "@llvm-project//mlir:Support",
         "@llvm-project//mlir:Transforms",
+        "@llvm-project//mlir:TranslateLib",
     ],
 )
 

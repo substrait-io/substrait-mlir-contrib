@@ -25,7 +25,7 @@ gentbl_filegroup(
                 "-gen-python-op-bindings",
                 "-bind-dialect=substrait",
             ],
-            "substrait_mlir/dialects/_substrait_ops_gen.py"
+            "substrait_mlir/dialects/_substrait_ops_gen.py",
         ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
