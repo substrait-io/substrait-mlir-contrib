@@ -214,7 +214,7 @@ gentbl_cc_library(
     strip_include_prefix = "include",
     tbl_outs = [
         (
-            ["-gen-pass-decls"],
+            ["-gen-pass-decls", "-name=Substrait"],
             "include/substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc",
         ),
     ],
@@ -322,5 +322,51 @@ cc_binary(
         "@llvm-project//mlir:CAPIIR",
         "@llvm-project//mlir:MLIRBindingsPythonNanobindHeadersAndDeps",
         "@nanobind",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Tools
+##---------------------------------------------------------------------------##
+
+cc_binary(
+    name = "substrait-lsp-server",
+    srcs = [
+        "tools/substrait-lsp-server/substrait-lsp-server.cpp",
+    ],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRSubstraitTransforms",
+        "@llvm-project//mlir:AllExtensions",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:MlirLspServerLib",
+    ],
+)
+
+cc_binary(
+    name = "substrait-opt",
+    srcs = [
+        "tools/substrait-opt/substrait-opt.cpp",
+    ],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRSubstraitTransforms",
+        "@llvm-project//mlir:AllExtensions",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:MlirOptLib",
+    ],
+)
+
+cc_binary(
+    name = "substrait-translate",
+    srcs = [
+        "tools/substrait-translate/substrait-translate.cpp",
+    ],
+    deps = [
+        ":MLIRSubstraitDialect",
+        ":MLIRTargetSubstraitPB",
+        "@llvm-project//mlir:AllExtensions",
+        "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:MlirTranslateMain",
     ],
 )
