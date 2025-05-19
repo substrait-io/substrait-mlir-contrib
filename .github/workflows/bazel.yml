@@ -39,3 +39,10 @@ jobs:
       run: |
         cd substrait-mlir/utils/bazel
         bazel build @substrait-mlir//...
+
+    - name: Smoke test
+      run: |
+        cd substrait-mlir/utils/bazel
+        bazel run @substrait-mlir//:substrait-lsp-server -- --version
+        bazel run @substrait-mlir//:substrait-opt -- --version
+        bazel run @substrait-mlir//:substrait-translate -- --version
