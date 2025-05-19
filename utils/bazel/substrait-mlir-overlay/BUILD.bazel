@@ -269,6 +269,9 @@ cc_library(
         "@llvm-project//mlir:Support",
         "@llvm-project//mlir:Transforms",
         "@llvm-project//mlir:TranslateLib",
+        "@substrait-cpp//:substrait_cc_proto",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:json_util",
     ],
 )
 
