@@ -35,6 +35,12 @@ jobs:
         path: substrait-mlir
         submodules: recursive
 
+    - name: Lint bazel files
+      run: |
+        cd substrait-mlir/utils/bazel
+        bazel run @substrait-mlir//:buildifier
+        git diff --exit-code || (echo 'Please reformat the bazel files, add them to this PR, and run CI again.'; false)
+
     - name: Compile
       run: |
         cd substrait-mlir/utils/bazel
