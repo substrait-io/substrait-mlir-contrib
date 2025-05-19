@@ -105,8 +105,8 @@ python_register_toolchains(
 
 new_local_repository(
     name = "substrait-cpp",
-    path = "../../third_party/substrait-cpp",
     build_file = "BUILD.substrait-cpp.bazel",
+    path = "../../third_party/substrait-cpp",
 )
 
 ##---------------------------------------------------------------------------##

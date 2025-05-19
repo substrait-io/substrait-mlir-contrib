@@ -30,8 +30,8 @@ package(
 proto_library(
     name = "type_proto",
     srcs = [
-      ":repackaged_type_proto",
-      ],
+        ":repackaged_type_proto",
+    ],
     deps = [
         "@com_google_protobuf//:empty_proto",
     ],
@@ -40,8 +40,8 @@ proto_library(
 proto_library(
     name = "extensions_proto",
     srcs = [
-      ":repackaged_extensions_extensions_proto",
-      ],
+        ":repackaged_extensions_extensions_proto",
+    ],
     deps = [
         "@com_google_protobuf//:any_proto",
     ],
@@ -50,28 +50,27 @@ proto_library(
 proto_library(
     name = "algebra_proto",
     srcs = [
-      ":repackaged_algebra_proto",
-      ],
+        ":repackaged_algebra_proto",
+    ],
     deps = [
-        ":type_proto",
         ":extensions_proto",
+        ":type_proto",
         "@com_google_protobuf//:any_proto",
     ],
 )
 
-
 proto_library(
     name = "capabilities_proto",
     srcs = [
-      ":repackaged_capabilities_proto",
-      ],
+        ":repackaged_capabilities_proto",
+    ],
 )
 
 proto_library(
     name = "type_expressions_proto",
     srcs = [
-      ":repackaged_type_expressions_proto",
-      ],
+        ":repackaged_type_expressions_proto",
+    ],
     deps = [
         ":type_proto",
     ],
@@ -80,8 +79,8 @@ proto_library(
 proto_library(
     name = "plan_proto",
     srcs = [
-      ":repackaged_plan_proto",
-      ],
+        ":repackaged_plan_proto",
+    ],
     deps = [
         ":algebra_proto",
         ":extensions_proto",
@@ -91,17 +90,18 @@ proto_library(
 proto_library(
     name = "parameterized_types_proto",
     srcs = [
-      ":repackaged_parameterized_types_proto",
-      ],
+        ":repackaged_parameterized_types_proto",
+    ],
     deps = [
         ":type_proto",
     ],
 )
+
 proto_library(
     name = "extended_expression_proto",
     srcs = [
-      ":repackaged_extended_expression_proto",
-      ],
+        ":repackaged_extended_expression_proto",
+    ],
     deps = [
         ":algebra_proto",
         ":extensions_proto",
@@ -113,27 +113,27 @@ proto_library(
 proto_library(
     name = "function_proto",
     srcs = [
-      ":repackaged_function_proto",
-      ],
+        ":repackaged_function_proto",
+    ],
     deps = [
         ":parameterized_types_proto",
-        ":type_proto",
         ":type_expressions_proto",
+        ":type_proto",
     ],
 )
 
 proto_library(
     name = "substrait_proto",
     deps = [
-      ":type_proto",
-      ":extensions_proto",
-      ":algebra_proto",
-      ":capabilities_proto",
-      ":type_expressions_proto",
-      ":plan_proto",
-      ":parameterized_types_proto",
-      ":extended_expression_proto",
-      ":function_proto",
+        ":algebra_proto",
+        ":capabilities_proto",
+        ":extended_expression_proto",
+        ":extensions_proto",
+        ":function_proto",
+        ":parameterized_types_proto",
+        ":plan_proto",
+        ":type_expressions_proto",
+        ":type_proto",
     ],
 )
 

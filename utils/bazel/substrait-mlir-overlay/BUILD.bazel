@@ -265,13 +265,13 @@ cc_library(
     includes = ["include"],
     deps = [
         ":MLIRSubstraitDialect",
+        "@com_google_protobuf//:json_util",
+        "@com_google_protobuf//:protobuf",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Support",
         "@llvm-project//mlir:Transforms",
         "@llvm-project//mlir:TranslateLib",
         "@substrait-cpp//:substrait_cc_proto",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//:json_util",
     ],
 )
 
