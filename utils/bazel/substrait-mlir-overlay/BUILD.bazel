@@ -186,10 +186,12 @@ cc_library(
         ":MLIRSubstraitInterfacesIncGen",
         ":MLIRSubstraitOpsIncGen",
         ":MLIRSubstraitTypesIncGen",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:CastInterfaces",
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:Support",
     ],
 )
 
@@ -267,6 +269,7 @@ cc_library(
         ":MLIRSubstraitDialect",
         "@com_google_protobuf//:json_util",
         "@com_google_protobuf//:protobuf",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Support",
         "@llvm-project//mlir:Transforms",
@@ -294,6 +297,7 @@ mlir_c_api_cc_library(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRTargetSubstraitPB",
+        "@llvm-project//mlir:IR",
     ],
 )
 
@@ -309,9 +313,12 @@ cc_binary(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRSubstraitTransforms",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:IR",
         "@llvm-project//mlir:MlirLspServerLib",
+        "@llvm-project//mlir:Support",
     ],
 )
 
@@ -323,8 +330,10 @@ cc_binary(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRSubstraitTransforms",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:IR",
         "@llvm-project//mlir:MlirOptLib",
     ],
 )
@@ -337,8 +346,11 @@ cc_binary(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRTargetSubstraitPB",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:AllExtensions",
         "@llvm-project//mlir:AllPassesAndDialects",
-        "@llvm-project//mlir:MlirTranslateMain",
+        "@llvm-project//mlir:AllTranslations",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:TranslateLib",
     ],
 )
