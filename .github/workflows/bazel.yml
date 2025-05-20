@@ -22,6 +22,7 @@ jobs:
         disk-cache: ${{ github.workflow }}
         # Share repository cache between workflows.
         repository-cache: true
+        external-cache: true
 
     - name: Cache git folder
       uses: actions/cache@v4
