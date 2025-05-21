@@ -14,6 +14,10 @@ package(
     default_visibility = [
         "//visibility:public",
     ],
+    features = [
+        "layering_check",
+        "parse_headers",
+    ],
 )
 
 # Format bazel BUILD and .bzl files with a standard convention
