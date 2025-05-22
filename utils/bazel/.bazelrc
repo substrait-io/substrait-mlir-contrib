@@ -4,8 +4,8 @@
 
 try-import .bazelrc.user
 
-build --action_env=CC=clang-14
-build --action_env=CXX=clang++-14
+build --action_env=CC=clang
+build --action_env=CXX=clang++
 build --cxxopt=-std=c++17
 build --host_cxxopt=-std=c++17
 build --cxxopt=-D_GLIBCXX_USE_CXX11_ABI=0
