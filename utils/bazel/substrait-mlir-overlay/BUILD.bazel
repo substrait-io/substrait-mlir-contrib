@@ -9,16 +9,25 @@
 load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "td_library")
 load("@llvm-project//mlir:build_defs.bzl", "mlir_c_api_cc_library")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+load("@rules_license//rules:license.bzl", "license")
 
 package(
-    default_visibility = [
-        "//visibility:public",
-    ],
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:public"],
     features = [
         "layering_check",
         "parse_headers",
     ],
 )
+
+license(
+    name = "license",
+    package_name = "substrait_mlir",
+)
+
+licenses(["notice"])
+
+exports_files(["LICENSE"])
 
 # Format bazel BUILD and .bzl files with a standard convention
 # Invoke as `bazel run @substrait-mlir//:buildifier`
