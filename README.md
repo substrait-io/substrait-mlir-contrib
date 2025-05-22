@@ -19,7 +19,7 @@ implement database query compilers.
 
 The project is work in progress with no stability guarantees. The coverage of
 the Substrait specification is tracked [here](docs/stats.md) and current and
-future work is tracked in the Github
+future work is tracked in the GitHub
 [issues](https://github.com/substrait-io/substrait-mlir-contrib/issues) and
 [milestones](https://github.com/substrait-io/substrait-mlir-contrib/milestones).
 

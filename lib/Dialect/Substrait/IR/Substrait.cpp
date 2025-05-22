@@ -203,7 +203,7 @@ std::string DecimalAttr::toDecimalString(DecimalType type, IntegerAttr value) {
       fractionalPart = "0";
   }
 
-  // Make sure neither part is emtpy.
+  // Make sure neither part is empty.
   if (integralPart.empty())
     integralPart = "0";
   if (fractionalPart.empty())
@@ -618,7 +618,7 @@ ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
   bool hasGroupings = false;
   bool hasGroupingSets = false;
   {
-    auto ensureOneOccurrance = [&](bool &hasParsed,
+    auto ensureOneOccurrence = [&](bool &hasParsed,
                                    StringRef name) -> LogicalResult {
       if (hasParsed) {
         SMLoc loc = parser.getCurrentLocation();
@@ -632,15 +632,15 @@ ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
     while (succeeded(parser.parseOptionalKeyword(
         &keyword, {"measures", "groupings", "grouping_sets"}))) {
       if (keyword == "measures") {
-        if (failed(ensureOneOccurrance(hasMeasures, "'measures' region")) ||
+        if (failed(ensureOneOccurrence(hasMeasures, "'measures' region")) ||
             failed(parser.parseRegion(measuresRegion)))
           return failure();
       } else if (keyword == "groupings") {
-        if (failed(ensureOneOccurrance(hasGroupings, "'groupings' region")) ||
+        if (failed(ensureOneOccurrence(hasGroupings, "'groupings' region")) ||
             failed(parser.parseRegion(groupingsRegion)))
           return failure();
       } else if (keyword == "grouping_sets") {
-        if (failed(ensureOneOccurrance(hasGroupingSets,
+        if (failed(ensureOneOccurrence(hasGroupingSets,
                                        "'grouping_sets' attribute")) ||
             failed(parser.parseAttribute(groupingSetsAttr)))
           return failure();
@@ -1105,7 +1105,7 @@ LogicalResult PlanRelOp::verifyRegions() {
 OpFoldResult ProjectOp::fold(FoldAdaptor adaptor) {
   Operation *terminator = adaptor.getExpressions().front().getTerminator();
 
-  // If the region does not yield any values, the the `project` has no effect.
+  // If the region does not yield any values, the `project` has no effect.
   if (terminator->getNumOperands() == 0) {
     return getInput();
   }
