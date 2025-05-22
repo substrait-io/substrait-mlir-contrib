@@ -12,7 +12,7 @@ on:
 jobs:
   ubuntu-build-and-test:
     name: Ubuntu build and test (Release Asserts)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       LLVM_SYMBOLIZER_PATH: /usr/lib/llvm-14/bin/llvm-symbolizer
     steps:

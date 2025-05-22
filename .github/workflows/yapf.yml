@@ -11,7 +11,7 @@ on:
 jobs:
   formatting-check:
     name: Run yapf
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v2
     - name: run YAPF to test if python code is correctly formatted
