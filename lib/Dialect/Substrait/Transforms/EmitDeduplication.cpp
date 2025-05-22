@@ -183,8 +183,8 @@ struct EliminateDuplicateYieldsInProjectPattern
     int64_t numOriginalYields = terminator->getNumOperands();
     auto inputTupleType = cast<TupleType>(op.getInput().getType());
 
-    // Determine duplicate values in `yield` and remember the first ocurrence of
-    // each value.
+    // Determine duplicate values in `yield` and remember the first occurrence
+    // of each value.
     llvm::DenseMap<Value, int64_t> valuePositions;
     for (Value value : terminator->getOperands())
       valuePositions.try_emplace(value, valuePositions.size());
@@ -384,7 +384,7 @@ struct PushDuplicatesThroughFilterPattern : public OpRewritePattern<FilterOp> {
         createDeduplicatingEmit(op.getInput(), reverseMapping, rewriter);
 
     if (!hasDuplicates)
-      // Note: if we end up failing here, then the invokation of
+      // Note: if we end up failing here, then the invocation of
       // `createDeduplicatingEmit` returned without creating a new (`emit`) op.
       return rewriter.notifyMatchFailure(
           op, "the 'emit' input does not have duplicates");
@@ -438,7 +438,7 @@ struct PushDuplicatesThroughProjectPattern
         createDeduplicatingEmit(op.getInput(), reverseMapping, rewriter);
 
     if (!hasDuplicates)
-      // Note: if we end up failing here, then the invokation of
+      // Note: if we end up failing here, then the invocation of
       // `createDeduplicatingEmit` returned without creating a new (`emit`) op.
       return rewriter.notifyMatchFailure(
           op, "the 'emit' input does not have duplicates");

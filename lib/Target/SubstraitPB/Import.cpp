@@ -68,7 +68,7 @@ struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
 //
 // We need one such function for most message types that we want to import. The
 // forward declarations are necessary such all import functions are available
-// for the definitions indepedently of the order of these definitions. The
+// for the definitions independently of the order of these definitions. The
 // message type passed to the function (specified by `MESSAGE_TYPE`) may be
 // different than the one it is responsible for: often the target op type
 // (specified by `OP_TYPE`) depends on a nested field value (such as `oneof`)
@@ -155,7 +155,7 @@ FailureOr<StringAttr> importAny(ImplicitLocOpBuilder builder,
 }
 
 // Helpers to build symbol names from anchors deterministically. This allows
-// to reate symbol references from anchors without look-up structure. Also,
+// to create symbol references from anchors without look-up structure. Also,
 // the format is exploited by the export logic to recover the original anchor
 // values of (unmodified) imported plans.
 

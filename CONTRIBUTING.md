@@ -21,8 +21,8 @@ This project follows
 ### Code Reviews
 
 This project is bound by the governance rules of the Substrait project and,
-therefor, follows the
-[processs](https://substrait.io/governance/#substrait-voting-process)
+therefore, follows the
+[process](https://substrait.io/governance/#substrait-voting-process)
 defined in the governance rules of the Substrait project. In particular, all
 submissions, including submissions by project members, require a review. We use
 GitHub [pull requests](https://help.github.com/articles/about-pull-requests/)

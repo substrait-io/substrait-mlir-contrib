@@ -782,7 +782,7 @@ SubstraitExporter::exportOperation(ExtensionTableOp op) {
   auto extensionTable = std::make_unique<ReadRel::ExtensionTable>();
   extensionTable->set_allocated_detail(detail.release());
 
-  // TODO(ingomueller): factor out commong logic of `ReadRel`.
+  // TODO(ingomueller): factor out common logic of `ReadRel`.
   // Export field names and result type into `base_schema`.
   auto tupleType = llvm::cast<TupleType>(op.getResult().getType());
   FailureOr<std::unique_ptr<NamedStruct>> baseSchema =
@@ -920,7 +920,7 @@ SubstraitExporter::exportOperation(FilterOp op) {
   // TODO(ingomueller): There can be cases where there isn't a defining op but
   //                    the region argument is returned directly. Support that.
   assert(yieldOp.getValue().size() == 1 &&
-         "fitler op must yield exactly one value");
+         "filter op must yield exactly one value");
   auto conditionOp = llvm::dyn_cast_if_present<ExpressionOpInterface>(
       yieldOp.getValue().front().getDefiningOp());
   if (!conditionOp)
@@ -1139,7 +1139,7 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   auto direct = std::make_unique<RelCommon::Direct>();
   relCommon->set_allocated_direct(direct.release());
 
-  // TODO(ingomueller): factor out commong logic of `ReadRel`.
+  // TODO(ingomueller): factor out common logic of `ReadRel`.
   // Export field names and result type into `base_schema`.
   auto tupleType = llvm::cast<TupleType>(op.getResult().getType());
   FailureOr<std::unique_ptr<NamedStruct>> baseSchema =
