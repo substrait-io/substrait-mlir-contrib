@@ -3,7 +3,8 @@ add_mlir_public_c_api_library(SubstraitMLIRCAPI
 
   LINK_LIBS PUBLIC
     MLIRCAPIIR
+    MLIRIR
+    MLIRPass
     MLIRSubstraitDialect
     MLIRTargetSubstraitPB
-    MLIRPass
 )

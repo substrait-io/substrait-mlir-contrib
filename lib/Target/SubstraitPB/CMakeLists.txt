@@ -3,6 +3,9 @@ add_mlir_translation_library(MLIRTargetSubstraitPB
   Import.cpp
   ProtobufUtils.cpp
 
+  LINK_COMPONENTS
+  Support
+
   LINK_LIBS PUBLIC
   MLIRIR
   MLIRSubstraitDialect

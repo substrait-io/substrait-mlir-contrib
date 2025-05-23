@@ -16,9 +16,10 @@ target_link_libraries(substrait-lsp-server
   ${extension_libs}
   ${dialect_libs}
   ${test_libs}
+  LLVMSupport
+  MLIRIR
   MLIRLspServerLib
   MLIRSupport
-  MLIRIR
 )
 
 mlir_check_all_link_libraries(substrait-lsp-server)
