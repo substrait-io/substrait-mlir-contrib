@@ -11,7 +11,7 @@
 import argparse
 import json
 import sys
-from typing import Generator, IO
+from typing import Iterator, IO
 
 import json5
 
@@ -19,7 +19,7 @@ import json5
 # Reads the given `file`` line by line until a stripped line is exactly equal to
 # the `separator` and yields every chunk between the separators (or the
 # beginning and end of the file).
-def split_file(file: IO, separator: str) -> Generator[str, None, None]:
+def split_file(file: IO, separator: str) -> Iterator[str]:
   chunk: list[str] = []
   for line in file:
     if line.strip() == separator:
