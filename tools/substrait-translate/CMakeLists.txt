@@ -14,9 +14,8 @@ target_link_libraries(substrait-translate
   PRIVATE
   ${dialect_libs}
   ${translation_libs}
+  LLVMSupport
   MLIRIR
-  MLIRParser
-  MLIRPass
   MLIRTargetSubstraitPB
   MLIRTranslateLib
   MLIRSupport

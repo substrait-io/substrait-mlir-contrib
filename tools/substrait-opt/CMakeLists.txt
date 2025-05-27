@@ -16,16 +16,9 @@ target_link_libraries(substrait-opt
   ${extension_libs}
   ${dialect_libs}
   ${test_libs}
-  MLIRAffineAnalysis
-  MLIRAnalysis
-  MLIRDialect
-  MLIROptLib
-  MLIRParser
-  MLIRPass
-  MLIRTransforms
-  MLIRTransformUtils
-  MLIRSupport
   MLIRIR
+  MLIROptLib
+  MLIRSupport
 )
 
 mlir_check_all_link_libraries(substrait-opt)
