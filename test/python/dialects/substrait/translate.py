@@ -11,7 +11,8 @@
 import json
 from typing import cast
 
-from substrait_mlir.dialects import substrait as ss, arith
+from substrait_mlir.dialects import substrait as ss
+from substrait_mlir.dialects import arith
 from substrait_mlir.ir import Context, Location
 
 JSON_PLAN = '''
