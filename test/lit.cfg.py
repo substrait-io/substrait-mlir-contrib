@@ -41,11 +41,6 @@ config.substitutions.extend([
     ("%PYTHON", sys.executable),
 ])
 
-# Deactivate Python's output buffering. Otherwise, output on stdout from Python
-# gets delayed with respect to output from native libraries (such as the MLIR
-# Python bindings) such that order is not preserved and FileCheck checks fail.
-config.environment['PYTHONUNBUFFERED'] = '1'
-
 # excludes: A list of directories to exclude from the testsuite. The 'Inputs'
 # subdirectories contain auxiliary inputs for various tests in their parent
 # directories.
