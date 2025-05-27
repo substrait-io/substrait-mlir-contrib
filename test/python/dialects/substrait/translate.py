@@ -6,7 +6,7 @@
 #
 # ===----------------------------------------------------------------------=== #
 
-# RUN: %PYTHON %s 2>&1 | FileCheck %s
+# RUN: %PYTHON -u %s 2>&1 | FileCheck %s
 
 import json
 from typing import cast
