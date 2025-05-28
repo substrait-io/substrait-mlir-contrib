@@ -1,0 +1,173 @@
+# ===-- BUILD.substrait-cpp.bazel - BUILD file Substrait protos -----------=== #
+#
+# This file is licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# ===----------------------------------------------------------------------=== #
+# This file is injected into the `third_party/substrait-cpp` repository, where
+# it provides rules for the protobuf libraries. These rules apply the same hack
+# that `substrait-cpp` applies, namely it moves them from the `substrait`
+# package to the `substrait.proto` package such that they end up in the C++
+# namespace `substrait::proto` and the header files in the `substrait/proto`
+# subfolder.
+# ===----------------------------------------------------------------------=== #
+
+package(
+    default_applicable_licenses = ["@substrait_mlir//:license"],
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Rewrite `.proto` files to change the proto package.
+##---------------------------------------------------------------------------##
+
+[
+    genrule(
+        name = "repackaged_" + name.replace("/", "_") + "_proto",
+        srcs = [
+            "third_party/substrait/proto/substrait/" + name + ".proto",
+        ],
+        outs = ["substrait/proto/" + name + ".proto"],
+        cmd = ("$(location src/substrait/proto/update_proto_package.pl) " +
+               "$(location third_party/substrait/proto/substrait/" + name + ".proto) " +
+               '> "$@"'),
+        tools = ["src/substrait/proto/update_proto_package.pl"],
+    )
+    for name in [
+        "algebra",
+        "capabilities",
+        "extended_expression",
+        "extensions/extensions",
+        "function",
+        "parameterized_types",
+        "plan",
+        "type",
+        "type_expressions",
+    ]
+]
+
+##---------------------------------------------------------------------------##
+# Proto libraries of individual `.proto` files.
+##---------------------------------------------------------------------------##
+
+proto_library(
+    name = "type_proto",
+    srcs = [
+        ":repackaged_type_proto",
+    ],
+    deps = [
+        "@com_google_protobuf//:empty_proto",
+    ],
+)
+
+proto_library(
+    name = "extensions_proto",
+    srcs = [
+        ":repackaged_extensions_extensions_proto",
+    ],
+    deps = [
+        "@com_google_protobuf//:any_proto",
+    ],
+)
+
+proto_library(
+    name = "algebra_proto",
+    srcs = [
+        ":repackaged_algebra_proto",
+    ],
+    deps = [
+        ":extensions_proto",
+        ":type_proto",
+        "@com_google_protobuf//:any_proto",
+    ],
+)
+
+proto_library(
+    name = "capabilities_proto",
+    srcs = [
+        ":repackaged_capabilities_proto",
+    ],
+)
+
+proto_library(
+    name = "type_expressions_proto",
+    srcs = [
+        ":repackaged_type_expressions_proto",
+    ],
+    deps = [
+        ":type_proto",
+    ],
+)
+
+proto_library(
+    name = "plan_proto",
+    srcs = [
+        ":repackaged_plan_proto",
+    ],
+    deps = [
+        ":algebra_proto",
+        ":extensions_proto",
+    ],
+)
+
+proto_library(
+    name = "parameterized_types_proto",
+    srcs = [
+        ":repackaged_parameterized_types_proto",
+    ],
+    deps = [
+        ":type_proto",
+    ],
+)
+
+proto_library(
+    name = "extended_expression_proto",
+    srcs = [
+        ":repackaged_extended_expression_proto",
+    ],
+    deps = [
+        ":algebra_proto",
+        ":extensions_proto",
+        ":plan_proto",
+        ":type_proto",
+    ],
+)
+
+proto_library(
+    name = "function_proto",
+    srcs = [
+        ":repackaged_function_proto",
+    ],
+    deps = [
+        ":parameterized_types_proto",
+        ":type_expressions_proto",
+        ":type_proto",
+    ],
+)
+
+##---------------------------------------------------------------------------##
+# Packaged targets.
+##---------------------------------------------------------------------------##
+
+proto_library(
+    name = "substrait_proto",
+    deps = [
+        ":algebra_proto",
+        ":capabilities_proto",
+        ":extended_expression_proto",
+        ":extensions_proto",
+        ":function_proto",
+        ":parameterized_types_proto",
+        ":plan_proto",
+        ":type_expressions_proto",
+        ":type_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "substrait_cc_proto",
+    deps = [":substrait_proto"],
+)
