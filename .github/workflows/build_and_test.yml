@@ -86,6 +86,8 @@ jobs:
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON \
           -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=ON \
+          -DSUBSTRAIT_MLIR_CLANG_TIDY_PATH=$(which clang-tidy) \
+          -DSUBSTRAIT_MLIR_ENABLE_CLANG_TIDY=ON \
           -S${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/third_party/llvm-project/llvm \
           -B${SUBSTRAIT_MLIR_MAIN_BINARY_DIR} -G Ninja
         echo "PYTHONPATH=${PYTHONPATH}:${SUBSTRAIT_MLIR_MAIN_BINARY_DIR}/tools/substrait_mlir/python_packages" | tee -a $GITHUB_ENV

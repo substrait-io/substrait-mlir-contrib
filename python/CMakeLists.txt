@@ -42,6 +42,10 @@ declare_mlir_python_sources(SubstraitMLIRPythonSources.MLIRLibs
 # ###############################################################################
 # Common CAPI
 # ###############################################################################
+
+# Disable clang-tidy because it also builds upstream sources.
+unset(CMAKE_CXX_CLANG_TIDY)
+
 add_mlir_python_common_capi_library(SubstraitMLIRPythonCAPI
   INSTALL_COMPONENT SubstraitMLIRPythonModules
   INSTALL_DESTINATION python_packages/substrait_mlir/_mlir_libs
@@ -55,9 +59,15 @@ add_mlir_python_common_capi_library(SubstraitMLIRPythonCAPI
   MLIRPythonSources.ExecutionEngine
 )
 
+set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
+
 # ###############################################################################
 # Instantiation of all Python modules
 # ###############################################################################
+
+# Disable clang-tidy because it also builds upstream sources.
+unset(CMAKE_CXX_CLANG_TIDY)
+
 add_mlir_python_modules(SubstraitMLIRPythonModules
   ROOT_PREFIX "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir"
   INSTALL_PREFIX "python_packages/substrait_mlir"
@@ -71,6 +81,8 @@ add_mlir_python_modules(SubstraitMLIRPythonModules
   COMMON_CAPI_LINK_LIBS
   SubstraitMLIRPythonCAPI
 )
+
+set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
 
 nanobind_add_stub(
   SubstraitMLIRPythonModuleStubs

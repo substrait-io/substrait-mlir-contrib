@@ -275,7 +275,8 @@ Run the command below to set up the build system, possibly adapting it to your
 needs. For example, you may choose not to compile `clang`, `clang-tools-extra`,
 `lld`, and/or the examples to save compilation time, or use a different variant
 than `Debug`. Similarly, you may want to set `DLLVM_ENABLE_LLD=OFF` on some Macs
-that don't have `lld`.
+that don't have `lld` or disable `clang-tidy` if this slows down your builds too
+much or you don't have that tool installed.
 
 ```bash
 cmake \
@@ -298,6 +299,8 @@ cmake \
   -DMLIR_ENABLE_BINDINGS_PYTHON=ON \
   -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON \
   -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=ON \
+  -DSUBSTRAIT_MLIR_CLANG_TIDY_PATH=$(which clang-tidy) \
+  -DSUBSTRAIT_MLIR_ENABLE_CLANG_TIDY=ON \
   -S${SUBSTRAIT_MLIR_SOURCE_DIR}/third_party/llvm-project/llvm \
   -B${SUBSTRAIT_MLIR_BUILD_DIR} \
   -G Ninja
@@ -347,3 +350,16 @@ ${SUBSTRAIT_MLIR_BUILD_DIR}/bin/mlir-pdll-lsp-server
 
 In VS Code, this is done via the `mlir.server_path`, `mlir.pdll_server_path`,
 and `mlir.tablegen_server_path` properties in `settings.json`.
+
+## Applying fixes from `clang-tidy`
+
+If you have enabled `clang-tidy` in your CMake configuration (see above), some
+code style related checks may fail on new code. In that case, `clang-tidy`
+generates automated fixes for some of its checks. You can apply them by running
+the following command:
+
+```bash
+cd ${SUBSTRAIT_MLIR_SOURCE_DIR} && \
+  clang-apply-replacements --format \
+  ${SUBSTRAIT_MLIR_BUILD_DIR}$/tools/substrait_mlir/clang-tidy-fixes
+```

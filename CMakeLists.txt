@@ -31,6 +31,41 @@ set(SUBSTRAIT_MLIR_TABLEGEN_OUTPUT_DIR ${SUBSTRAIT_MLIR_BINARY_DIR}/include)
 message(STATUS "Substrait MLIR build directory: ${SUBSTRAIT_MLIR_BINARY_DIR}")
 
 ################################################################################
+# Set up clang-tidy
+################################################################################
+
+option(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY
+       "Enable clang-tidy static analysis on Substrait MLIR targets"
+       OFF)
+option(SUBSTRAIT_MLIR_CLANG_TIDY_PATH "path to 'clang-tidy' executable")
+
+if(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
+  # Find `clang-tidy` executable.
+  get_filename_component(CLANG_TIDY_NAME
+    "${SUBSTRAIT_MLIR_CLANG_TIDY_PATH}" NAME)
+  get_filename_component(CLANG_TIDY_DIR
+    "${SUBSTRAIT_MLIR_CLANG_TIDY_PATH}" DIRECTORY)
+  find_program(CLANG_TIDY_EXE
+    HINTS ${CLANG_TIDY_DIR}
+    NAMES "clang-tidy" "${CLANG_TIDY_NAME}"
+    REQUIRED)
+  if("${CLANG_TIDY_EXE}" STREQUAL "")
+    message(FATAL_ERROR "failed to find clang-tidy executable")
+  endif()
+
+  # Assemble command line.
+  set(CLANG_TIDY_CONFIG_FILE "${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/.clang-tidy")
+  set(CLANG_TIDY_COMMAND
+    "${CLANG_TIDY_EXE};--config-file=${CLANG_TIDY_CONFIG_FILE}")
+  if (${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
+    set(CLANG_TIDY_COMMAND "${CLANG_TIDY_COMMAND};--warnings-as-errors=*")
+  endif()
+  set(CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR
+    "${SUBSTRAIT_MLIR_BINARY_DIR}/clang-tidy-fixes")
+  message(STATUS "clang-tidy enabled, command: ${CLANG_TIDY_COMMAND}")
+endif(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
+
+################################################################################
 # Set include paths
 ################################################################################
 include_directories(SYSTEM ${MLIR_INCLUDE_DIR})
@@ -63,8 +98,14 @@ add_custom_target(substrait-mlir-all)
 # Set default value for COMPILE_WARNING_AS_ERROR for our targets.
 set(CMAKE_COMPILE_WARNING_AS_ERROR ${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
 
+# Enable clang-tidy for our targets.
+set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND})
+
 add_subdirectory(lib)
 add_subdirectory(include)
 add_subdirectory(python)
 add_subdirectory(test)
 add_subdirectory(tools)
+
+# Disable clang-tidy for everything that may came after.
+unset(CMAKE_CXX_CLANG_TIDY)
