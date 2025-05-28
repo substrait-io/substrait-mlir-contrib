@@ -1,9 +1,28 @@
+# ===-- BUILD.substrait-cpp.bazel - BUILD file Substrait protos -----------=== #
+#
+# This file is licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+# ===----------------------------------------------------------------------=== #
+# This file is injected into the `third_party/substrait-cpp` repository, where
+# it provides rules for the protobuf libraries. These rules apply the same hack
+# that `substrait-cpp` applies, namely it moves them from the `substrait`
+# package to the `substrait.proto` package such that they end up in the C++
+# namespace `substrait::proto` and the header files in the `substrait/proto`
+# subfolder.
+# ===----------------------------------------------------------------------=== #
+
 package(
     default_applicable_licenses = ["@substrait_mlir//:license"],
     default_visibility = [
         "//visibility:public",
     ],
 )
+
+##---------------------------------------------------------------------------##
+# Rewrite `.proto` files to change the proto package.
+##---------------------------------------------------------------------------##
 
 [
     genrule(
@@ -12,7 +31,9 @@ package(
             "third_party/substrait/proto/substrait/" + name + ".proto",
         ],
         outs = ["substrait/proto/" + name + ".proto"],
-        cmd = "$(location src/substrait/proto/update_proto_package.pl) $(location third_party/substrait/proto/substrait/" + name + ".proto) > \"$@\"",
+        cmd = ("$(location src/substrait/proto/update_proto_package.pl) " +
+               "$(location third_party/substrait/proto/substrait/" + name + ".proto) " +
+               '> "$@"'),
         tools = ["src/substrait/proto/update_proto_package.pl"],
     )
     for name in [
@@ -27,6 +48,10 @@ package(
         "type_expressions",
     ]
 ]
+
+##---------------------------------------------------------------------------##
+# Proto libraries of individual `.proto` files.
+##---------------------------------------------------------------------------##
 
 proto_library(
     name = "type_proto",
@@ -122,6 +147,10 @@ proto_library(
         ":type_proto",
     ],
 )
+
+##---------------------------------------------------------------------------##
+# Packaged targets.
+##---------------------------------------------------------------------------##
 
 proto_library(
     name = "substrait_proto",
