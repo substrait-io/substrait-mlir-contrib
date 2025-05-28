@@ -39,10 +39,12 @@ buildifier(
 # Substrait dialect: IR
 ##---------------------------------------------------------------------------##
 
+DIALECT_HDR_DIR = "include/substrait-mlir/Dialect/Substrait"
+
 td_library(
     name = "MLIRSubstraitOpsIncGenTdFiles",
     srcs = glob([
-        "include/substrait-mlir/Dialect/Substrait/IR/*.td",
+        DIALECT_HDR_DIR + "/IR/*.td",
     ]),
     includes = ["include"],
     deps = [
@@ -57,18 +59,12 @@ td_library(
 gentbl_cc_library(
     name = "MLIRSubstraitAttrsIncGen",
     strip_include_prefix = "include",
-    tbl_outs = [
-        (
-            ["-gen-attrdef-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.h.inc",
-        ),
-        (
-            ["-gen-attrdef-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc",
-        ),
-    ],
+    tbl_outs = {
+        DIALECT_HDR_DIR + "/IR/SubstraitOpsAttrs.h.inc": ["-gen-attrdef-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitOpsAttrs.cpp.inc": ["-gen-attrdef-defs"],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrs.td",
+    td_file = DIALECT_HDR_DIR + "/IR/SubstraitAttrs.td",
     deps = [
         ":MLIRSubstraitOpsIncGenTdFiles",
     ],
@@ -77,18 +73,12 @@ gentbl_cc_library(
 gentbl_cc_library(
     name = "MLIRSubstraitEnumsIncGen",
     strip_include_prefix = "include",
-    tbl_outs = [
-        (
-            ["-gen-enum-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.h.inc",
-        ),
-        (
-            ["-gen-enum-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.cpp.inc",
-        ),
-    ],
+    tbl_outs = {
+        DIALECT_HDR_DIR + "/IR/SubstraitEnums.h.inc": ["-gen-enum-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitEnums.cpp.inc": ["-gen-enum-defs"],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.td",
+    td_file = DIALECT_HDR_DIR + "/IR/SubstraitEnums.td",
     deps = [
         ":MLIRSubstraitOpsIncGenTdFiles",
     ],
@@ -97,34 +87,16 @@ gentbl_cc_library(
 gentbl_cc_library(
     name = "MLIRSubstraitInterfacesIncGen",
     strip_include_prefix = "include",
-    tbl_outs = [
-        (
-            ["-gen-attr-interface-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.h.inc",
-        ),
-        (
-            ["-gen-attr-interface-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc",
-        ),
-        (
-            ["-gen-op-interface-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.h.inc",
-        ),
-        (
-            ["-gen-op-interface-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc",
-        ),
-        (
-            ["-gen-type-interface-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.h.inc",
-        ),
-        (
-            ["-gen-type-interface-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc",
-        ),
-    ],
+    tbl_outs = {
+        DIALECT_HDR_DIR + "/IR/SubstraitAttrInterfaces.h.inc": ["-gen-attr-interface-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitAttrInterfaces.cpp.inc": ["-gen-attr-interface-defs"],
+        DIALECT_HDR_DIR + "/IR/SubstraitOpInterfaces.h.inc": ["-gen-op-interface-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitOpInterfaces.cpp.inc": ["-gen-op-interface-defs"],
+        DIALECT_HDR_DIR + "/IR/SubstraitTypeInterfaces.h.inc": ["-gen-type-interface-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitTypeInterfaces.cpp.inc": ["-gen-type-interface-defs"],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitInterfaces.td",
+    td_file = DIALECT_HDR_DIR + "/IR/SubstraitInterfaces.td",
     deps = [
         "@llvm-project//mlir:OpBaseTdFiles",
     ],
@@ -133,32 +105,20 @@ gentbl_cc_library(
 gentbl_cc_library(
     name = "MLIRSubstraitOpsIncGen",
     strip_include_prefix = "include",
-    tbl_outs = [
-        (
-            ["-gen-op-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.h.inc",
-        ),
-        (
-            ["-gen-op-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc",
-        ),
-        (
-            [
-                "-gen-dialect-decls",
-                "-dialect=substrait",
-            ],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.h.inc",
-        ),
-        (
-            [
-                "-gen-dialect-defs",
-                "-dialect=substrait",
-            ],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc",
-        ),
-    ],
+    tbl_outs = {
+        DIALECT_HDR_DIR + "/IR/SubstraitOps.h.inc": ["-gen-op-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitOps.cpp.inc": ["-gen-op-defs"],
+        DIALECT_HDR_DIR + "/IR/SubstraitOpsDialect.h.inc": [
+            "-gen-dialect-decls",
+            "-dialect=substrait",
+        ],
+        DIALECT_HDR_DIR + "/IR/SubstraitOpsDialect.cpp.inc": [
+            "-gen-dialect-defs",
+            "-dialect=substrait",
+        ],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOps.td",
+    td_file = DIALECT_HDR_DIR + "/IR/SubstraitOps.td",
     deps = [
         ":MLIRSubstraitOpsIncGenTdFiles",
     ],
@@ -167,18 +127,12 @@ gentbl_cc_library(
 gentbl_cc_library(
     name = "MLIRSubstraitTypesIncGen",
     strip_include_prefix = "include",
-    tbl_outs = [
-        (
-            ["-gen-typedef-decls"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.h.inc",
-        ),
-        (
-            ["-gen-typedef-defs"],
-            "include/substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc",
-        ),
-    ],
+    tbl_outs = {
+        DIALECT_HDR_DIR + "/IR/SubstraitOpsTypes.h.inc": ["-gen-typedef-decls"],
+        DIALECT_HDR_DIR + "/IR/SubstraitOpsTypes.cpp.inc": ["-gen-typedef-defs"],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/IR/SubstraitTypes.td",
+    td_file = DIALECT_HDR_DIR + "/IR/SubstraitTypes.td",
     deps = [
         ":MLIRSubstraitOpsIncGenTdFiles",
     ],
@@ -190,7 +144,7 @@ cc_library(
         "lib/Dialect/Substrait/IR/Substrait.cpp",
     ],
     hdrs = glob([
-        "include/substrait-mlir/Dialect/Substrait/IR/*.h",
+        DIALECT_HDR_DIR + "/IR/*.h",
     ]),
     includes = ["include"],
     deps = [
@@ -215,7 +169,7 @@ cc_library(
 td_library(
     name = "MLIRSubstraitTransformsIncGenTdFiles",
     srcs = glob([
-        "include/substrait-mlir/Dialect/Substrait/Transforms/*.td",
+        DIALECT_HDR_DIR + "/Transforms/*.td",
     ]),
     includes = ["include"],
     deps = [
@@ -226,17 +180,14 @@ td_library(
 gentbl_cc_library(
     name = "MLIRSubstraitTransformsIncGen",
     strip_include_prefix = "include",
-    tbl_outs = [
-        (
-            [
-                "-gen-pass-decls",
-                "-name=Substrait",
-            ],
-            "include/substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc",
-        ),
-    ],
+    tbl_outs = {
+        DIALECT_HDR_DIR + "/Transforms/Passes.h.inc": [
+            "-gen-pass-decls",
+            "-name=Substrait",
+        ],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
-    td_file = "include/substrait-mlir/Dialect/Substrait/Transforms/Passes.td",
+    td_file = DIALECT_HDR_DIR + "/Transforms/Passes.td",
     deps = [
         ":MLIRSubstraitTransformsIncGenTdFiles",
     ],
@@ -248,7 +199,7 @@ cc_library(
         "lib/Dialect/Substrait/Transforms/EmitDeduplication.cpp",
     ],
     hdrs = glob([
-        "include/substrait-mlir/Dialect/Substrait/Transforms/*.h",
+        DIALECT_HDR_DIR + "/Transforms/*.h",
     ]),
     includes = ["include"],
     deps = [
@@ -396,15 +347,12 @@ td_library(
 
 gentbl_filegroup(
     name = "SubstraitOpsPyGen",
-    tbl_outs = [
-        (
-            [
-                "-gen-python-op-bindings",
-                "-bind-dialect=substrait",
-            ],
-            "python/substrait_mlir/dialects/_substrait_ops_gen.py",
-        ),
-    ],
+    tbl_outs = {
+        "python/substrait_mlir/dialects/_substrait_ops_gen.py": [
+            "-gen-python-op-bindings",
+            "-bind-dialect=substrait",
+        ],
+    },
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "python/substrait_mlir/dialects/SubstraitOps.td",
     deps = [
