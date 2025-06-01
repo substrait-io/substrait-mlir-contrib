@@ -493,6 +493,7 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
 
     ```mlir
     %0 = ...
+    // XXX: update example snippets, here and below
     %1 = aggregate %0 : tuple<si32> -> tuple<si32, si32>
       groupings {
       ^bb0(%arg : tuple<si32>):
@@ -563,7 +564,8 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     $left `x` $right (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($left) `x` type($right)
+    attr-dict `:`
+    custom<SubstraitType>(type($left)) `x` custom<SubstraitType>(type($right))
   }];
   let builders = [
       OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right), [{
