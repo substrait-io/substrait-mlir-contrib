@@ -13,6 +13,48 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<!substrait.list<!substrait.fixed_binary<4>>>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            list {
+              type {
+                fixed_binary {
+                  length: 4
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
 # CHECK-SAME:       : tuple<!substrait.decimal<12, 3>>
 
 relations {
@@ -30,6 +72,43 @@ relations {
               nullability: NULLABILITY_REQUIRED
               precision: 12
               scale: 3
+            }
+          }
+          nullability: NULLABILITY_REQUIRED
+        }
+      }
+      named_table {
+        names: "t1"
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK:      substrait.plan
+# CHECK-NEXT:   relation
+# CHECK-NEXT:     named_table
+# CHECK-SAME:       : tuple<!substrait.fixed_binary<5>>
+
+relations {
+  rel {
+    read {
+      common {
+        direct {
+        }
+      }
+      base_schema {
+        names: "a"
+        struct {
+          types {
+            fixed_binary {
+              length: 5
+              nullability: NULLABILITY_REQUIRED
             }
           }
           nullability: NULLABILITY_REQUIRED

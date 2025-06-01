@@ -116,6 +116,29 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
   return success();
 }
 
+LogicalResult mlir::substrait::ListAttr::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, ArrayAttr value,
+    ListType listType) {
+
+  mlir::Type expectedType =
+      listType.getType(); // The atomic type the list is parameterized with
+
+  for (mlir::Attribute attr : value) {
+    auto typedAttr = mlir::dyn_cast<mlir::TypedAttr>(attr);
+    if (!typedAttr) {
+      return emitError()
+             << "'ListAttr' values must be typed attributes, but got: " << attr;
+    }
+
+    if (typedAttr.getType() != expectedType) {
+      return emitError() << "mismatched element type in 'ListAttr': expected "
+                         << expectedType << ", but got " << typedAttr.getType();
+    }
+  }
+
+  return success();
+}
+
 LogicalResult mlir::substrait::VarCharAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
     VarCharType type) {
@@ -142,6 +165,24 @@ LogicalResult mlir::substrait::DecimalType::verify(
                        << precision << ") but got " << scale;
 
   return success();
+}
+
+LogicalResult mlir::substrait::ListType::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, mlir::Type type) {
+  // ListType must be parameterized with an atomic type.
+  if (!mlir::isa<mlir::IntegerType, mlir::Float32Type, mlir::Float64Type,
+                 substrait::StringType, substrait::BinaryType,
+                 substrait::TimestampType, substrait::TimestampTzType,
+                 substrait::DateType, substrait::TimeType,
+                 substrait::IntervalYearMonthType,
+                 substrait::IntervalDaySecondType, substrait::UUIDType,
+                 substrait::FixedCharType, substrait::VarCharType,
+                 substrait::FixedBinaryType, substrait::DecimalType>(type))
+    return emitError()
+           << "'ListType' must be parameterized with an atomic type, but got: "
+           << type;
+
+  return mlir::success();
 }
 
 // Count the number of digits in an APInt in base 10.
