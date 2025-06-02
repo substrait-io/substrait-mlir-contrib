@@ -9,10 +9,32 @@
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h"
 
+#include "mlir/IR/BuiltinAttributes.h"
+#include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/Dominance.h"
+#include "mlir/IR/Location.h"
+#include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/PatternMatch.h"
+#include "mlir/IR/Region.h"
+#include "mlir/IR/Types.h"
+#include "mlir/IR/Value.h"
+#include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/CSE.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/Sequence.h"
+#include "llvm/ADT/SmallVector.h"
+#include "llvm/Support/Casting.h"
+#include "llvm/Support/LogicalResult.h"
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <tuple>
+#include <utility>
 
 namespace mlir::substrait {
 #define GEN_PASS_DEF_SUBSTRAITEMITDEDUPLICATIONPASS

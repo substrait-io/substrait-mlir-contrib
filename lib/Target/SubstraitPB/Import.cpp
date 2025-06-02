@@ -6,28 +6,61 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "substrait-mlir/Target/SubstraitPB/Import.h"
 #include "ProtobufUtils.h"
 
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Import.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 
+#include "mlir/IR/Attributes.h"
+#include "mlir/IR/Block.h"
+#include "mlir/IR/Builders.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/ImplicitLocOpBuilder.h"
+#include "mlir/IR/Location.h"
+#include "mlir/IR/OperationSupport.h"
 #include "mlir/IR/OwningOpRef.h"
+#include "mlir/IR/Region.h"
+#include "mlir/IR/Types.h"
+#include "mlir/IR/Value.h"
+#include "mlir/Support/LLVM.h"
+#include "llvm/ADT/APInt.h"
+#include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/DenseMapInfo.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringRef.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgcc-compat"
+#include "absl/status/status.h"
+#pragma clang diagnostic pop
 
 // TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
 // as system headers and remove the diagnostic fiddling here.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/util/json_util.h>
-#include <substrait/proto/algebra.pb.h>
-#include <substrait/proto/extensions/extensions.pb.h>
-#include <substrait/proto/plan.pb.h>
-#include <substrait/proto/type.pb.h>
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/util/json_util.h"
+#include "substrait/proto/algebra.pb.h"
+#include "substrait/proto/extensions/extensions.pb.h"
+#include "substrait/proto/plan.pb.h"
+#include "substrait/proto/type.pb.h"
 #pragma clang diagnostic pop
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <tuple>
 
 using namespace mlir;
 using namespace mlir::substrait;

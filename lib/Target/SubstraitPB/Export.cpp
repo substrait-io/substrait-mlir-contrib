@@ -6,31 +6,62 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "substrait-mlir/Target/SubstraitPB/Export.h"
 #include "ProtobufUtils.h"
 
 #include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Export.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 
+#include "mlir/IR/Attributes.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/BuiltinTypeInterfaces.h"
+#include "mlir/IR/BuiltinTypes.h"
+#include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/Dominance.h"
+#include "mlir/IR/Location.h"
+#include "mlir/IR/MLIRContext.h"
 #include "mlir/IR/PatternMatch.h"
+#include "mlir/IR/Region.h"
+#include "mlir/IR/SymbolTable.h"
+#include "mlir/IR/Types.h"
+#include "mlir/IR/Value.h"
+#include "mlir/IR/ValueRange.h"
+#include "mlir/Support/LLVM.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Transforms/CSE.h"
+#include "llvm/ADT/APInt.h"
+#include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/TypeSwitch.h"
+#include "llvm/Support/Casting.h"
 #include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/raw_ostream.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgcc-compat"
+#include "absl/status/status.h"
+#pragma clang diagnostic pop
 
 // TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
 // as system headers and remove the diagnostic fiddling here.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/util/json_util.h>
-#include <substrait/proto/algebra.pb.h>
-#include <substrait/proto/extensions/extensions.pb.h>
-#include <substrait/proto/plan.pb.h>
-#include <substrait/proto/type.pb.h>
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/util/json_util.h"
+#include "substrait/proto/algebra.pb.h"
+#include "substrait/proto/extensions/extensions.pb.h"
+#include "substrait/proto/plan.pb.h"
+#include "substrait/proto/type.pb.h"
 #pragma clang diagnostic pop
+
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
 
 using namespace mlir;
 using namespace mlir::substrait;
