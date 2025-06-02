@@ -834,10 +834,10 @@ importNamedStruct(ImplicitLocOpBuilder builder, const NamedStruct &message) {
   auto fieldNamesAttr = ArrayAttr::get(context, fieldNames);
 
   // Assemble field types from schema.
-  const proto::Type::Struct &struct_ = message.struct_();
+  const proto::Type::Struct &structMsg = message.struct_();
   llvm::SmallVector<mlir::Type> resultTypes;
-  resultTypes.reserve(struct_.types_size());
-  for (const proto::Type &type : struct_.types()) {
+  resultTypes.reserve(structMsg.types_size());
+  for (const proto::Type &type : structMsg.types()) {
     FailureOr<mlir::Type> mlirType = importType(context, type);
     if (failed(mlirType))
       return failure();

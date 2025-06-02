@@ -1103,19 +1103,19 @@ SubstraitExporter::exportNamedStruct(Location loc, ArrayAttr fieldNames,
                                      TupleType relationType) {
 
   // Build `Struct` message.
-  auto struct_ = std::make_unique<proto::Type::Struct>();
-  struct_->set_nullability(
+  auto structMsg = std::make_unique<proto::Type::Struct>();
+  structMsg->set_nullability(
       Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
   for (mlir::Type fieldType : relationType.getTypes()) {
     FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
     if (failed(type))
       return (failure());
-    *struct_->add_types() = *std::move(type.value());
+    *structMsg->add_types() = *std::move(type.value());
   }
 
   // Build `NamedStruct` message.
   auto namedStruct = std::make_unique<NamedStruct>();
-  namedStruct->set_allocated_struct_(struct_.release());
+  namedStruct->set_allocated_struct_(structMsg.release());
   for (Attribute attr : fieldNames) {
     namedStruct->add_names(mlir::cast<StringAttr>(attr).getValue().str());
   }
