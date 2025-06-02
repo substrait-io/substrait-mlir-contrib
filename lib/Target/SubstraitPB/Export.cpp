@@ -1274,9 +1274,9 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
 
   // Add `expected_type_urls` to plan if present.
   if (op.getExpectedTypeUrls()) {
-    ArrayAttr expected_type_urls = op.getExpectedTypeUrls().value();
-    for (auto expected_type_url : expected_type_urls.getAsRange<StringAttr>())
-      plan->add_expected_type_urls(expected_type_url.str());
+    ArrayAttr expectedTypeUrls = op.getExpectedTypeUrls().value();
+    for (auto expectedTypeUrl : expectedTypeUrls.getAsRange<StringAttr>())
+      plan->add_expected_type_urls(expectedTypeUrl.str());
   }
 
   // Add `extension_uris` to plan.

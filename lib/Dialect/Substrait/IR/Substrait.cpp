@@ -73,8 +73,8 @@ LogicalResult mlir::substrait::FixedCharAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
     Type type) {
   FixedCharType fixedCharType = mlir::dyn_cast<FixedCharType>(type);
-  int32_t value_length = value.size();
-  if (fixedCharType != nullptr && value_length != fixedCharType.getLength())
+  int32_t valueLength = value.size();
+  if (fixedCharType != nullptr && valueLength != fixedCharType.getLength())
     return emitError() << "value length must be " << fixedCharType.getLength()
                        << " characters.";
   return success();
@@ -86,8 +86,8 @@ LogicalResult mlir::substrait::FixedBinaryAttr::verify(
   FixedBinaryType fixedBinaryType = mlir::dyn_cast<FixedBinaryType>(type);
   if (fixedBinaryType == nullptr)
     return emitError() << "expected a fixed binary type";
-  int32_t value_length = value.size();
-  if (value_length != fixedBinaryType.getLength())
+  int32_t valueLength = value.size();
+  if (valueLength != fixedBinaryType.getLength())
     return emitError() << "value length must be " << fixedBinaryType.getLength()
                        << " characters.";
   return success();
@@ -119,8 +119,8 @@ LogicalResult mlir::substrait::IntervalDaySecondAttr::verify(
 LogicalResult mlir::substrait::VarCharAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, StringAttr value,
     VarCharType type) {
-  int32_t value_length = value.size();
-  if (value_length > type.getLength())
+  int32_t valueLength = value.size();
+  if (valueLength > type.getLength())
     return emitError() << "value length must be at most " << type.getLength()
                        << " characters.";
   return success();
@@ -160,9 +160,9 @@ LogicalResult mlir::substrait::DecimalAttr::verify(
 
   // Max `P` digits.
   size_t nDigits = countDigits(value.getValue());
-  size_t P = type.getPrecision();
-  if (nDigits > P)
-    return emitError() << "value must have at most " << P
+  size_t p = type.getPrecision();
+  if (nDigits > p)
+    return emitError() << "value must have at most " << p
                        << " digits as per the type " << type << " but got "
                        << nDigits;
 
@@ -1048,11 +1048,11 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 
   // Get accessor to `join_type`.
   Adaptor adaptor(operands, attributes, properties, regions);
-  JoinType join_type = adaptor.getJoinType();
+  JoinType joinType = adaptor.getJoinType();
 
   SmallVector<mlir::Type> fieldTypes;
 
-  switch (join_type) {
+  switch (joinType) {
   case JoinType::unspecified:
   case JoinType::inner:
   case JoinType::outer:
