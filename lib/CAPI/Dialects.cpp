@@ -8,16 +8,17 @@
 
 #include "substrait-mlir-c/Dialects.h"
 
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Export.h"
+#include "substrait-mlir/Target/SubstraitPB/Import.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
+
 #include "mlir-c/BuiltinTypes.h"
 #include "mlir-c/IR.h"
 #include "mlir/CAPI/IR.h"
 #include "mlir/CAPI/Registration.h"
 #include "mlir/CAPI/Support.h"
 #include "mlir/IR/Types.h"
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
-#include "substrait-mlir/Target/SubstraitPB/Export.h"
-#include "substrait-mlir/Target/SubstraitPB/Import.h"
-#include "substrait-mlir/Target/SubstraitPB/Options.h"
 
 using namespace mlir;
 using namespace mlir::substrait;
