@@ -8,15 +8,16 @@
 // `mlir-stranslate` with translations to and from Substrait MLIR dialects.
 //===----------------------------------------------------------------------===//
 
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Export.h"
+#include "substrait-mlir/Target/SubstraitPB/Import.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
+
 #include "mlir/IR/BuiltinOps.h" // IWYU: keep
 #include "mlir/IR/Operation.h"
 #include "mlir/InitAllTranslations.h"
 #include "mlir/Tools/mlir-translate/MlirTranslateMain.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
-#include "substrait-mlir/Target/SubstraitPB/Export.h"
-#include "substrait-mlir/Target/SubstraitPB/Import.h"
-#include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/Support/raw_ostream.h"
 
 namespace mlir {

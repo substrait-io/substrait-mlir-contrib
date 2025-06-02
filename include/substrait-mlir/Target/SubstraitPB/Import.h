@@ -10,6 +10,7 @@
 #define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_IMPORT_H
 
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
+
 #include "llvm/ADT/StringRef.h"
 
 namespace mlir {

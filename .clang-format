@@ -1,2 +1,16 @@
 BasedOnStyle: LLVM
 AlwaysBreakTemplateDeclarations: Yes
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"(llvm|llvm-c)/'
+    Priority:        3
+    SortPriority:    4
+  - Regex:           '^"(mlir|mlir-c)/'
+    Priority:        3
+  - Regex:           '^"(substrait-mlir|substrait-mlir-c)/'
+    Priority:        2
+  - Regex:           '<[[:alnum:].]+>'
+    Priority:        5
+  - Regex:           '.*'
+    Priority:        0
+    SortPriority:    1

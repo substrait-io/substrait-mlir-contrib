@@ -6,11 +6,12 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "substrait-mlir-c/Dialects.h"
+
 #include "mlir-c/BuiltinAttributes.h"
 #include "mlir-c/IR.h"
 #include "mlir/Bindings/Python/Nanobind.h"         // IWYU pragma: keep
 #include "mlir/Bindings/Python/NanobindAdaptors.h" // IWYU pragma: keep
-#include "substrait-mlir-c/Dialects.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
 

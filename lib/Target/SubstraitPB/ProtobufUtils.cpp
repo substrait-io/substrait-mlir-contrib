@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "ProtobufUtils.h"
+
 #include "mlir/IR/Diagnostics.h"
 
 // TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
