@@ -1,6 +1,5 @@
 ---
 # Enable the same checks as MLIR, except for the following:
-#    misc-include-cleaner
 #    readability-braces-around-statements
 #    misc-use-anonymous-namespace
 # TODO(ingomueller): fix issues found by clang-tidy and enable checks.
@@ -17,7 +16,6 @@ Checks: >
     -misc-non-private-member-variables-in-classes,
     readability-braces-around-statements,
     readability-identifier-naming,
-    -misc-include-cleaner,
     -readability-braces-around-statements,
     -misc-use-anonymous-namespace
 
