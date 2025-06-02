@@ -1105,19 +1105,19 @@ SubstraitExporter::exportNamedStruct(Location loc, ArrayAttr fieldNames,
                                      TupleType relationType) {
 
   // Build `Struct` message.
-  auto struct_ = std::make_unique<proto::Type::Struct>();
-  struct_->set_nullability(
+  auto structMsg = std::make_unique<proto::Type::Struct>();
+  structMsg->set_nullability(
       Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
   for (mlir::Type fieldType : relationType.getTypes()) {
     FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
     if (failed(type))
       return (failure());
-    *struct_->add_types() = *std::move(type.value());
+    *structMsg->add_types() = *std::move(type.value());
   }
 
   // Build `NamedStruct` message.
   auto namedStruct = std::make_unique<NamedStruct>();
-  namedStruct->set_allocated_struct_(struct_.release());
+  namedStruct->set_allocated_struct_(structMsg.release());
   for (Attribute attr : fieldNames) {
     namedStruct->add_names(mlir::cast<StringAttr>(attr).getValue().str());
   }
@@ -1276,9 +1276,9 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
 
   // Add `expected_type_urls` to plan if present.
   if (op.getExpectedTypeUrls()) {
-    ArrayAttr expected_type_urls = op.getExpectedTypeUrls().value();
-    for (auto expected_type_url : expected_type_urls.getAsRange<StringAttr>())
-      plan->add_expected_type_urls(expected_type_url.str());
+    ArrayAttr expectedTypeUrls = op.getExpectedTypeUrls().value();
+    for (auto expectedTypeUrl : expectedTypeUrls.getAsRange<StringAttr>())
+      plan->add_expected_type_urls(expectedTypeUrl.str());
   }
 
   // Add `extension_uris` to plan.

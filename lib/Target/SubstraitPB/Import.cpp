@@ -497,8 +497,8 @@ static mlir::FailureOr<ExpressionOpInterface>
 importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
   Location loc = builder.getLoc();
 
-  Expression::RexTypeCase rex_type = message.rex_type_case();
-  switch (rex_type) {
+  Expression::RexTypeCase rexType = message.rex_type_case();
+  switch (rexType) {
   case Expression::kCast:
     return importCast(builder, message.cast());
   case Expression::kLiteral:
@@ -511,7 +511,7 @@ importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
     return emitError(loc) << Twine("expression type not set");
   default: {
     const pb::FieldDescriptor *desc =
-        Expression::GetDescriptor()->FindFieldByNumber(rex_type);
+        Expression::GetDescriptor()->FindFieldByNumber(rexType);
     return emitError(loc) << Twine("unsupported expression type: ") +
                                  desc->name();
   }
@@ -620,13 +620,13 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   Value leftVal = leftOp.value()->getResult(0);
   Value rightVal = rightOp.value()->getResult(0);
 
-  std::optional<JoinType> join_type = static_cast<JoinType>(joinRel.type());
+  std::optional<JoinType> joinType = static_cast<JoinType>(joinRel.type());
 
   // Check for unsupported set operations.
-  if (!join_type)
+  if (!joinType)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  auto joinOp = builder.create<JoinOp>(leftVal, rightVal, *join_type);
+  auto joinOp = builder.create<JoinOp>(leftVal, rightVal, *joinType);
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, joinOp, joinRel);
@@ -716,9 +716,9 @@ importLiteral(ImplicitLocOpBuilder builder,
     APInt var(128, 0);
     llvm::LoadIntFromMemory(
         var, reinterpret_cast<const uint8_t *>(message.uuid().data()), 16);
-    IntegerAttr integer_attr =
+    IntegerAttr integerAttr =
         IntegerAttr::get(IntegerType::get(context, 128), var);
-    auto attr = UUIDAttr::get(context, integer_attr);
+    auto attr = UUIDAttr::get(context, integerAttr);
     return builder.create<LiteralOp>(attr);
   }
   case Expression::Literal::LiteralTypeCase::kFixedChar: {
@@ -835,10 +835,10 @@ importNamedStruct(ImplicitLocOpBuilder builder, const NamedStruct &message) {
   auto fieldNamesAttr = ArrayAttr::get(context, fieldNames);
 
   // Assemble field types from schema.
-  const proto::Type::Struct &struct_ = message.struct_();
+  const proto::Type::Struct &structMsg = message.struct_();
   llvm::SmallVector<mlir::Type> resultTypes;
-  resultTypes.reserve(struct_.types_size());
-  for (const proto::Type &type : struct_.types()) {
+  resultTypes.reserve(structMsg.types_size());
+  for (const proto::Type &type : structMsg.types()) {
     FailureOr<mlir::Type> mlirType = importType(context, type);
     if (failed(mlirType))
       return failure();
@@ -909,12 +909,12 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
   planOp.getBody().push_back(new Block());
 
   // Import `expected_type_urls` if present.
-  SmallVector<Attribute> expected_type_urls;
-  for (const std::string &expected_type_url : message.expected_type_urls()) {
-    expected_type_urls.push_back(StringAttr::get(context, expected_type_url));
+  SmallVector<Attribute> expectedTypeUrls;
+  for (const std::string &expectedTypeUrl : message.expected_type_urls()) {
+    expectedTypeUrls.push_back(StringAttr::get(context, expectedTypeUrl));
   }
-  if (!expected_type_urls.empty()) {
-    planOp.setExpectedTypeUrlsAttr(ArrayAttr::get(context, expected_type_urls));
+  if (!expectedTypeUrls.empty()) {
+    planOp.setExpectedTypeUrlsAttr(ArrayAttr::get(context, expectedTypeUrls));
   }
 
   // Import advanced extension if it is present.
