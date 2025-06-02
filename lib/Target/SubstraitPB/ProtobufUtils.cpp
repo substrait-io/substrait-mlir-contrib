@@ -9,12 +9,14 @@
 #include "ProtobufUtils.h"
 
 #include "mlir/IR/Diagnostics.h"
+#include "mlir/IR/Location.h"
+#include "mlir/Support/LLVM.h"
 
 // TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
 // as system headers and remove the diagnostic fiddling here.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
-#include <substrait/proto/algebra.pb.h>
+#include "substrait/proto/algebra.pb.h"
 #pragma clang diagnostic pop
 
 using namespace mlir;
