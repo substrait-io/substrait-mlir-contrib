@@ -23,20 +23,20 @@ using namespace mlir::substrait;
 // Substrait dialect
 //===----------------------------------------------------------------------===//
 
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsDialect.cpp.inc" // IWYU pragma: keep
 
 void SubstraitDialect::initialize() {
 #define GET_OP_LIST
   addOperations<
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc" // IWYU pragma: keep
       >();
   addTypes<
 #define GET_TYPEDEF_LIST
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc" // IWYU pragma: keep
       >();
   addAttributes<
 #define GET_ATTRDEF_LIST
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc" // IWYU pragma: keep
       >();
 }
 
@@ -271,15 +271,15 @@ ParseResult DecimalAttr::parseDecimalString(
 // Substrait enums
 //===----------------------------------------------------------------------===//
 
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitEnums.cpp.inc" // IWYU pragma: keep
 
 //===----------------------------------------------------------------------===//
 // Substrait interfaces
 //===----------------------------------------------------------------------===//
 
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc"
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc"
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitAttrInterfaces.cpp.inc" // IWYU pragma: keep
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpInterfaces.cpp.inc" // IWYU pragma: keep
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitTypeInterfaces.cpp.inc" // IWYU pragma: keep
 
 //===----------------------------------------------------------------------===//
 // Custom Parser and Printer for Substrait
@@ -525,7 +525,7 @@ static void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
 } // namespace mlir
 
 #define GET_OP_CLASSES
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc" // IWYU pragma: keep
 
 namespace {
 
@@ -1292,7 +1292,7 @@ LogicalResult ProjectOp::verifyRegions() {
 //===----------------------------------------------------------------------===//
 
 #define GET_TYPEDEF_CLASSES
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsTypes.cpp.inc" // IWYU pragma: keep
 
 #define GET_ATTRDEF_CLASSES
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc"
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOpsAttrs.cpp.inc" // IWYU pragma: keep
