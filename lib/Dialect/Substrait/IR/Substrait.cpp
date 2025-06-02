@@ -449,8 +449,8 @@ ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
     // If there is no `groupings` region, create only the empty grouping set.
     if (!hasGroupings) {
       groupingSetsAttr = ArrayAttr::get(context, ArrayAttr::get(context, {}));
-      // Otherwise, create the grouping set with all grouping columns.
     } else if (!groupingsRegion.empty()) {
+      // Otherwise, create the grouping set with all grouping columns.
       auto yieldOp =
           llvm::dyn_cast<YieldOp>(groupingsRegion.front().getTerminator());
       if (yieldOp) {

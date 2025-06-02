@@ -886,9 +886,10 @@ SubstraitExporter::exportOperation(FieldReferenceOp op) {
   } else {
     // Input must be a `BlockArgument`. Only support root references for now.
     auto blockArg = llvm::cast<BlockArgument>(inputVal);
-    if (blockArg.getOwner() != op->getBlock())
+    if (blockArg.getOwner() != op->getBlock()) {
       // TODO(ingomueller): support outer reference type.
       return op.emitOpError("has unsupported outer reference");
+    }
 
     auto rootReference = std::make_unique<FieldReference::RootReference>();
     fieldReference->set_allocated_root_reference(rootReference.release());
