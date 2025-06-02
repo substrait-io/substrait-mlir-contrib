@@ -2,7 +2,6 @@
 # Enable the same checks as MLIR, except for the following:
 #    misc-include-cleaner
 #    readability-braces-around-statements
-#    readability-identifier-naming
 #    misc-use-anonymous-namespace
 # TODO(ingomueller): fix issues found by clang-tidy and enable checks.
 Checks: >
@@ -20,7 +19,6 @@ Checks: >
     readability-identifier-naming,
     -misc-include-cleaner,
     -readability-braces-around-statements,
-    -readability-identifier-naming,
     -misc-use-anonymous-namespace
 
 CheckOptions:
