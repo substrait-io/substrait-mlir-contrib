@@ -29,9 +29,11 @@
 
 using namespace mlir;
 
-static void registerSubstraitDialects(DialectRegistry &registry) {
+namespace {
+void registerSubstraitDialects(DialectRegistry &registry) {
   registry.insert<mlir::substrait::SubstraitDialect>();
 }
+} // namespace
 
 int main(int argc, char **argv) {
 #ifndef NDEBUG

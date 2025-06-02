@@ -177,12 +177,14 @@ LogicalResult mlir::substrait::DecimalType::verify(
   return success();
 }
 
+namespace {
 // Count the number of digits in an APInt in base 10.
-static size_t countDigits(const APInt &value) {
+size_t countDigits(const APInt &value) {
   llvm::SmallVector<char> buffer;
   value.toString(buffer, 10, /*isSigned=*/false);
   return buffer.size();
 }
+} // namespace
 
 LogicalResult mlir::substrait::DecimalAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, DecimalType type,
@@ -317,372 +319,7 @@ ParseResult DecimalAttr::parseDecimalString(
 // Custom Parser and Printer for Substrait
 //===----------------------------------------------------------------------===//
 
-bool parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
-  // `all` keyword (corresponds to `-1`).
-  if (!parser.parseOptionalKeyword("all")) {
-    count = parser.getBuilder().getI64IntegerAttr(-1);
-    return false;
-  }
-
-  // Normal integer.
-  int64_t result;
-  if (!parser.parseInteger(result)) {
-    count = parser.getBuilder().getI64IntegerAttr(result);
-    return false;
-  }
-
-  // Error.
-  return true;
-}
-
-void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
-  if (count.getInt() == -1) {
-    printer << "all";
-    return;
-  }
-  // Normal integer.
-  printer << count.getValue();
-}
-
-// Parses a VarCharType by extracting the length from the given parser. Assumes
-// the length is surrounded by `<` and `>` symbols, which are removed. On
-// success, assigns the parsed type to `type` and returns success.
-ParseResult parseVarCharTypeByLength(AsmParser &parser, VarCharType &type) {
-  // remove `<` and `>` symbols
-  int64_t result;
-  if (parser.parseInteger(result))
-    return failure();
-
-  type = VarCharType::get(parser.getContext(), result);
-
-  return success();
-}
-
-// Prints the VarCharType by outputting its length to the given printer.
-void printVarCharTypeByLength(AsmPrinter &printer, VarCharType type) {
-  // Normal integer.
-  printer << type.getLength();
-}
-
-ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
-                               IntegerAttr &value) {
-  llvm::SMLoc loc = parser.getCurrentLocation();
-
-  // Parse decimal value as quoted string.
-  std::string valueStr;
-  if (parser.parseString(&valueStr))
-    return failure();
-
-  // Parse `P = <precision>`.
-  uint32_t precision;
-  if (parser.parseComma() || parser.parseKeyword("P") || parser.parseEqual() ||
-      parser.parseInteger(precision))
-    return failure();
-
-  // Parse `S = <scale>`.
-  uint32_t scale;
-  if (parser.parseComma() || parser.parseKeyword("S") || parser.parseEqual() ||
-      parser.parseInteger(scale))
-    return failure();
-
-  // Create `DecimalType`.
-  auto emitError = [&]() { return parser.emitError(loc); };
-  if (!(type = DecimalType::getChecked(emitError, parser.getContext(),
-                                       precision, scale)))
-    return failure();
-
-  // Parse value as the given type.
-  if (failed(DecimalAttr::parseDecimalString(emitError, valueStr, type, value)))
-    return failure();
-
-  return success();
-}
-
-void printDecimalNumber(AsmPrinter &printer, DecimalType type,
-                        IntegerAttr value) {
-  printer << "\"" << DecimalAttr::toDecimalString(type, value) << "\", ";
-  printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
-}
-
-ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
-                                    FixedBinaryType &type) {
-  std::string valueStr;
-  // Parse fixed binary value as quoted string.
-  if (parser.parseString(&valueStr))
-    return failure();
-
-  // Create `FixedBinaryType`.
-  auto emitError = [&]() {
-    return parser.emitError(parser.getCurrentLocation());
-  };
-  MLIRContext *context = parser.getContext();
-  uint32_t length = valueStr.size();
-  if (!(type = FixedBinaryType::getChecked(emitError, context, length)))
-    return failure();
-
-  value = parser.getBuilder().getStringAttr(valueStr);
-
-  return success();
-}
-
-void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
-                             FixedBinaryType type) {
-  printer << value;
-}
-
-static StringRef getTypeKeyword(Type type) {
-  return TypeSwitch<Type, StringRef>(type)
-      .Case<RelationType>([&](Type) { return "rel"; })
-      .Default([](Type t) -> StringRef { return ""; });
-}
-
-ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
-  SMLoc loc = parser.getCurrentLocation();
-
-  // Try parsing any MLIR type in full form.
-  OptionalParseResult result = parser.parseOptionalType(valueType);
-  if (result.has_value()) {
-    if (failed(result.value()))
-      return failure();
-    return success();
-  }
-
-  // If no type is found, expect a short Substrait type keyword.
-  StringRef keyword;
-  if (failed(parser.parseKeyword(&keyword)))
-    return failure();
-
-  // Dispatch parsing to type class depending on keyword.
-  valueType = StringSwitch<function_ref<Type()>>(keyword)
-                  .Case("rel", [&] { return RelationType::parse(parser); })
-                  .Default([&] {
-                    parser.emitError(loc)
-                        << "unknown Substrait type: " << keyword;
-                    return Type();
-                  })();
-  return success(valueType != Type());
-}
-
-ParseResult parseSubstraitType(AsmParser &parser,
-                               SmallVectorImpl<Type> &valueTypes) {
-  return parser.parseCommaSeparatedList([&]() {
-    Type type;
-    if (failed(parseSubstraitType(parser, type)))
-      return failure();
-    valueTypes.push_back(type);
-    return success();
-  });
-}
-
-void printSubstraitType(AsmPrinter &printer, Operation * /*op*/, Type type) {
-  StringRef keyword = getTypeKeyword(type);
-
-  // No short-hand version available: print type in regular form.
-  if (keyword.empty()) {
-    printer << type;
-    return;
-  }
-
-  // Short-hand form available: print type in that form.
-  printer << keyword;
-  llvm::TypeSwitch<Type>(type).Case<RelationType>(
-      [&](auto type) { type.print(printer); });
-}
-
-void printSubstraitType(AsmPrinter &printer, Operation *op,
-                        TypeRange valueTypes) {
-  llvm::interleaveComma(valueTypes, printer, [&](Type type) {
-    printSubstraitType(printer, op, type);
-  });
-}
-
-Type RelationType::parse(AsmParser &parser) {
-  // Parse `<` literal.
-  if (failed(parser.parseLess()))
-    return Type();
-
-  // If we parse the `>` literal, we have an empty list of types and are done.
-  if (succeeded(parser.parseOptionalGreater()))
-    return get(parser.getContext());
-
-  // Parse list of field types.
-  SmallVector<Type> fieldTypes;
-  if (failed(parser.parseCommaSeparatedList([&]() {
-        Type type;
-        if (failed(parser.parseType(type)))
-          return failure();
-        fieldTypes.push_back(type);
-        return success();
-      })))
-    return Type();
-
-  // Parse `>` literal.
-  if (failed(parser.parseGreater()))
-    return Type();
-
-  return get(parser.getContext(), fieldTypes);
-}
-
-void RelationType::print(AsmPrinter &printer) const {
-  printer << "<";
-  llvm::interleaveComma(getFieldTypes(), printer);
-  printer << ">";
-}
-
-//===----------------------------------------------------------------------===//
-// Substrait operations
-//===----------------------------------------------------------------------===//
-
-namespace mlir {
-namespace substrait {
-
-static ParseResult
-parseAggregationDetails(OpAsmParser &parser,
-                        AggregationPhaseAttr &aggregationPhase,
-                        AggregationInvocationAttr &aggregationInvocation);
-static void
-printAggregationDetails(OpAsmPrinter &printer, CallOp op,
-                        AggregationPhaseAttr aggregationPhase,
-                        AggregationInvocationAttr aggregationInvocation);
-static ParseResult parseAggregateRegions(OpAsmParser &parser,
-                                         Region &groupingsRegion,
-                                         Region &measuresRegion,
-                                         ArrayAttr &groupingSetsAttr);
-static void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
-                                  Region &groupingsRegion,
-                                  Region &measuresRegion,
-                                  ArrayAttr groupingSetsAttr);
-
-} // namespace substrait
-} // namespace mlir
-
-#define GET_OP_CLASSES
-#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc" // IWYU pragma: keep
-
 namespace {
-
-/// Computes the type of the nested field of the given `type` identified by
-/// `position`. Each entry `n` in the given index array `position` corresponds
-/// to the `n`-th entry in that level.
-FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
-                                      ArrayRef<int64_t> position);
-
-namespace impl {
-
-/// Helper that extracts computes the type at a position given a container type.
-template <typename ContainerType>
-FailureOr<Type> computeTypeAtPositionHelper(Location loc,
-                                            ContainerType containerType,
-                                            ArrayRef<int64_t> position) {
-  assert(!position.empty() && "expected to be called with non-empty position");
-
-  // Recurse into fields of first index in position array.
-  int64_t index = position[0];
-  ArrayRef<Type> fieldTypes = containerType.getTypes();
-  if (index >= static_cast<int64_t>(fieldTypes.size()) || index < 0)
-    return emitError(loc) << index << " is not a valid index for "
-                          << containerType;
-
-  return ::computeTypeAtPosition(loc, fieldTypes[index], position.drop_front());
-}
-} // namespace impl
-
-// Implementation of `computeTypeAtPosition`.
-//
-// The function is implemented corecursively with `computeTypeAtPositionHelper`,
-// where each recursion level extracts the type of the outer-most level
-// identified by the first index in the `position` array. In each level, this
-// function handles the leaf case and type-switches into the helper, which is
-// templated using the container type such that the extraction of the nested
-// types can use the concrete container type.
-FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
-                                      ArrayRef<int64_t> position) {
-  if (position.empty())
-    return type;
-
-  return TypeSwitch<Type, FailureOr<Type>>(type)
-      .Case<RelationType, TupleType>([&](auto type) {
-        return impl::computeTypeAtPositionHelper(loc, type, position);
-      })
-      .Default([&](auto type) {
-        return emitError(loc) << "can't extract element from type " << type;
-      });
-}
-
-/// Verifies that the provided field names match the provided field types. While
-/// the field types are potentially nested, the names are given in a single,
-/// flat list and correspond to the field types in depth first order (where each
-/// nested tuple-typed field has a name and its nested field have names on their
-/// own). Furthermore, the names on each nesting level need to be unique. For
-/// details, see
-/// https://substrait.io/tutorial/sql_to_substrait/#types-and-schemas.
-FailureOr<int> verifyNamedStructHelper(Location loc,
-                                       llvm::ArrayRef<Attribute> fieldNames,
-                                       TypeRange fieldTypes) {
-  int numConsumedNames = 0;
-  llvm::SmallSet<llvm::StringRef, 8> currentLevelNames;
-  for (Type type : fieldTypes) {
-    // Check name of current field.
-    if (numConsumedNames >= static_cast<int>(fieldNames.size()))
-      return emitError(loc, "not enough field names provided");
-    auto currentName = llvm::cast<StringAttr>(fieldNames[numConsumedNames]);
-    if (!currentLevelNames.insert(currentName).second)
-      return emitError(loc, llvm::Twine("duplicate field name: '") +
-                                currentName.getValue() + "'");
-    numConsumedNames++;
-
-    // Recurse for nested structs/tuples.
-    if (auto tupleType = llvm::dyn_cast<TupleType>(type)) {
-      llvm::ArrayRef<Type> nestedFieldTypes = tupleType.getTypes();
-      llvm::ArrayRef<Attribute> remainingNames =
-          fieldNames.drop_front(numConsumedNames);
-      FailureOr<int> res =
-          verifyNamedStructHelper(loc, remainingNames, nestedFieldTypes);
-      if (failed(res))
-        return failure();
-      numConsumedNames += res.value();
-    }
-  }
-  return numConsumedNames;
-}
-
-LogicalResult verifyNamedStruct(Operation *op,
-                                llvm::ArrayRef<Attribute> fieldNames,
-                                TupleType tupleType) {
-  Location loc = op->getLoc();
-  TypeRange fieldTypes = tupleType.getTypes();
-
-  // Emits error message with context on failure.
-  auto emitErrorMessage = [&]() {
-    InFlightDiagnostic error = op->emitOpError()
-                               << "has mismatching 'field_names' ([";
-    llvm::interleaveComma(fieldNames, error);
-    error << "]) and result type (" << tupleType << ")";
-    return error;
-  };
-
-  // Call recursive verification function.
-  FailureOr<int> numConsumedNames =
-      verifyNamedStructHelper(loc, fieldNames, fieldTypes);
-
-  // Relay any failure.
-  if (failed(numConsumedNames))
-    return emitErrorMessage();
-
-  // If we haven't consumed all names, we got too many of them, so report.
-  if (numConsumedNames.value() != static_cast<int>(fieldNames.size())) {
-    InFlightDiagnostic error = emitErrorMessage();
-    error.attachNote(loc) << "too many field names provided";
-    return error;
-  }
-
-  return success();
-}
-
-} // namespace
-
-namespace mlir {
-namespace substrait {
 
 ParseResult
 parseAggregationDetails(OpAsmParser &parser,
@@ -860,6 +497,317 @@ void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
 
   printer.decreaseIndent();
 }
+
+ParseResult parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
+  // `all` keyword (corresponds to `-1`).
+  if (!parser.parseOptionalKeyword("all")) {
+    count = parser.getBuilder().getI64IntegerAttr(-1);
+    return success();
+  }
+
+  // Normal integer.
+  int64_t result;
+  if (!parser.parseInteger(result)) {
+    count = parser.getBuilder().getI64IntegerAttr(result);
+    return success();
+  }
+
+  return failure();
+}
+
+void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
+  if (count.getInt() == -1) {
+    printer << "all";
+    return;
+  }
+  // Normal integer.
+  printer << count.getValue();
+}
+
+// Parses a VarCharType by extracting the length from the given parser. Assumes
+// the length is surrounded by `<` and `>` symbols, which are removed. On
+// success, assigns the parsed type to `type` and returns success.
+ParseResult parseVarCharTypeByLength(AsmParser &parser, VarCharType &type) {
+  // remove `<` and `>` symbols
+  int64_t result;
+  if (parser.parseInteger(result))
+    return failure();
+
+  type = VarCharType::get(parser.getContext(), result);
+
+  return success();
+}
+
+// Prints the VarCharType by outputting its length to the given printer.
+void printVarCharTypeByLength(AsmPrinter &printer, VarCharType type) {
+  // Normal integer.
+  printer << type.getLength();
+}
+
+ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
+                               IntegerAttr &value) {
+  llvm::SMLoc loc = parser.getCurrentLocation();
+
+  // Parse decimal value as quoted string.
+  std::string valueStr;
+  if (parser.parseString(&valueStr))
+    return failure();
+
+  // Parse `P = <precision>`.
+  uint32_t precision;
+  if (parser.parseComma() || parser.parseKeyword("P") || parser.parseEqual() ||
+      parser.parseInteger(precision))
+    return failure();
+
+  // Parse `S = <scale>`.
+  uint32_t scale;
+  if (parser.parseComma() || parser.parseKeyword("S") || parser.parseEqual() ||
+      parser.parseInteger(scale))
+    return failure();
+
+  // Create `DecimalType`.
+  auto emitError = [&]() { return parser.emitError(loc); };
+  if (!(type = DecimalType::getChecked(emitError, parser.getContext(),
+                                       precision, scale)))
+    return failure();
+
+  // Parse value as the given type.
+  if (failed(DecimalAttr::parseDecimalString(emitError, valueStr, type, value)))
+    return failure();
+
+  return success();
+}
+
+void printDecimalNumber(AsmPrinter &printer, DecimalType type,
+                        IntegerAttr value) {
+  printer << "\"" << DecimalAttr::toDecimalString(type, value) << "\", ";
+  printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
+}
+
+ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
+                                    FixedBinaryType &type) {
+  std::string valueStr;
+  // Parse fixed binary value as quoted string.
+  if (parser.parseString(&valueStr))
+    return failure();
+
+  // Create `FixedBinaryType`.
+  auto emitError = [&]() {
+    return parser.emitError(parser.getCurrentLocation());
+  };
+  MLIRContext *context = parser.getContext();
+  uint32_t length = valueStr.size();
+  if (!(type = FixedBinaryType::getChecked(emitError, context, length)))
+    return failure();
+
+  value = parser.getBuilder().getStringAttr(valueStr);
+
+  return success();
+}
+
+void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
+                             FixedBinaryType type) {
+  printer << value;
+}
+
+StringRef getTypeKeyword(Type type) {
+  return TypeSwitch<Type, StringRef>(type)
+      .Case<RelationType>([&](Type) { return "rel"; })
+      .Default([](Type t) -> StringRef { return ""; });
+}
+
+ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
+  SMLoc loc = parser.getCurrentLocation();
+
+  // Try parsing any MLIR type in full form.
+  OptionalParseResult result = parser.parseOptionalType(valueType);
+  if (result.has_value()) {
+    if (failed(result.value()))
+      return failure();
+    return success();
+  }
+
+  // If no type is found, expect a short Substrait type keyword.
+  StringRef keyword;
+  if (failed(parser.parseKeyword(&keyword)))
+    return failure();
+
+  // Dispatch parsing to type class depending on keyword.
+  valueType = StringSwitch<function_ref<Type()>>(keyword)
+                  .Case("rel", [&] { return RelationType::parse(parser); })
+                  .Default([&] {
+                    parser.emitError(loc)
+                        << "unknown Substrait type: " << keyword;
+                    return Type();
+                  })();
+  return success(valueType != Type());
+}
+
+ParseResult parseSubstraitType(AsmParser &parser,
+                               SmallVectorImpl<Type> &valueTypes) {
+  return parser.parseCommaSeparatedList([&]() {
+    Type type;
+    if (failed(parseSubstraitType(parser, type)))
+      return failure();
+    valueTypes.push_back(type);
+    return success();
+  });
+}
+
+void printSubstraitType(AsmPrinter &printer, Operation * /*op*/, Type type) {
+  StringRef keyword = getTypeKeyword(type);
+
+  // No short-hand version available: print type in regular form.
+  if (keyword.empty()) {
+    printer << type;
+    return;
+  }
+
+  // Short-hand form available: print type in that form.
+  printer << keyword;
+  llvm::TypeSwitch<Type>(type).Case<RelationType>(
+      [&](auto type) { type.print(printer); });
+}
+
+void printSubstraitType(AsmPrinter &printer, Operation *op,
+                        TypeRange valueTypes) {
+  llvm::interleaveComma(valueTypes, printer, [&](Type type) {
+    printSubstraitType(printer, op, type);
+  });
+}
+
+} // namespace
+
+//===----------------------------------------------------------------------===//
+// Substrait operations
+//===----------------------------------------------------------------------===//
+
+#define GET_OP_CLASSES
+#include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc" // IWYU pragma: keep
+
+namespace {
+
+/// Computes the type of the nested field of the given `type` identified by
+/// `position`. Each entry `n` in the given index array `position` corresponds
+/// to the `n`-th entry in that level.
+FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
+                                      ArrayRef<int64_t> position);
+
+namespace impl {
+
+/// Helper that extracts computes the type at a position given a container type.
+template <typename ContainerType>
+FailureOr<Type> computeTypeAtPositionHelper(Location loc,
+                                            ContainerType containerType,
+                                            ArrayRef<int64_t> position) {
+  assert(!position.empty() && "expected to be called with non-empty position");
+
+  // Recurse into fields of first index in position array.
+  int64_t index = position[0];
+  ArrayRef<Type> fieldTypes = containerType.getTypes();
+  if (index >= static_cast<int64_t>(fieldTypes.size()) || index < 0)
+    return emitError(loc) << index << " is not a valid index for "
+                          << containerType;
+
+  return ::computeTypeAtPosition(loc, fieldTypes[index], position.drop_front());
+}
+} // namespace impl
+
+// Implementation of `computeTypeAtPosition`.
+//
+// The function is implemented corecursively with `computeTypeAtPositionHelper`,
+// where each recursion level extracts the type of the outer-most level
+// identified by the first index in the `position` array. In each level, this
+// function handles the leaf case and type-switches into the helper, which is
+// templated using the container type such that the extraction of the nested
+// types can use the concrete container type.
+FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
+                                      ArrayRef<int64_t> position) {
+  if (position.empty())
+    return type;
+
+  return TypeSwitch<Type, FailureOr<Type>>(type)
+      .Case<RelationType, TupleType>([&](auto type) {
+        return impl::computeTypeAtPositionHelper(loc, type, position);
+      })
+      .Default([&](auto type) {
+        return emitError(loc) << "can't extract element from type " << type;
+      });
+}
+
+/// Verifies that the provided field names match the provided field types. While
+/// the field types are potentially nested, the names are given in a single,
+/// flat list and correspond to the field types in depth first order (where each
+/// nested tuple-typed field has a name and its nested field have names on their
+/// own). Furthermore, the names on each nesting level need to be unique. For
+/// details, see
+/// https://substrait.io/tutorial/sql_to_substrait/#types-and-schemas.
+FailureOr<int> verifyNamedStructHelper(Location loc,
+                                       llvm::ArrayRef<Attribute> fieldNames,
+                                       TypeRange fieldTypes) {
+  int numConsumedNames = 0;
+  llvm::SmallSet<llvm::StringRef, 8> currentLevelNames;
+  for (Type type : fieldTypes) {
+    // Check name of current field.
+    if (numConsumedNames >= static_cast<int>(fieldNames.size()))
+      return emitError(loc, "not enough field names provided");
+    auto currentName = llvm::cast<StringAttr>(fieldNames[numConsumedNames]);
+    if (!currentLevelNames.insert(currentName).second)
+      return emitError(loc, llvm::Twine("duplicate field name: '") +
+                                currentName.getValue() + "'");
+    numConsumedNames++;
+
+    // Recurse for nested structs/tuples.
+    if (auto tupleType = llvm::dyn_cast<TupleType>(type)) {
+      llvm::ArrayRef<Type> nestedFieldTypes = tupleType.getTypes();
+      llvm::ArrayRef<Attribute> remainingNames =
+          fieldNames.drop_front(numConsumedNames);
+      FailureOr<int> res =
+          verifyNamedStructHelper(loc, remainingNames, nestedFieldTypes);
+      if (failed(res))
+        return failure();
+      numConsumedNames += res.value();
+    }
+  }
+  return numConsumedNames;
+}
+
+LogicalResult verifyNamedStruct(Operation *op,
+                                llvm::ArrayRef<Attribute> fieldNames,
+                                TupleType tupleType) {
+  Location loc = op->getLoc();
+  TypeRange fieldTypes = tupleType.getTypes();
+
+  // Emits error message with context on failure.
+  auto emitErrorMessage = [&]() {
+    InFlightDiagnostic error = op->emitOpError()
+                               << "has mismatching 'field_names' ([";
+    llvm::interleaveComma(fieldNames, error);
+    error << "]) and result type (" << tupleType << ")";
+    return error;
+  };
+
+  // Call recursive verification function.
+  FailureOr<int> numConsumedNames =
+      verifyNamedStructHelper(loc, fieldNames, fieldTypes);
+
+  // Relay any failure.
+  if (failed(numConsumedNames))
+    return emitErrorMessage();
+
+  // If we haven't consumed all names, we got too many of them, so report.
+  if (numConsumedNames.value() != static_cast<int>(fieldNames.size())) {
+    InFlightDiagnostic error = emitErrorMessage();
+    error.attachNote(loc) << "too many field names provided";
+    return error;
+  }
+
+  return success();
+}
+
+} // namespace
+
+namespace mlir::substrait {
 
 void AggregateOp::build(OpBuilder &builder, OperationState &result, Value input,
                         ArrayAttr groupingSets, Region *groupings,
@@ -1316,8 +1264,40 @@ LogicalResult ProjectOp::verifyRegions() {
   return success();
 }
 
-} // namespace substrait
-} // namespace mlir
+Type RelationType::parse(AsmParser &parser) {
+  // Parse `<` literal.
+  if (failed(parser.parseLess()))
+    return Type();
+
+  // If we parse the `>` literal, we have an empty list of types and are done.
+  if (succeeded(parser.parseOptionalGreater()))
+    return get(parser.getContext());
+
+  // Parse list of field types.
+  SmallVector<Type> fieldTypes;
+  if (failed(parser.parseCommaSeparatedList([&]() {
+        Type type;
+        if (failed(parser.parseType(type)))
+          return failure();
+        fieldTypes.push_back(type);
+        return success();
+      })))
+    return Type();
+
+  // Parse `>` literal.
+  if (failed(parser.parseGreater()))
+    return Type();
+
+  return get(parser.getContext(), fieldTypes);
+}
+
+void RelationType::print(AsmPrinter &printer) const {
+  printer << "<";
+  llvm::interleaveComma(getFieldTypes(), printer);
+  printer << ">";
+}
+
+} // namespace mlir::substrait
 
 //===----------------------------------------------------------------------===//
 // Substrait types and attributes
