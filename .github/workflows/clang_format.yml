@@ -21,3 +21,6 @@ jobs:
         exclude: './third_party'
         extensions: 'h,cpp'
         clangFormatVersion: 18
+    - name: Check include styles
+      run: |
+        ! git grep -E '#include <(absl|google|llvm|mlir|substrait)(-c)?/' || (echo "error: wrong include style for LLVM or MLIR header" && exit 1)
