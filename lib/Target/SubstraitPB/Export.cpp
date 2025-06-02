@@ -536,10 +536,11 @@ SubstraitExporter::exportOperation(AggregateOp op) {
       ValueRange yieldedValues = yieldOp->getOperands();
       DenseSet<Value> distinctYieldedValues;
       distinctYieldedValues.insert(yieldedValues.begin(), yieldedValues.end());
-      if (yieldedValues.size() != distinctYieldedValues.size())
+      if (yieldedValues.size() != distinctYieldedValues.size()) {
         return op.emitOpError()
                << "cannot be exported: values yielded from 'groupings' region "
                   "are not all distinct after CSE";
+      }
     }
 
     // Export values yielded from `groupings` region as `Expression` messages.
@@ -559,10 +560,11 @@ SubstraitExporter::exportOperation(AggregateOp op) {
         // Build `Expression` message for operand.
         auto definingOp = llvm::dyn_cast_if_present<ExpressionOpInterface>(
             columnVal.getDefiningOp());
-        if (!definingOp)
+        if (!definingOp) {
           return op->emitOpError()
                  << "yields grouping column " << columnIdx
                  << " that was not produced by Substrait expression op";
+        }
 
         FailureOr<std::unique_ptr<Expression>> columnExpr =
             exportOperation(definingOp);
@@ -1449,10 +1451,11 @@ SubstraitExporter::exportOperation(ProjectOp op) {
     // Make sure the yielded value was produced by an expression op.
     auto exprRootOp =
         llvm::dyn_cast_if_present<ExpressionOpInterface>(val.getDefiningOp());
-    if (!exprRootOp)
+    if (!exprRootOp) {
       return op->emitOpError(
           "expression not supported for export: yielded op was "
           "not produced by Substrait expression op");
+    }
 
     // Export the expression recursively.
     FailureOr<std::unique_ptr<Expression>> expression =
@@ -1489,10 +1492,11 @@ SubstraitExporter::exportCallOpCommon(CallOp op) {
     // Build `Expression` message for operand.
     auto definingOp = llvm::dyn_cast_if_present<ExpressionOpInterface>(
         operand.getDefiningOp());
-    if (!definingOp)
+    if (!definingOp) {
       return op->emitOpError()
              << "with operand " << i
              << " that was not produced by Substrait expression op";
+    }
 
     FailureOr<std::unique_ptr<Expression>> expression =
         exportOperation(definingOp);
