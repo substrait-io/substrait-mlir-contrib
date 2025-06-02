@@ -13,7 +13,7 @@
 #include "substrait-mlir/Target/SubstraitPB/Import.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 
-#include "mlir/IR/BuiltinOps.h" // IWYU: keep
+#include "mlir/IR/BuiltinOps.h" // IWYU pragma: keep
 #include "mlir/IR/Operation.h"
 #include "mlir/InitAllTranslations.h"
 #include "mlir/Tools/mlir-translate/MlirTranslateMain.h"
