@@ -7,13 +7,14 @@
 //===----------------------------------------------------------------------===//
 
 #include "substrait-mlir/Target/SubstraitPB/Import.h"
-
 #include "ProtobufUtils.h"
+
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
+
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/ImplicitLocOpBuilder.h"
 #include "mlir/IR/OwningOpRef.h"
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
-#include "substrait-mlir/Target/SubstraitPB/Options.h"
 
 // TODO(ingomueller): Find a way to make `substrait-cpp` declare these headers
 // as system headers and remove the diagnostic fiddling here.

@@ -14,13 +14,14 @@
 ///
 //===----------------------------------------------------------------------===//
 
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+
 #include "mlir/IR/DialectRegistry.h"
 #include "mlir/InitAllDialects.h"
 #include "mlir/InitAllExtensions.h"
 #include "mlir/InitAllPasses.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Tools/mlir-lsp-server/MlirLspServerMain.h"
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
 

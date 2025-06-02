@@ -8,13 +8,15 @@
 
 #include "substrait-mlir/Target/SubstraitPB/Export.h"
 #include "ProtobufUtils.h"
+
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
+#include "substrait-mlir/Target/SubstraitPB/Options.h"
+
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Dominance.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Transforms/CSE.h"
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
-#include "substrait-mlir/Target/SubstraitPB/Options.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/ErrorHandling.h"
 

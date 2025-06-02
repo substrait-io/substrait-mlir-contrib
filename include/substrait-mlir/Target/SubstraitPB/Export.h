@@ -10,6 +10,7 @@
 #define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_EXPORT_H
 
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
+
 #include "llvm/Support/raw_ostream.h"
 
 namespace llvm {

@@ -6,13 +6,13 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 #include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h"
 
 #include "mlir/IR/Dominance.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Transforms/CSE.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
 
 namespace mlir::substrait {
 #define GEN_PASS_DEF_SUBSTRAITEMITDEDUPLICATIONPASS
