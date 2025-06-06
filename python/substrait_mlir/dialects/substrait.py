@@ -14,8 +14,7 @@ from .._mlir_libs._substraitDialects.substrait import *
 
 try:
   from .. import ir
-  from ._ods_common import (
-      _cext as _ods_cext,)
+  from ._ods_common import _cext as _ods_cext
 except ImportError as e:
   raise RuntimeError("Error loading imports from extension module") from e
 
