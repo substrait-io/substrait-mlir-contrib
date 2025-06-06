@@ -150,6 +150,17 @@ gazelle_dependencies(go_repository_default_config = "@//:WORKSPACE.bazel")
 # gazelle_dependencies()
 
 http_archive(
+    name = "com_google_absl",
+    sha256 = "338420448b140f0dfd1a1ea3c3ce71b3bc172071f24f4d9a57d59b45037da440",
+    # Use the version used by com_google_protobuf.
+    strip_prefix = "abseil-cpp-20240116.0",
+    urls = [
+        "https://github.com/abseil/abseil-cpp/releases/download/20240116.0/abseil-cpp-20240116.0.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.0.tar.gz",
+    ],
+)
+
+http_archive(
     name = "com_google_protobuf",
     sha256 = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568",
     strip_prefix = "protobuf-3.19.4",
