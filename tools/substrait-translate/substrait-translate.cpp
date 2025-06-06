@@ -13,11 +13,16 @@
 #include "substrait-mlir/Target/SubstraitPB/Import.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 
-#include "mlir/IR/BuiltinOps.h" // IWYU: keep
+#include "mlir/IR/BuiltinOps.h" // IWYU pragma: keep
+#include "mlir/IR/DialectRegistry.h"
 #include "mlir/IR/Operation.h"
 #include "mlir/InitAllTranslations.h"
+#include "mlir/Support/LLVM.h"
 #include "mlir/Tools/mlir-translate/MlirTranslateMain.h"
 #include "mlir/Tools/mlir-translate/Translation.h"
+#include "llvm/ADT/StringRef.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/LogicalResult.h"
 #include "llvm/Support/raw_ostream.h"
 
 namespace mlir {

@@ -6,9 +6,9 @@
 #
 # ===----------------------------------------------------------------------=== #
 
-load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "gentbl_filegroup", "td_library")
-load("@llvm-project//mlir:build_defs.bzl", "mlir_c_api_cc_library")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+load("@llvm-project//mlir:build_defs.bzl", "mlir_c_api_cc_library")
+load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "gentbl_filegroup", "td_library")
 load("@rules_license//rules:license.bzl", "license")
 
 package(
@@ -205,6 +205,7 @@ cc_library(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRSubstraitTransformsIncGen",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:Rewrite",
@@ -232,6 +233,7 @@ cc_library(
     includes = ["include"],
     deps = [
         ":MLIRSubstraitDialect",
+        "@com_google_absl//absl/status",
         "@com_google_protobuf//:json_util",
         "@com_google_protobuf//:protobuf",
         "@llvm-project//llvm:Support",
@@ -262,7 +264,9 @@ mlir_c_api_cc_library(
     deps = [
         ":MLIRSubstraitDialect",
         ":MLIRTargetSubstraitPB",
+        "@llvm-project//llvm:Support",
         "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
     ],
 )
 
@@ -300,6 +304,7 @@ cc_binary(
         "@llvm-project//mlir:AllPassesAndDialects",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:MlirOptLib",
+        "@llvm-project//mlir:Support",
     ],
 )
 
@@ -316,6 +321,7 @@ cc_binary(
         "@llvm-project//mlir:AllPassesAndDialects",
         "@llvm-project//mlir:AllTranslations",
         "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:Support",
         "@llvm-project//mlir:TranslateLib",
     ],
 )

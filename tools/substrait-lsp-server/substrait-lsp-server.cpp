@@ -25,6 +25,8 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
 
+#include <string>
+
 using namespace mlir;
 
 static void registerSubstraitDialects(DialectRegistry &registry) {
