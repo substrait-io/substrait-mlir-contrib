@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Special handling for LLVM, to avoid too much noise.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/third_party/"
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "llvm-project"
+
+  # All other git submodules.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    ignore:
+      - dependency-name: "llvm-project"
