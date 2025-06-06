@@ -161,10 +161,11 @@ LogicalResult mlir::substrait::DecimalAttr::verify(
   // Max `P` digits.
   size_t nDigits = countDigits(value.getValue());
   size_t p = type.getPrecision();
-  if (nDigits > p)
+  if (nDigits > p) {
     return emitError() << "value must have at most " << p
                        << " digits as per the type " << type << " but got "
                        << nDigits;
+  }
 
   return success();
 }
@@ -246,10 +247,11 @@ ParseResult DecimalAttr::parseDecimalString(
   // Verify precision.
   size_t precision = type.getPrecision();
   size_t numDigits = detectedScale + integralPart.size();
-  if (numDigits > precision)
+  if (numDigits > precision) {
     return emitError() << "decimal value has too many digits (" << numDigits
                        << "). Expected <=" << precision << " as per the type "
                        << type;
+  }
 
   // Concatenate parts to normalized string. Add trailing zeros if necessary
   // (detectedScale != type.getScale()). This is required to be able to
@@ -651,10 +653,10 @@ ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
   // Create default value of `grouping_sets` attr if not provided.
   if (!hasGroupingSets) {
     // If there is no `groupings` region, create only the empty grouping set.
-    if (!hasGroupings)
+    if (!hasGroupings) {
       groupingSetsAttr = ArrayAttr::get(context, ArrayAttr::get(context, {}));
-    // Otherwise, create the grouping set with all grouping columns.
-    else if (!groupingsRegion.empty()) {
+    } else if (!groupingsRegion.empty()) {
+      // Otherwise, create the grouping set with all grouping columns.
       auto yieldOp =
           llvm::dyn_cast<YieldOp>(groupingsRegion.front().getTerminator());
       if (yieldOp) {
@@ -773,18 +775,20 @@ LogicalResult AggregateOp::verifyRegions() {
       continue;
 
     // Verify that the regions have the input tuple as argument.
-    if (region->getArgumentTypes() != TypeRange{inputTupleType})
+    if (region->getArgumentTypes() != TypeRange{inputTupleType}) {
       return emitOpError() << "has region #" << idx
                            << " with invalid argument types (expected: "
                            << inputTupleType
                            << ", got: " << region->getArgumentTypes() << ")";
+    }
 
     // Verify that at least one value is yielded.
     auto yieldOp = llvm::cast<YieldOp>(region->front().getTerminator());
-    if (yieldOp->getNumOperands() == 0)
+    if (yieldOp->getNumOperands() == 0) {
       return emitOpError()
              << "has region #" << idx
              << " that yields no values (use empty region instead)";
+    }
   }
 
   // Verify that the grouping sets refer to values yielded from `groupings`,
@@ -805,16 +809,18 @@ LogicalResult AggregateOp::verifyRegions() {
       for (auto [refIdx, refAttr] :
            llvm::enumerate(cast<ArrayAttr>(groupingSet))) {
         auto ref = cast<IntegerAttr>(refAttr).getInt();
-        if (ref < 0 || ref >= numGroupingColumns)
+        if (ref < 0 || ref >= numGroupingColumns) {
           return emitOpError() << "has invalid grouping set #" << groupingSetIdx
                                << ": column reference " << ref << " (column #"
                                << refIdx << ") is out of bounds";
+        }
         auto [_, hasInserted] = allGroupingRefs.insert(ref);
         if (hasInserted &&
-            ref != static_cast<int64_t>(allGroupingRefs.size() - 1))
+            ref != static_cast<int64_t>(allGroupingRefs.size() - 1)) {
           return emitOpError()
                  << "has invalid grouping sets: the first occerrences of the "
                     "column references must be densely increasing";
+        }
       }
     }
 
@@ -833,10 +839,11 @@ LogicalResult AggregateOp::verifyRegions() {
   if (!getMeasures().empty()) {
     for (Value value : getMeasures().front().getTerminator()->getOperands()) {
       auto callOp = llvm::dyn_cast_or_null<CallOp>(value.getDefiningOp());
-      if (!callOp || !callOp.isAggregate())
+      if (!callOp || !callOp.isAggregate()) {
         return emitOpError() << "yields value from 'measures' region that was "
                                 "not produced by an aggregate function: "
                              << value;
+      }
     }
   }
 
@@ -971,10 +978,11 @@ LogicalResult FieldReferenceOp::inferReturnTypes(
   Type inputType = operands[0].getType();
   FailureOr<Type> fieldType =
       computeTypeAtPosition(loc.value(), inputType, position);
-  if (failed(fieldType))
+  if (failed(fieldType)) {
     return ::emitError(loc.value())
            << "mismatching position and type (position: " << position
            << ", type: " << inputType << ")";
+  }
 
   inferredReturnTypes.push_back(fieldType.value());
 
@@ -988,16 +996,18 @@ LogicalResult FilterOp::verifyRegions() {
 
   // Verify that type of yielded value is Boolean.
   auto yieldOp = llvm::cast<YieldOp>(condition.front().getTerminator());
-  if (yieldOp.getValue().size() != 1)
+  if (yieldOp.getValue().size() != 1) {
     return emitOpError()
            << "must have 'condition' region yielding one value (yields "
            << yieldOp.getValue().size() << ")";
+  }
 
   Type yieldedType = yieldOp.getValue().getTypes()[0];
-  if (yieldedType != si1)
+  if (yieldedType != si1) {
     return emitOpError()
            << "must have 'condition' region yielding 'si1' (yields "
            << yieldedType << ")";
+  }
 
   // Verify that block has argument of input tuple type.
   Type tupleType = getResult().getType();
@@ -1086,10 +1096,11 @@ LogicalResult NamedTableOp::verify() {
 LogicalResult PlanRelOp::verifyRegions() {
   // Verify that we `yield` exactly one value.
   auto yieldOp = llvm::cast<YieldOp>(getBody().front().getTerminator());
-  if (yieldOp.getValue().size() != 1)
+  if (yieldOp.getValue().size() != 1) {
     return emitOpError()
            << "must have 'body' region yielding one value (yields "
            << yieldOp.getValue().size() << ")";
+  }
 
   // Verify that the field names match the field types. If we don't have any,
   // we're done.
@@ -1117,11 +1128,12 @@ LogicalResult ProjectOp::verifyRegions() {
   // Verify that the expression block has a matching argument type.
   auto inputTupleType = llvm::cast<TupleType>(getInput().getType());
   auto blockArgTypes = getExpressions().front().getArgumentTypes();
-  if (blockArgTypes != ArrayRef<Type>(inputTupleType))
+  if (blockArgTypes != ArrayRef<Type>(inputTupleType)) {
     return emitOpError()
            << "has 'expressions' region with mismatching argument type"
            << " (has: " << blockArgTypes << ", expected: " << inputTupleType
            << ")";
+  }
 
   // Verify that the input field types are a prefix of the output field types.
   size_t numInputFields = inputTupleType.getTypes().size();
@@ -1129,22 +1141,24 @@ LogicalResult ProjectOp::verifyRegions() {
   ArrayRef<Type> outputPrefixTypes =
       outputTupleType.getTypes().take_front(numInputFields);
 
-  if (inputTupleType.getTypes() != outputPrefixTypes)
+  if (inputTupleType.getTypes() != outputPrefixTypes) {
     return emitOpError()
            << "has output field type whose prefix is different from "
            << "input field types (" << inputTupleType.getTypes() << " vs "
            << outputPrefixTypes << ")";
+  }
 
   // Verify that yielded operands have the same types as the new output fields.
   ArrayRef<Type> newFieldTypes =
       outputTupleType.getTypes().drop_front(numInputFields);
   auto yieldOp = llvm::cast<YieldOp>(getExpressions().front().getTerminator());
 
-  if (yieldOp.getOperandTypes() != newFieldTypes)
+  if (yieldOp.getOperandTypes() != newFieldTypes) {
     return emitOpError()
            << "has output field type whose new fields are different from "
            << "the yielded operand types (" << newFieldTypes << " vs "
            << yieldOp.getOperandTypes() << ")";
+  }
 
   return success();
 }
