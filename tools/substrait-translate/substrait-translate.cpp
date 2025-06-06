@@ -20,8 +20,13 @@
 #include "mlir/Tools/mlir-translate/Translation.h"
 #include "llvm/Support/raw_ostream.h"
 
-namespace mlir {
-namespace substrait {
+using namespace mlir;
+using namespace mlir::substrait;
+
+namespace {
+void registerSubstraitDialects(DialectRegistry &registry) {
+  registry.insert<mlir::substrait::SubstraitDialect>();
+}
 
 llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
     "substrait-protobuf-format", llvm::cl::ValueRequired,
@@ -34,10 +39,6 @@ llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
         clEnumValN(SerdeFormat::kPrettyJson, "pretty-json",
                    "JSON format with new lines")),
     llvm::cl::init(SerdeFormat::kText));
-
-static void registerSubstraitDialects(DialectRegistry &registry) {
-  registry.insert<mlir::substrait::SubstraitDialect>();
-}
 
 void registerSubstraitToProtobufTranslation() {
   TranslateFromMLIRRegistration registration(
@@ -77,15 +78,13 @@ void registerProtobufToSubstraitPlanVersionTranslation() {
       },
       registerSubstraitDialects);
 }
-
-} // namespace substrait
-} // namespace mlir
+} // namespace
 
 int main(int argc, char **argv) {
   mlir::registerAllTranslations();
-  mlir::substrait::registerSubstraitToProtobufTranslation();
-  mlir::substrait::registerProtobufToSubstraitPlanTranslation();
-  mlir::substrait::registerProtobufToSubstraitPlanVersionTranslation();
+  registerSubstraitToProtobufTranslation();
+  registerProtobufToSubstraitPlanTranslation();
+  registerProtobufToSubstraitPlanVersionTranslation();
 
   return failed(
       mlir::mlirTranslateMain(argc, argv, "MLIR Translation Testing Tool"));

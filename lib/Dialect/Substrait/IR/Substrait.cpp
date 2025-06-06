@@ -144,12 +144,14 @@ LogicalResult mlir::substrait::DecimalType::verify(
   return success();
 }
 
+namespace {
 // Count the number of digits in an APInt in base 10.
-static size_t countDigits(const APInt &value) {
+size_t countDigits(const APInt &value) {
   llvm::SmallVector<char> buffer;
   value.toString(buffer, 10, /*isSigned=*/false);
   return buffer.size();
 }
+} // namespace
 
 LogicalResult mlir::substrait::DecimalAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, DecimalType type,
@@ -404,22 +406,19 @@ void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
 namespace mlir {
 namespace substrait {
 
-static ParseResult
+ParseResult
 parseAggregationDetails(OpAsmParser &parser,
                         AggregationPhaseAttr &aggregationPhase,
                         AggregationInvocationAttr &aggregationInvocation);
-static void
-printAggregationDetails(OpAsmPrinter &printer, CallOp op,
-                        AggregationPhaseAttr aggregationPhase,
-                        AggregationInvocationAttr aggregationInvocation);
-static ParseResult parseAggregateRegions(OpAsmParser &parser,
-                                         Region &groupingsRegion,
-                                         Region &measuresRegion,
-                                         ArrayAttr &groupingSetsAttr);
-static void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
-                                  Region &groupingsRegion,
+void printAggregationDetails(OpAsmPrinter &printer, CallOp op,
+                             AggregationPhaseAttr aggregationPhase,
+                             AggregationInvocationAttr aggregationInvocation);
+ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
                                   Region &measuresRegion,
-                                  ArrayAttr groupingSetsAttr);
+                                  ArrayAttr &groupingSetsAttr);
+void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
+                           Region &groupingsRegion, Region &measuresRegion,
+                           ArrayAttr groupingSetsAttr);
 
 } // namespace substrait
 } // namespace mlir
