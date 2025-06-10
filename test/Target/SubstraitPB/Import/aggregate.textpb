@@ -15,7 +15,7 @@
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : <si32> -> <si1, si1, si32, si32>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : rel<si32> -> rel<si1, si1, si32, si32>
 # CHECK-NEXT:        groupings {
 # CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V2:.*]] = literal -1 : si1
@@ -132,7 +132,7 @@ version {
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : <si32> -> <si1>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : rel<si32> -> rel<si1>
 # CHECK-NEXT:        groupings {
 # CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V2:.*]] = literal 0 : si1
@@ -191,7 +191,7 @@ version {
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : <si32> -> <si32>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : rel<si32> -> rel<si32>
 # CHECK-NEXT:        measures {
 # CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32>
@@ -277,7 +277,7 @@ version {
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : <si32> -> <si32>
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : rel<si32> -> rel<si32>
 # CHECK-NEXT:        grouping_sets []
 # CHECK-NEXT:        measures {
 # CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
@@ -362,7 +362,7 @@ version {
 # CHECK-NEXT:    extension_function @[[F1:.*]] at @[[URI]]["somefunc"]
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      %[[V0:.*]] = named_table
-# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : <si32> ->
+# CHECK-NEXT:      %[[V1:.*]] = aggregate %[[V0]] : rel<si32> ->
 # CHECK-NEXT:        measures {
 # CHECK-NEXT:        (%[[ARG1:.*]]: tuple<si32>):
 # CHECK-DAG:           %[[V2:.*]] = call @[[F1]](%{{.*}}) aggregate initial_to_intermediate : (si32) -> si32
@@ -589,7 +589,7 @@ version {
 # CHECK-LABEL: substrait.plan
 # CHECK:           aggregate %{{.*}} advanced_extension optimization = "\08*"
 # CHECK-SAME:          : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
-# CHECK-SAME:        : <si32> -> <si1>
+# CHECK-SAME:        : rel<si32> -> rel<si1>
 
 relations {
   rel {

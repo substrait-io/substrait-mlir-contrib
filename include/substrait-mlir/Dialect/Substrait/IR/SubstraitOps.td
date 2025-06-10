@@ -493,8 +493,7 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
 
     ```mlir
     %0 = ...
-    // XXX: update example snippets, here and below
-    %1 = aggregate %0 : tuple<si32> -> tuple<si32, si32>
+    %1 = aggregate %0 : rel<si32> -> rel<si32, si32>
       groupings {
       ^bb0(%arg : tuple<si32>):
         %2 = field_reference %arg[0] : tuple<si32>
@@ -520,8 +519,9 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
     AnyRegion:$measures
   );
   let assemblyFormat = [{
-    $input (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($input) `->` type($result)
+    $input (`advanced_extension` `` $advanced_extension^)? attr-dict
+    `:` custom<SubstraitType>(type($input))
+      `->` custom<SubstraitType>(type($result))
     custom<AggregateRegions>($groupings, $measures, $grouping_sets)
   }];
   let hasRegionVerifier = 1;
@@ -553,7 +553,7 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
     ```mlir
     %0 = ...
     %1 = ...
-    %2 = cross %0 x %1 : tuple<si32> x tuple<si32>
+    %2 = cross %0 x %1 : rel<si32> x rel<si32>
     ```
   }];
   let arguments = (ins
@@ -589,7 +589,7 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
 
     ```mlir
     %0 = ...
-    %1 = emit [2, 1] from %0 : tuple<si32, s1, si32> -> tuple<si32, si1>
+    %1 = emit [2, 1] from %0 : rel<si32, s1, si32> -> rel<si32, si1>
     ```
   }];
   let arguments = (ins
@@ -598,7 +598,9 @@ def Substrait_EmitOp : Substrait_RelOp<"emit", [
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $mapping `from` $input attr-dict `:` type($input) `->` type($result)
+    $mapping `from` $input attr-dict
+    `:` custom<SubstraitType>(type($input))
+      `->` custom<SubstraitType>(type($result))
   }];
   let hasFolder = 1;
   let extraClassDefinition = [{
@@ -622,7 +624,7 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table", [
     ```mlir
     %0 = extension_table
            "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
-           as ["a"] : tuple<si32>
+           as ["a"] : rel<si32>
     ```
   }];
   let arguments = (ins
@@ -633,7 +635,7 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     $detail `as` $field_names (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($result)
+    attr-dict `:` custom<SubstraitType>(type($result))
   }];
   let hasVerifier = true;
   let builders = [
@@ -663,7 +665,8 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     custom<CountAsAll>($count) (`offset` $offset^)? `from` $input
-    (`advanced_extension` `` $advanced_extension^)? attr-dict `:` type($input)
+    (`advanced_extension` `` $advanced_extension^)? attr-dict
+    `:` custom<SubstraitType>(type($input))
   }];
   let builders = [
       OpBuilder<(ins "::mlir::Value":$input, "int64_t":$offset,
@@ -689,7 +692,7 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
 
     ```mlir
     %0 = ...
-    %1 = filter %0 : tuple<si32> {
+    %1 = filter %0 : rel<si32> {
     ^bb0(%arg : tuple<si32>):
       %true = literal -1 : si1
       yield %true : si1
@@ -707,7 +710,7 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   //                    `scf.for` etc.
   let assemblyFormat = [{
     $input (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($input) $condition
+    attr-dict `:` custom<SubstraitType>(type($input)) $condition
   }];
   let hasRegionVerifier = 1;
   let extraClassDefinition = [{
@@ -738,7 +741,10 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     $join_type $left `,` $right (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($left) `,` type($right) `->` type($result)
+    attr-dict
+    `:` custom<SubstraitType>(type($left)) `,`
+        custom<SubstraitType>(type($right))
+      `->` custom<SubstraitType>(type($result))
   }];
   let builders = [
       OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
@@ -760,7 +766,7 @@ def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
     Example:
 
     ```mlir
-    %0 = named_table @t1 as ["a"] : tuple<si32>
+    %0 = named_table @t1 as ["a"] : rel<si32>
     ```
   }];
   // TODO(ingomueller): Maybe the result names should be part of a to-be-created
@@ -773,7 +779,8 @@ def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     $table_name `as` $field_names
-    (`advanced_extension` `` $advanced_extension^)? attr-dict `:` type($result)
+    (`advanced_extension` `` $advanced_extension^)? attr-dict
+    `:` custom<SubstraitType>(type($result))
   }];
   let hasVerifier = true;
   let builders = [
@@ -805,7 +812,7 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
 
     ```mlir
     %0 = ...
-    %1 = project %0 : tuple<si32> -> tuple<si32, si1, si32> {
+    %1 = project %0 : rel<si32> -> rel<si32, si1, si32> {
     ^bb0(%arg : tuple<si32>):
       %true = literal -1 : si1
       %42 = literal 42 : si32
@@ -823,8 +830,10 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   //                    assembly by writing custom printers/parsers similar to
   //                    `scf.for` etc.
   let assemblyFormat = [{
-    $input (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($input) `->` type($result) $expressions
+    $input (`advanced_extension` `` $advanced_extension^)? attr-dict
+    `:` custom<SubstraitType>(type($input))
+      `->` custom<SubstraitType>(type($result))
+    $expressions
   }];
   let hasRegionVerifier = 1;
   let hasFolder = 1;
@@ -858,7 +867,7 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     $kind $inputs (`advanced_extension` `` $advanced_extension^)?
-    attr-dict `:` type($result)
+    attr-dict `:` custom<SubstraitType>(type($result))
   }];
   let builders = [
       OpBuilder<(ins "::mlir::ValueRange":$inputs, "SetOpKind":$kind), [{

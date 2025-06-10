@@ -10,8 +10,8 @@
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : <si32>
-    %1 = named_table @t2 as ["b"] : <si1>
+    %0 = named_table @t1 as ["a"] : rel<si32>
+    %1 = named_table @t2 as ["b"] : rel<si1>
     %2 = cross %0 x %1 : rel<si32> x rel<si1>
     yield %2 : !substrait.relation<si32, si1>
   }
@@ -28,8 +28,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : <si32>
-    %1 = named_table @t2 as ["b"] : <si1>
+    %0 = named_table @t1 as ["a"] : rel<si32>
+    %1 = named_table @t2 as ["b"] : rel<si1>
     %2 = cross %0 x %1
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">

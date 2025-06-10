@@ -39,7 +39,7 @@ def testNamedTable():
   plan = ir.Module.parse('''
     substrait.plan version 0 : 42 : 1 {
       relation {
-        %0 = named_table @t as ["a", "b"] : <si32, si32>
+        %0 = named_table @t as ["a", "b"] : rel<si32, si32>
         yield %0 : !substrait.relation<si32, si32>
       }
     }

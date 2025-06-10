@@ -59,8 +59,8 @@
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : <si32>
-    %1 = project %0 : <si32> -> <si32, si64, si64, si64> {
+    %0 = named_table @t1 as ["a"] : rel<si32>
+    %1 = project %0 : rel<si32> -> rel<si32, si64, si64, si64> {
     ^bb0(%arg : tuple<si32>):
       %2 = literal 42 : si32
       %3 = cast %2 or return_null : si32 to si64
