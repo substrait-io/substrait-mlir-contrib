@@ -207,7 +207,6 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
   let summary = "Substrait relation, i.e., result of `RelOpInterface` ops";
   let description = [{
   }];
-  // XXX: decide if we want to restrict the types that can be used for fields
   let parameters = (ins AnyTuple:$structType);
   let builders = [
     TypeBuilder<(ins "TypeRange":$fieldTypes), [{
@@ -220,17 +219,18 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
   let skipDefaultBuilders = 1;
   let hasCustomAssemblyFormat = 1;
   let extraClassDeclaration = [{
-    // XXX: document
+    /// Get the field types of the relation.
     ArrayRef<Type> getFieldTypes() const {
       return getStructType().getTypes();
     }
 
+    /// Get the field types of the relation (for symmetry with `TupleType`).
     ArrayRef<Type> getTypes() const { return getFieldTypes(); }
 
-    /// Return the number of held types.
+    /// Return the number of fields.
     size_t size() const { return getFieldTypes().size(); }
 
-    /// Iterate over the held elements.
+    /// Iterate over the field types.
     using iterator = ArrayRef<Type>::iterator;
     iterator begin() const { return getFieldTypes().begin(); }
     iterator end() const { return getFieldTypes().end(); }
