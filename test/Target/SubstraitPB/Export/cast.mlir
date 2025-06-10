@@ -68,6 +68,6 @@ substrait.plan version 0 : 42 : 1 {
       %5 = cast %2 or unspecified : si32 to si64
       yield %3, %4, %5 : si64, si64, si64
     }
-    yield %1 : !substrait.relation<si32, si64, si64, si64>
+    yield %1 : rel<si32, si64, si64, si64>
   }
 }

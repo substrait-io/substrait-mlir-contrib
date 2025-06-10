@@ -36,7 +36,7 @@ substrait.plan version 0 : 42 : 1 {
       %42 = literal 42 : si32
       yield %true, %42 : si1, si32
     }
-    yield %1 : !substrait.relation<si32, si1, si32>
+    yield %1 : rel<si32, si1, si32>
   }
 }
 
@@ -64,6 +64,6 @@ substrait.plan version 0 : 42 : 1 {
     ^bb0(%arg0: tuple<si32>):
       yield
     }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }

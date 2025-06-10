@@ -92,7 +92,7 @@ substrait.plan version 0 : 42 : 1 {
         %3 = call @function(%2) aggregate : (si32) -> si32
         yield %3 : si32
       }
-    yield %1 : !substrait.relation<si1, si1, si32, si32>
+    yield %1 : rel<si1, si1, si32, si32>
   }
 }
 
@@ -118,7 +118,7 @@ substrait.plan version 0 : 42 : 1 {
         yield %2 : si1
       }
       grouping_sets [[0]]
-    yield %1 : !substrait.relation<si1>
+    yield %1 : rel<si1>
   }
 }
 
@@ -146,7 +146,7 @@ substrait.plan version 0 : 42 : 1 {
         %4 = call @function(%2) aggregate : (si32) -> si32
         yield %4 : si32
       }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -173,7 +173,7 @@ substrait.plan version 0 : 42 : 1 {
         %4 = call @function(%2) aggregate : (si32) -> si32
         yield %4 : si32
       }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -239,7 +239,7 @@ substrait.plan version 0 : 42 : 1 {
         yield %3, %4, %5, %6, %7, %8, %9
               : si32, si32, si32, si32, si32, si32, si32
       }
-    yield %1 : !substrait.relation<si32, si32, si32, si32, si32, si32, si32>
+    yield %1 : rel<si32, si32, si32, si32, si32, si32, si32>
   }
 }
 
@@ -270,6 +270,6 @@ substrait.plan version 0 : 42 : 1 {
         %2 = literal 0 : si1
         yield %2 : si1
       }
-    yield %1 : !substrait.relation<si1>
+    yield %1 : rel<si1>
   }
 }

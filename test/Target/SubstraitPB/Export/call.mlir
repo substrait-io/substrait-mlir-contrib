@@ -46,6 +46,6 @@ substrait.plan version 0 : 42 : 1 {
       %3 = call @f2(%2) : (si32) -> si1
       yield %3 : si1
     }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }

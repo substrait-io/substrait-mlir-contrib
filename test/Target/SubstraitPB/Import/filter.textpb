@@ -18,7 +18,7 @@
 # CHECK-NEXT:        %[[V2:.*]] = literal -1 : si1
 # CHECK-NEXT:        yield %[[V2]] : si1
 # CHECK-NEXT:      }
-# CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+# CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 relations {
   rel {

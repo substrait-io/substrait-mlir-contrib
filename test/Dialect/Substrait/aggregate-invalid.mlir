@@ -12,7 +12,7 @@ substrait.plan version 0 : 42 : 1 {
         %2 = literal 0 : si1
         yield %2 : si1
       }
-    yield %1 : !substrait.relation<si1>
+    yield %1 : rel<si1>
   }
 }
 
@@ -31,7 +31,7 @@ substrait.plan version 0 : 42 : 1 {
         %3 = call @function(%2) aggregate : (si1) -> si1
         yield %3 : si1
       }
-    yield %1 : !substrait.relation<si1>
+    yield %1 : rel<si1>
   }
 }
 
@@ -50,7 +50,7 @@ substrait.plan version 0 : 42 : 1 {
         yield %2 : si1
       }
       grouping_sets [[1]]
-    yield %1 : !substrait.relation<si1>
+    yield %1 : rel<si1>
   }
 }
 
@@ -70,7 +70,7 @@ substrait.plan version 0 : 42 : 1 {
         yield %2, %2 : si1, si1
       }
       grouping_sets [[1, 0]]
-    yield %1 : !substrait.relation<si1, si1>
+    yield %1 : rel<si1, si1>
   }
 }
 
@@ -89,7 +89,7 @@ substrait.plan version 0 : 42 : 1 {
         yield %2, %2 : si1, si1
       }
       grouping_sets [[0]]
-    yield %1 : !substrait.relation<si1, si1>
+    yield %1 : rel<si1, si1>
   }
 }
 
@@ -103,7 +103,7 @@ substrait.plan version 0 : 42 : 1 {
     // expected-error@+1 {{one of 'groupings' or 'measures' must be specified}}
     %1 = aggregate %0 : rel<si32> -> rel<>
       grouping_sets [[]]
-    yield %1 : !substrait.relation<>
+    yield %1 : rel<>
   }
 }
 
@@ -122,7 +122,7 @@ substrait.plan version 0 : 42 : 1 {
         %3 = call @function(%2) : (si32) -> si32
         yield %3 : si32
       }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -141,7 +141,7 @@ substrait.plan version 0 : 42 : 1 {
         %3 = call @function(%2) aggregate foo : (si32) -> si32
         yield %3 : si32
       }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -156,7 +156,7 @@ substrait.plan version 0 : 42 : 1 {
       ^bb0(%arg : tuple<si32>):
         yield
       }
-    yield %1 : !substrait.relation<>
+    yield %1 : rel<>
   }
 }
 
@@ -171,6 +171,6 @@ substrait.plan version 0 : 42 : 1 {
       ^bb0(%arg : tuple<si32>):
         yield
       }
-    yield %1 : !substrait.relation<>
+    yield %1 : rel<>
   }
 }

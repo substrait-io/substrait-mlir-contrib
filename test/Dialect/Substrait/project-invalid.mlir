@@ -9,7 +9,7 @@ substrait.plan version 0 : 42 : 1 {
       %42 = literal 42 : si32
       yield %42 : si32
     }
-    yield %1 : !substrait.relation<si1, si32>
+    yield %1 : rel<si1, si32>
   }
 }
 
@@ -24,7 +24,7 @@ substrait.plan version 0 : 42 : 1 {
       %42 = literal 42 : si32
       yield %42 : si32
     }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -39,7 +39,7 @@ substrait.plan version 0 : 42 : 1 {
       %42 = literal 42 : si32
       yield %42 : si32
     }
-    yield %1 : !substrait.relation<si32, si1>
+    yield %1 : rel<si32, si1>
   }
 }
 
@@ -54,6 +54,6 @@ substrait.plan version 0 : 42 : 1 {
       %3 = field_reference %arg[0] : tuple<si1>
       yield %3 : si1
     }
-    yield %1 : !substrait.relation<si32, si1>
+    yield %1 : rel<si32, si1>
   }
 }

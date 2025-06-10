@@ -17,7 +17,7 @@ substrait.plan version 0 : 42 : 1 {
       %2 = field_reference %arg[0] : tuple<si1>
       yield %2 : si1
     }
-    yield %1 : !substrait.relation<si1>
+    yield %1 : rel<si1>
   }
 }
 
@@ -39,7 +39,7 @@ substrait.plan version 0 : 42 : 1 {
       %2 = field_reference %arg[1, 0] : tuple<si1, tuple<si1>>
       yield %2 : si1
     }
-    yield %1 : !substrait.relation<si1, tuple<si1>>
+    yield %1 : rel<si1, tuple<si1>>
   }
 }
 
@@ -63,6 +63,6 @@ substrait.plan version 0 : 42 : 1 {
       %3 = field_reference %2[0] : tuple<si1>
       yield %3 : si1
     }
-    yield %1 : !substrait.relation<si1, tuple<si1>>
+    yield %1 : rel<si1, tuple<si1>>
   }
 }

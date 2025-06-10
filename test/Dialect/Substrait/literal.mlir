@@ -39,7 +39,7 @@
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_binary<"8181818181">
 // CHECK-NEXT:      yield %[[V2]] : !substrait.fixed_binary<10>
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.fixed_binary<10>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.fixed_binary<10>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -49,7 +49,7 @@ substrait.plan version 0 : 42 : 1 {
       %bytes = literal #substrait.fixed_binary<"8181818181">
       yield %bytes : !substrait.fixed_binary<10>
     }
-    yield %1 : !substrait.relation<si1, !substrait.fixed_binary<10>>
+    yield %1 : rel<si1, !substrait.fixed_binary<10>>
   }
 }
 
@@ -63,7 +63,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.var_char<"hello", 6>
 // CHECK-NEXT:      yield %[[V2]] : !substrait.var_char<6>
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.var_char<6>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.var_char<6>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -73,7 +73,7 @@ substrait.plan version 0 : 42 : 1 {
       %var_char = literal #substrait.var_char<"hello", 6>
       yield %var_char : !substrait.var_char<6>
     }
-    yield %1 : !substrait.relation<si1, !substrait.var_char<6>>
+    yield %1 : rel<si1, !substrait.var_char<6>>
   }
 }
 
@@ -87,7 +87,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_char<"hello">
 // CHECK-NEXT:      yield %[[V2]] : !substrait.fixed_char<5>
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.fixed_char<5>>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.fixed_char<5>>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -97,7 +97,7 @@ substrait.plan version 0 : 42 : 1 {
       %fixed_char = literal #substrait.fixed_char<"hello">
       yield %fixed_char : !substrait.fixed_char<5>
     }
-    yield %1 : !substrait.relation<si1, !substrait.fixed_char<5>>
+    yield %1 : rel<si1, !substrait.fixed_char<5>>
   }
 }
 
@@ -111,7 +111,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.uuid<1000000000 : i128>
 // CHECK-NEXT:      yield %[[V2]] : !substrait.uuid
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.uuid>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.uuid>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -121,7 +121,7 @@ substrait.plan version 0 : 42 : 1 {
       %uuid = literal #substrait.uuid<1000000000 : i128>
       yield %uuid : !substrait.uuid
     }
-    yield %1 : !substrait.relation<si1, !substrait.uuid>
+    yield %1 : rel<si1, !substrait.uuid>
   }
 }
 
@@ -135,7 +135,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V3:.*]] = literal #substrait.interval_day_second<9d 8000s>{{$}}
 // CHECK-NEXT:      yield %[[V2]], %[[V3]] : !substrait.interval_year_month, !substrait.interval_day_second
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.interval_year_month, !substrait.interval_day_second>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.interval_year_month, !substrait.interval_day_second>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -146,7 +146,7 @@ substrait.plan version 0 : 42 : 1 {
       %interval_day_second = literal #substrait.interval_day_second<9d 8000s>
       yield %interval_year_month, %interval_day_second : !substrait.interval_year_month, !substrait.interval_day_second
     }
-    yield %1 : !substrait.relation<si1, !substrait.interval_year_month, !substrait.interval_day_second>
+    yield %1 : rel<si1, !substrait.interval_year_month, !substrait.interval_day_second>
   }
 }
 
@@ -160,7 +160,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.time<200000000us>{{$}}
 // CHECK-NEXT:      yield %[[V2]] : !substrait.time
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.time>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.time>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -170,7 +170,7 @@ substrait.plan version 0 : 42 : 1 {
       %time = literal #substrait.time<200000000us>
       yield %time : !substrait.time
     }
-    yield %1 : !substrait.relation<si1, !substrait.time>
+    yield %1 : rel<si1, !substrait.time>
   }
 }
 
@@ -184,7 +184,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.date<200000000>{{$}}
 // CHECK-NEXT:      yield %[[V2]] : !substrait.date
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.date>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.date>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -194,7 +194,7 @@ substrait.plan version 0 : 42 : 1 {
       %date = literal #substrait.date<200000000>
       yield %date : !substrait.date
     }
-    yield %1 : !substrait.relation<si1, !substrait.date>
+    yield %1 : rel<si1, !substrait.date>
   }
 }
 
@@ -209,7 +209,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V3:.*]] = literal #substrait.timestamp_tz<10000000000us>{{$}}
 // CHECK-NEXT:      yield %[[V2]], %[[V3]] : !substrait.timestamp, !substrait.timestamp_tz
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.timestamp, !substrait.timestamp_tz>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.timestamp, !substrait.timestamp_tz>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -220,7 +220,7 @@ substrait.plan version 0 : 42 : 1 {
       %timestamp_tz = literal #substrait.timestamp_tz<10000000000us>
       yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
     }
-    yield %1 : !substrait.relation<si1, !substrait.timestamp, !substrait.timestamp_tz>
+    yield %1 : rel<si1, !substrait.timestamp, !substrait.timestamp_tz>
   }
 }
 
@@ -234,7 +234,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal "4,5,6,7" : !substrait.binary
 // CHECK-NEXT:      yield %[[V2]] : !substrait.binary
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.binary>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.binary>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -244,7 +244,7 @@ substrait.plan version 0 : 42 : 1 {
       %bytes = literal "4,5,6,7" : !substrait.binary
       yield %bytes : !substrait.binary
     }
-    yield %1 : !substrait.relation<si1, !substrait.binary>
+    yield %1 : rel<si1, !substrait.binary>
   }
 }
 
@@ -258,7 +258,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V2:.*]] = literal "hi" : !substrait.string
 // CHECK-NEXT:      yield %[[V2]] : !substrait.string
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, !substrait.string>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.string>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -268,7 +268,7 @@ substrait.plan version 0 : 42 : 1 {
       %hi = literal "hi" : !substrait.string
       yield %hi : !substrait.string
     }
-    yield %1 : !substrait.relation<si1, !substrait.string>
+    yield %1 : rel<si1, !substrait.string>
   }
 }
 
@@ -283,7 +283,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V3:.*]] = literal 4.242000e+01 : f64
 // CHECK-NEXT:      yield %[[V2]], %[[V3]] : f32, f64
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<f32, f32, f64>
+// CHECK-NEXT:    yield %[[V1]] : rel<f32, f32, f64>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -294,7 +294,7 @@ substrait.plan version 0 : 42 : 1 {
       %42 = literal 42.42 : f64
       yield %35, %42 : f32, f64
     }
-    yield %1 : !substrait.relation<f32, f32, f64>
+    yield %1 : rel<f32, f32, f64>
   }
 }
 
@@ -312,7 +312,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:      %[[V6:.*]] = literal 42 : si64
 // CHECK-NEXT:      yield %[[V2]], %[[V3]], %[[V4]], %[[V5]], %[[V6]] : si1, si8, si16, si32, si64
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : !substrait.relation<si1, si1, si8, si16, si32, si64>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, si1, si8, si16, si32, si64>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
@@ -326,6 +326,6 @@ substrait.plan version 0 : 42 : 1 {
       %42 = literal 42 : si64
       yield %false, %2, %-1, %35, %42 : si1, si8, si16, si32, si64
     }
-    yield %1 : !substrait.relation<si1, si1, si8, si16, si32, si64>
+    yield %1 : rel<si1, si1, si8, si16, si32, si64>
   }
 }

@@ -265,7 +265,9 @@ def Substrait_YieldOp : Substrait_Op<"yield", [
   ]> {
   let summary = "Yields the result of a `PlanRelOp`";
   let arguments = (ins Variadic<AnyType>:$value);
-  let assemblyFormat = "attr-dict ($value^ `:` type($value))?";
+  let assemblyFormat = [{
+    attr-dict ($value^ `:` custom<SubstraitType>(type($value)))?
+  }];
   let builders = [OpBuilder<(ins), [{ /* do nothing */ }]>];
 }
 

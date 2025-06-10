@@ -9,7 +9,7 @@
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as [] : rel<>
-    yield %0 : !substrait.relation<>
+    yield %0 : rel<>
   }
 }
 
@@ -23,7 +23,7 @@ substrait.plan version 0 : 42 : 1 {
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
-    yield %0 : !substrait.relation<si32>
+    yield %0 : rel<si32>
   }
 }
 
@@ -37,7 +37,7 @@ substrait.plan version 0 : 42 : 1 {
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : rel<si32, si32>
-    yield %0 : !substrait.relation<si32, si32>
+    yield %0 : rel<si32, si32>
   }
 }
 
@@ -52,7 +52,7 @@ substrait.plan version 0 : 42 : 1 {
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["outer", "inner"] : rel<tuple<si32>>
-    yield %0 : !substrait.relation<tuple<si32>>
+    yield %0 : rel<tuple<si32>>
   }
 }
 
@@ -67,7 +67,7 @@ substrait.plan version 0 : 42 : 1 {
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "a"] : rel<tuple<si32>>
-    yield %0 : !substrait.relation<tuple<si32>>
+    yield %0 : rel<tuple<si32>>
   }
 }
 
@@ -85,6 +85,6 @@ substrait.plan version 0 : 42 : 1 {
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32>
-    yield %0 : !substrait.relation<si32>
+    yield %0 : rel<si32>
   }
 }

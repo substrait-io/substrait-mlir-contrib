@@ -29,7 +29,7 @@
 # CHECK-DAG:           %[[V5:.*]] = call @[[F1]](%[[V4]]) aggregate : (si32) -> si32
 # CHECK-NEXT:          yield %[[V5]] : si32
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si1, si1, si32, si32>
+# CHECK-NEXT:      yield %[[V1]] : rel<si1, si1, si32, si32>
 
 extension_uris {
   uri: "http://some.url/with/extensions.yml"
@@ -138,7 +138,7 @@ version {
 # CHECK-DAG:           %[[V2:.*]] = literal 0 : si1
 # CHECK-NEXT:          yield %[[V2]] : si1
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si1>
+# CHECK-NEXT:      yield %[[V1]] : rel<si1>
 
 relations {
   rel {
@@ -198,7 +198,7 @@ version {
 # CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate : (si32) -> si32
 # CHECK-NEXT:          yield %[[V3]] : si32
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+# CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 extension_uris {
   uri: "http://some.url/with/extensions.yml"
@@ -285,7 +285,7 @@ version {
 # CHECK-DAG:           %[[V3:.*]] = call @[[F1]](%[[V2]]) aggregate : (si32) -> si32
 # CHECK-NEXT:          yield %[[V3]] : si32
 # CHECK-NEXT:        }
-# CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+# CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 extension_uris {
   uri: "http://some.url/with/extensions.yml"

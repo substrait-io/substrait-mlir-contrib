@@ -16,7 +16,7 @@
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join unspecified %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si32>, rel<si32> -> rel<si32, si32>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
+# CHECK-NEXT:      yield %[[V2]] : rel<si32, si32>
 
 relations {
   rel {
@@ -85,7 +85,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join inner %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si32>, rel<si32> -> rel<si32, si32>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
+# CHECK-NEXT:      yield %[[V2]] : rel<si32, si32>
 
 relations {
   rel {
@@ -155,7 +155,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join outer %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si32>, rel<si32> -> rel<si32, si32>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
+# CHECK-NEXT:      yield %[[V2]] : rel<si32, si32>
 
 relations {
   rel {
@@ -225,7 +225,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join left %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si32>, rel<si32> -> rel<si32, si32>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
+# CHECK-NEXT:      yield %[[V2]] : rel<si32, si32>
 
 relations {
   rel {
@@ -295,7 +295,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join right %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si32>, rel<si32> -> rel<si32, si32>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
+# CHECK-NEXT:      yield %[[V2]] : rel<si32, si32>
 
 relations {
   rel {
@@ -365,7 +365,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join semi %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si1>, rel<si32> -> rel<si1>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si1>
+# CHECK-NEXT:      yield %[[V2]] : rel<si1>
 
 relations {
   rel {
@@ -435,7 +435,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join anti %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si1>, rel<si32> -> rel<si1>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si1>
+# CHECK-NEXT:      yield %[[V2]] : rel<si1>
 
 relations {
   rel {
@@ -505,7 +505,7 @@ version {
 # CHECK:           %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = join single %[[V0]], %[[V1]] :
 # CHECK-SAME:                     rel<si32>, rel<si1> -> rel<si1>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si1>
+# CHECK-NEXT:      yield %[[V2]] : rel<si1>
 
 relations {
   rel {

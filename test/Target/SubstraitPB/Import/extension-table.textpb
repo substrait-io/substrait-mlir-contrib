@@ -15,7 +15,7 @@
 # CHECK-NEXT:      %[[V0:.*]] = extension_table
 # CHECK-SAME:          "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
 # CHECK-SAME:        as ["a"] : rel<si32>
-# CHECK-NEXT:      yield %[[V0]] : !substrait.relation<si32>
+# CHECK-NEXT:      yield %[[V0]] : rel<si32>
 
 relations {
   rel {

@@ -27,7 +27,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set unspecified %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -51,7 +51,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set minus_primary %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -75,7 +75,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set minus_multiset %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -99,7 +99,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set intersection_primary %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -123,7 +123,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set intersection_multiset %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -147,7 +147,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set union_distinct %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -171,7 +171,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = named_table @t2 as ["b"] : rel<si32>
     %2 = set union_all %0, %1 : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }
 
@@ -194,6 +194,6 @@ substrait.plan version 0 : 42 : 1 {
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32>
-    yield %2 : !substrait.relation<si32>
+    yield %2 : rel<si32>
   }
 }

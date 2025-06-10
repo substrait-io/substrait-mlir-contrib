@@ -11,7 +11,7 @@ substrait.plan version 0 : 42 : 1 {
       %3 = literal 0 : si1
       yield %3 : si1
     }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -28,6 +28,6 @@ substrait.plan version 0 : 42 : 1 {
       %3 = literal 0 : si1
       yield %3 : si1
     }
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }

@@ -5,13 +5,13 @@
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK-NEXT:      %[[V1:.*]] = fetch 5 offset 3 from %[[V0]] : rel<si32>
-// CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+// CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = fetch 5 offset 3 from %0 : rel<si32>
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -21,13 +21,13 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK-NEXT:      %[[V1:.*]] = fetch all offset 3 from %[[V0]] : rel<si32>
-// CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+// CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = fetch -1 offset 3 from %0 : rel<si32>
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -37,13 +37,13 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK-NEXT:      %[[V1:.*]] = fetch all offset 3 from %[[V0]] : rel<si32>
-// CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+// CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = fetch all offset 3 from %0 : rel<si32>
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -53,13 +53,13 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK-NEXT:      %[[V1:.*]] = fetch 3 from %[[V0]] : rel<si32>
-// CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+// CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = fetch 3 from %0 : rel<si32>
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -69,13 +69,13 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         relation
 // CHECK:           %[[V0:.*]] = named_table
 // CHECK-NEXT:      %[[V1:.*]] = fetch 3 from %[[V0]] : rel<si32>
-// CHECK-NEXT:      yield %[[V1]] : !substrait.relation<si32>
+// CHECK-NEXT:      yield %[[V1]] : rel<si32>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = fetch 3 offset 0 from %0 : rel<si32>
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }
 
@@ -94,6 +94,6 @@ substrait.plan version 0 : 42 : 1 {
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32>
-    yield %1 : !substrait.relation<si32>
+    yield %1 : rel<si32>
   }
 }

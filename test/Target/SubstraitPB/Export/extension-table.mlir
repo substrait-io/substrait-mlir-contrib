@@ -43,7 +43,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = extension_table
            "\08*" : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
            as ["a"] : rel<si32>
-    yield %0 : !substrait.relation<si32>
+    yield %0 : rel<si32>
   }
 }
 
@@ -64,6 +64,6 @@ substrait.plan version 0 : 42 : 1 {
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32>
-    yield %0 : !substrait.relation<si32>
+    yield %0 : rel<si32>
   }
 }

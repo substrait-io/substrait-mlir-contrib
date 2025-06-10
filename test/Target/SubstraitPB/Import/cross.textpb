@@ -15,7 +15,7 @@
 # CHECK-NEXT:      %[[V0:.*]] = named_table
 # CHECK-NEXT:      %[[V1:.*]] = named_table
 # CHECK-NEXT:      %[[V2:.*]] = cross %[[V0]] x %[[V1]] : rel<si32> x rel<si32>
-# CHECK-NEXT:      yield %[[V2]] : !substrait.relation<si32, si32>
+# CHECK-NEXT:      yield %[[V2]] : rel<si32, si32>
 
 relations {
   rel {

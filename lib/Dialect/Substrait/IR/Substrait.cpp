@@ -401,16 +401,14 @@ void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
 static StringRef getTypeKeyword(Type type) {
   return TypeSwitch<Type, StringRef>(type)
       .Case<RelationType>([&](Type) { return "rel"; })
-      .Default([](Type) -> StringRef {
-        llvm_unreachable("unexpected 'llvm' type kind");
-      });
+      .Default([](Type t) -> StringRef { return ""; });
 }
 
-ParseResult parseSubstraitType(AsmParser &parser, Type &type) {
+ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
   SMLoc loc = parser.getCurrentLocation();
 
   // Try parsing any MLIR type in full form.
-  OptionalParseResult result = parser.parseOptionalType(type);
+  OptionalParseResult result = parser.parseOptionalType(valueType);
   if (result.has_value()) {
     if (failed(result.value()))
       return failure();
@@ -423,19 +421,47 @@ ParseResult parseSubstraitType(AsmParser &parser, Type &type) {
     return failure();
 
   // Dispatch parsing to type class depending on keyword.
-  type = StringSwitch<function_ref<Type()>>(keyword)
-             .Case("rel", [&] { return RelationType::parse(parser); })
-             .Default([&] {
-               parser.emitError(loc) << "unknown Substrait type: " << keyword;
-               return Type();
-             })();
-  return success(type != Type());
+  valueType = StringSwitch<function_ref<Type()>>(keyword)
+                  .Case("rel", [&] { return RelationType::parse(parser); })
+                  .Default([&] {
+                    parser.emitError(loc)
+                        << "unknown Substrait type: " << keyword;
+                    return Type();
+                  })();
+  return success(valueType != Type());
 }
 
-void printSubstraitType(AsmPrinter &printer, Operation *op, Type type) {
-  printer << getTypeKeyword(type);
+ParseResult parseSubstraitType(AsmParser &parser,
+                               SmallVectorImpl<Type> &valueTypes) {
+  return parser.parseCommaSeparatedList([&]() {
+    Type type;
+    if (failed(parseSubstraitType(parser, type)))
+      return failure();
+    valueTypes.push_back(type);
+    return success();
+  });
+}
+
+void printSubstraitType(AsmPrinter &printer, Operation * /*op*/, Type type) {
+  StringRef keyword = getTypeKeyword(type);
+
+  // No short-hand version available: print type in regular form.
+  if (keyword.empty()) {
+    printer << type;
+    return;
+  }
+
+  // Short-hand form available: print type in that form.
+  printer << keyword;
   llvm::TypeSwitch<Type>(type).Case<RelationType>(
       [&](auto type) { type.print(printer); });
+}
+
+void printSubstraitType(AsmPrinter &printer, Operation *op,
+                        TypeRange valueTypes) {
+  llvm::interleaveComma(valueTypes, printer, [&](Type type) {
+    printSubstraitType(printer, op, type);
+  });
 }
 
 Type RelationType::parse(AsmParser &parser) {
