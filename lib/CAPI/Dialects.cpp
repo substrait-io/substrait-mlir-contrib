@@ -13,12 +13,20 @@
 #include "substrait-mlir/Target/SubstraitPB/Import.h"
 #include "substrait-mlir/Target/SubstraitPB/Options.h"
 
-#include "mlir-c/BuiltinTypes.h"
 #include "mlir-c/IR.h"
+#include "mlir-c/Support.h"
 #include "mlir/CAPI/IR.h"
 #include "mlir/CAPI/Registration.h"
 #include "mlir/CAPI/Support.h"
+#include "mlir/CAPI/Wrap.h"
+#include "mlir/IR/Attributes.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/Types.h"
+#include "mlir/Support/LLVM.h"
+#include "llvm/Support/raw_ostream.h"
+
+#include <cstdint>
+#include <string>
 
 using namespace mlir;
 using namespace mlir::substrait;
