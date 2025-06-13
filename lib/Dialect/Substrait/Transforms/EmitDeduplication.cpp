@@ -366,11 +366,12 @@ struct PushDuplicatesThroughCrossPattern : public OpRewritePattern<CrossOp> {
     for (int64_t &idx : drop_begin(reverseMapping, numLeftOriginalindices))
       idx += numLeftIndices;
 
-    if (!leftHasDuplicates && !rightHasDuplicates)
+    if (!leftHasDuplicates && !rightHasDuplicates) {
       // Note: if we end up failing here, then both invocations of
       // `createDeduplicatingEmit` returned without creating a new (`emit`) op.
       return rewriter.notifyMatchFailure(
           op, "none of the 'emit' inputs have duplicates");
+    }
 
     // Create new cross op with the two deduplicated inputs.
     auto newOp =
@@ -406,11 +407,12 @@ struct PushDuplicatesThroughFilterPattern : public OpRewritePattern<FilterOp> {
     auto [newInput, numDedupIndices, hasDuplicates] =
         createDeduplicatingEmit(op.getInput(), reverseMapping, rewriter);
 
-    if (!hasDuplicates)
+    if (!hasDuplicates) {
       // Note: if we end up failing here, then the invocation of
       // `createDeduplicatingEmit` returned without creating a new (`emit`) op.
       return rewriter.notifyMatchFailure(
           op, "the 'emit' input does not have duplicates");
+    }
 
     // Create new `filter` op. Move over the `condition` region. This needs to
     // happen now because replacing the op will destroy the region.
@@ -461,11 +463,12 @@ struct PushDuplicatesThroughProjectPattern
     auto [newInput, numDedupIndices, hasDuplicates] =
         createDeduplicatingEmit(op.getInput(), reverseMapping, rewriter);
 
-    if (!hasDuplicates)
+    if (!hasDuplicates) {
       // Note: if we end up failing here, then the invocation of
       // `createDeduplicatingEmit` returned without creating a new (`emit`) op.
       return rewriter.notifyMatchFailure(
           op, "the 'emit' input does not have duplicates");
+    }
 
     MLIRContext *context = op.getContext();
 
