@@ -52,7 +52,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]]
 // CHECK-SAME:      advanced_extension optimization = "\08*" :
-// CHECK-SAME:        !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
+// CHECK-SAME:        any<"type.googleapis.com/google.protobuf.Int32Value">
 // CHECK-SAME:      rel<si32> -> rel<si32> {
 
 substrait.plan version 0 : 42 : 1 {

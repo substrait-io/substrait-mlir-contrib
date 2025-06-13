@@ -612,8 +612,21 @@ void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
 
 StringRef getTypeKeyword(Type type) {
   return TypeSwitch<Type, StringRef>(type)
+      .Case<AnyType>([&](Type) { return "any"; })
+      .Case<BinaryType>([&](Type) { return "binary"; })
+      .Case<DateType>([&](Type) { return "date"; })
+      .Case<DecimalType>([&](Type) { return "decimal"; })
+      .Case<FixedBinaryType>([&](Type) { return "fixed_binary"; })
+      .Case<FixedCharType>([&](Type) { return "fixed_char"; })
+      .Case<IntervalDaySecondType>([&](Type) { return "interval_ds"; })
+      .Case<IntervalYearMonthType>([&](Type) { return "interval_ym"; })
       .Case<RelationType>([&](Type) { return "rel"; })
+      .Case<StringType>([&](Type) { return "string"; })
+      .Case<TimeType>([&](Type) { return "time"; })
       .Case<TimestampType>([&](Type) { return "timestamp"; })
+      .Case<TimestampTzType>([&](Type) { return "timestamp_tz"; })
+      .Case<UUIDType>([&](Type) { return "uuid"; })
+      .Case<VarCharType>([&](Type) { return "var_char"; })
       .Default([](Type) -> StringRef { return ""; });
 }
 
@@ -637,8 +650,23 @@ ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
   MLIRContext *context = parser.getContext();
   valueType =
       StringSwitch<function_ref<Type()>>(keyword)
+          .Case("any", [&] { return AnyType::parse(parser); })
+          .Case("binary", [&] { return BinaryType::get(context); })
+          .Case("date", [&] { return DateType::get(context); })
+          .Case("decimal", [&] { return DecimalType::parse(parser); })
+          .Case("fixed_binary", [&] { return FixedBinaryType::parse(parser); })
+          .Case("fixed_char", [&] { return FixedCharType::parse(parser); })
+          .Case("interval_ds",
+                [&] { return IntervalDaySecondType::get(context); })
+          .Case("interval_ym",
+                [&] { return IntervalYearMonthType::get(context); })
           .Case("rel", [&] { return RelationType::parse(parser); })
+          .Case("string", [&] { return StringType::get(context); })
+          .Case("time", [&] { return TimeType::get(context); })
           .Case("timestamp", [&] { return TimestampType::get(context); })
+          .Case("timestamp_tz", [&] { return TimestampTzType::get(context); })
+          .Case("uuid", [&] { return UUIDType::get(context); })
+          .Case("var_char", [&] { return VarCharType::parse(parser); })
           .Default([&] {
             parser.emitError(loc) << "unknown Substrait type: " << keyword;
             return Type();
@@ -668,8 +696,18 @@ void printSubstraitType(AsmPrinter &printer, Operation * /*op*/, Type type) {
 
   // Short-hand form available: print type in that form.
   printer << keyword;
-  llvm::TypeSwitch<Type>(type).Case<RelationType>(
-      [&](auto type) { type.print(printer); });
+  llvm::TypeSwitch<Type>(type)
+      // Case for parametrized types. All other types just fall through.
+      .Case<
+          // clang-format off
+          AnyType,
+          DecimalType,
+          FixedBinaryType,
+          FixedCharType,
+          RelationType,
+          VarCharType
+          // clang-format on
+          >([&](auto type) { type.print(printer); });
 }
 
 void printSubstraitType(AsmPrinter &printer, Operation *op,

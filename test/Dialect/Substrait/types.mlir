@@ -17,13 +17,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.decimal<12, 2>>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.decimal<12, 2>>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<decimal<12, 2>>
+// CHECK-NEXT:    yield %[[V0]] : rel<decimal<12, 2>>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.decimal<12, 2>>
-    yield %0 : rel<!substrait.decimal<12, 2>>
+    %0 = named_table @t1 as ["a"] : rel<decimal<12, 2>>
+    yield %0 : rel<decimal<12, 2>>
   }
 }
 
@@ -31,13 +31,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.fixed_binary<4>>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.fixed_binary<4>>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<fixed_binary<4>>
+// CHECK-NEXT:    yield %[[V0]] : rel<fixed_binary<4>>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.fixed_binary<4>>
-    yield %0 : rel<!substrait.fixed_binary<4>>
+    %0 = named_table @t1 as ["a"] : rel<fixed_binary<4>>
+    yield %0 : rel<fixed_binary<4>>
   }
 }
 
@@ -45,13 +45,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.var_char<6>>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.var_char<6>>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<var_char<6>>
+// CHECK-NEXT:    yield %[[V0]] : rel<var_char<6>>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.var_char<6>>
-    yield %0 : rel<!substrait.var_char<6>>
+    %0 = named_table @t1 as ["a"] : rel<var_char<6>>
+    yield %0 : rel<var_char<6>>
   }
 }
 
@@ -59,13 +59,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.fixed_char<5>>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.fixed_char<5>>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<fixed_char<5>>
+// CHECK-NEXT:    yield %[[V0]] : rel<fixed_char<5>>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.fixed_char<5>>
-    yield %0 : rel<!substrait.fixed_char<5>>
+    %0 = named_table @t1 as ["a"] : rel<fixed_char<5>>
+    yield %0 : rel<fixed_char<5>>
   }
 }
 
@@ -73,13 +73,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.uuid>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.uuid>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<uuid>
+// CHECK-NEXT:    yield %[[V0]] : rel<uuid>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.uuid>
-    yield %0 : rel<!substrait.uuid>
+    %0 = named_table @t1 as ["a"] : rel<uuid>
+    yield %0 : rel<uuid>
   }
 }
 
@@ -87,13 +87,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : rel<!substrait.interval_year_month, !substrait.interval_day_second>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.interval_year_month, !substrait.interval_day_second>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : rel<interval_ym, interval_ds>
+// CHECK-NEXT:    yield %[[V0]] : rel<interval_ym, interval_ds>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b"] : rel<!substrait.interval_year_month, !substrait.interval_day_second>
-    yield %0 : rel<!substrait.interval_year_month, !substrait.interval_day_second>
+    %0 = named_table @t1 as ["a", "b"] : rel<interval_ym, interval_ds>
+    yield %0 : rel<interval_ym, interval_ds>
   }
 }
 
@@ -101,13 +101,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.time>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.time>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<time>
+// CHECK-NEXT:    yield %[[V0]] : rel<time>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.time>
-    yield %0 : rel<!substrait.time>
+    %0 = named_table @t1 as ["a"] : rel<time>
+    yield %0 : rel<time>
   }
 }
 
@@ -115,13 +115,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.date>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.date>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<date>
+// CHECK-NEXT:    yield %[[V0]] : rel<date>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.date>
-    yield %0 : rel<!substrait.date>
+    %0 = named_table @t1 as ["a"] : rel<date>
+    yield %0 : rel<date>
   }
 }
 
@@ -129,13 +129,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : rel<timestamp, !substrait.timestamp_tz>
-// CHECK-NEXT:    yield %[[V0]] : rel<timestamp, !substrait.timestamp_tz>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b"] : rel<timestamp, timestamp_tz>
+// CHECK-NEXT:    yield %[[V0]] : rel<timestamp, timestamp_tz>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b"] : rel<!substrait.timestamp, !substrait.timestamp_tz>
-    yield %0 : rel<timestamp, !substrait.timestamp_tz>
+    %0 = named_table @t1 as ["a", "b"] : rel<timestamp, timestamp_tz>
+    yield %0 : rel<timestamp, timestamp_tz>
   }
 }
 
@@ -143,13 +143,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.binary>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.binary>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<binary>
+// CHECK-NEXT:    yield %[[V0]] : rel<binary>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.binary>
-    yield %0 : rel<!substrait.binary>
+    %0 = named_table @t1 as ["a"] : rel<binary>
+    yield %0 : rel<binary>
   }
 }
 
@@ -157,13 +157,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.binary>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.binary>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<binary>
+// CHECK-NEXT:    yield %[[V0]] : rel<binary>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.binary>
-    yield %0 : rel<!substrait.binary>
+    %0 = named_table @t1 as ["a"] : rel<binary>
+    yield %0 : rel<binary>
   }
 }
 
@@ -171,13 +171,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<!substrait.string>
-// CHECK-NEXT:    yield %[[V0]] : rel<!substrait.string>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a"] : rel<string>
+// CHECK-NEXT:    yield %[[V0]] : rel<string>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a"] : rel<!substrait.string>
-    yield %0 : rel<!substrait.string>
+    %0 = named_table @t1 as ["a"] : rel<string>
+    yield %0 : rel<string>
   }
 }
 
