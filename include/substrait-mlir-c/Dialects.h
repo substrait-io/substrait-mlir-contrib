@@ -12,6 +12,8 @@
 #include "mlir-c/IR.h"
 #include "mlir-c/Support.h"
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
