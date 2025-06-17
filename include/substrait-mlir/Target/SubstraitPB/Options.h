@@ -9,8 +9,6 @@
 #ifndef SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H
 #define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H
 
-#include "llvm/ADT/StringRef.h"
-
 namespace mlir {
 namespace substrait {
 

@@ -11,11 +11,17 @@
 
 #include "mlir/Pass/Pass.h"
 
+#include <memory>
+
+namespace mlir {
+class RewritePatternSet;
+}
+
 namespace mlir {
 namespace substrait {
 
 #define GEN_PASS_DECL
-#include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc"
+#include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc" // IWYU pragma: export
 
 /// Create a pass to eliminate duplicate fields in `emit` ops.
 std::unique_ptr<Pass> createEmitDeduplicationPass();
@@ -25,7 +31,7 @@ void populateEmitDeduplicationPatterns(RewritePatternSet &patterns);
 
 /// Generate the code for registering passes.
 #define GEN_PASS_REGISTRATION
-#include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc"
+#include "substrait-mlir/Dialect/Substrait/Transforms/Passes.h.inc" // IWYU pragma: export
 
 } // namespace substrait
 } // namespace mlir
