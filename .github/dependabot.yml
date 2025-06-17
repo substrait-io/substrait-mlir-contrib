@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "weekly"
     allow:
-      - dependency-name: "llvm-project"
+      - dependency-name: "third_party/llvm-project"
 
   # All other git submodules.
   - package-ecosystem: "gitsubmodule"
@@ -14,4 +14,4 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: "llvm-project"
+      - dependency-name: "third_party/llvm-project"
