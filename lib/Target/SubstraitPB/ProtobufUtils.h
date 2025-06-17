@@ -9,9 +9,9 @@
 #ifndef LIB_TARGET_SUBSTRAITPB_PROTOBUFUTILS_H
 #define LIB_TARGET_SUBSTRAITPB_PROTOBUFUTILS_H
 
-#include <type_traits>
-
 #include "mlir/IR/Location.h"
+
+#include <type_traits>
 
 namespace substrait::proto {
 class RelCommon;
