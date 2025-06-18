@@ -1041,9 +1041,9 @@ static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
 
   // Handle `Rel` and `RelRoot` separately.
   const Rel *rel;
-  if (message.has_rel())
+  if (message.has_rel()) {
     rel = &message.rel();
-  else {
+  } else {
     const RelRoot &root = message.root();
     rel = &root.input();
 
