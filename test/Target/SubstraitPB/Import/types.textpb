@@ -13,7 +13,7 @@
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.decimal<12, 3>>
+# CHECK-SAME:       : rel<decimal<12, 3>>
 
 relations {
   rel {
@@ -51,7 +51,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.fixed_binary<5>>
+# CHECK-SAME:       : rel<fixed_binary<5>>
 
 relations {
   rel {
@@ -88,7 +88,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.var_char<6>>
+# CHECK-SAME:       : rel<var_char<6>>
 
 relations {
   rel {
@@ -125,7 +125,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.fixed_char<5>>
+# CHECK-SAME:       : rel<fixed_char<5>>
 
 relations {
   rel {
@@ -170,7 +170,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.uuid>
+# CHECK-SAME:       : rel<uuid>
 
 relations {
   rel {
@@ -206,7 +206,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.interval_year_month, !substrait.interval_day_second>
+# CHECK-SAME:       : rel<interval_ym, interval_ds>
 
 relations {
   rel {
@@ -248,7 +248,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.time>
+# CHECK-SAME:       : rel<time>
 
 relations {
   rel {
@@ -283,7 +283,7 @@ version {
 
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table {{.*}} : rel<!substrait.date>
+# CHECK-NEXT:     named_table {{.*}} : rel<date>
 
 relations {
   rel {
@@ -319,7 +319,7 @@ version {
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<!substrait.timestamp, !substrait.timestamp_tz>
+# CHECK-SAME:       : rel<timestamp, timestamp_tz>
 
 relations {
   rel {
@@ -360,7 +360,7 @@ version {
 
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table {{.*}} : rel<!substrait.binary>
+# CHECK-NEXT:     named_table {{.*}} : rel<binary>
 
 relations {
   rel {
@@ -395,7 +395,7 @@ version {
 
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table {{.*}} : rel<!substrait.string>
+# CHECK-NEXT:     named_table {{.*}} : rel<string>
 
 relations {
   rel {

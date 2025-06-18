@@ -34,22 +34,22 @@
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.fixed_binary<10>> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, fixed_binary<10>> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_binary<"8181818181">
-// CHECK-NEXT:      yield %[[V2]] : !substrait.fixed_binary<10>
+// CHECK-NEXT:      yield %[[V2]] : fixed_binary<10>
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.fixed_binary<10>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, fixed_binary<10>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.fixed_binary<10>> {
+    %1 = project %0 : rel<si1> -> rel<si1, fixed_binary<10>> {
     ^bb0(%arg : tuple<si1>):
       %bytes = literal #substrait.fixed_binary<"8181818181">
-      yield %bytes : !substrait.fixed_binary<10>
+      yield %bytes : fixed_binary<10>
     }
-    yield %1 : rel<si1, !substrait.fixed_binary<10>>
+    yield %1 : rel<si1, fixed_binary<10>>
   }
 }
 
@@ -58,22 +58,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.var_char<6>> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, var_char<6>> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.var_char<"hello", 6>
-// CHECK-NEXT:      yield %[[V2]] : !substrait.var_char<6>
+// CHECK-NEXT:      yield %[[V2]] : var_char<6>
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.var_char<6>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, var_char<6>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.var_char<6>> {
+    %1 = project %0 : rel<si1> -> rel<si1, var_char<6>> {
     ^bb0(%arg : tuple<si1>):
       %var_char = literal #substrait.var_char<"hello", 6>
-      yield %var_char : !substrait.var_char<6>
+      yield %var_char : var_char<6>
     }
-    yield %1 : rel<si1, !substrait.var_char<6>>
+    yield %1 : rel<si1, var_char<6>>
   }
 }
 
@@ -82,22 +82,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.fixed_char<5>> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, fixed_char<5>> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.fixed_char<"hello">
-// CHECK-NEXT:      yield %[[V2]] : !substrait.fixed_char<5>
+// CHECK-NEXT:      yield %[[V2]] : fixed_char<5>
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.fixed_char<5>>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, fixed_char<5>>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.fixed_char<5>> {
+    %1 = project %0 : rel<si1> -> rel<si1, fixed_char<5>> {
     ^bb0(%arg : tuple<si1>):
       %fixed_char = literal #substrait.fixed_char<"hello">
-      yield %fixed_char : !substrait.fixed_char<5>
+      yield %fixed_char : fixed_char<5>
     }
-    yield %1 : rel<si1, !substrait.fixed_char<5>>
+    yield %1 : rel<si1, fixed_char<5>>
   }
 }
 
@@ -106,22 +106,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.uuid> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, uuid> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.uuid<1000000000 : i128>
-// CHECK-NEXT:      yield %[[V2]] : !substrait.uuid
+// CHECK-NEXT:      yield %[[V2]] : uuid
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.uuid>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, uuid>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.uuid> {
+    %1 = project %0 : rel<si1> -> rel<si1, uuid> {
     ^bb0(%arg : tuple<si1>):
       %uuid = literal #substrait.uuid<1000000000 : i128>
-      yield %uuid : !substrait.uuid
+      yield %uuid : uuid
     }
-    yield %1 : rel<si1, !substrait.uuid>
+    yield %1 : rel<si1, uuid>
   }
 }
 
@@ -129,24 +129,24 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.interval_year_month, !substrait.interval_day_second> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, interval_ym, interval_ds> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.interval_year_month<2024y 1m>{{$}}
 // CHECK-NEXT:      %[[V3:.*]] = literal #substrait.interval_day_second<9d 8000s>{{$}}
-// CHECK-NEXT:      yield %[[V2]], %[[V3]] : !substrait.interval_year_month, !substrait.interval_day_second
+// CHECK-NEXT:      yield %[[V2]], %[[V3]] : interval_ym, interval_ds
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.interval_year_month, !substrait.interval_day_second>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, interval_ym, interval_ds>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.interval_year_month, !substrait.interval_day_second> {
+    %1 = project %0 : rel<si1> -> rel<si1, interval_ym, interval_ds> {
     ^bb0(%arg : tuple<si1>):
       %interval_year_month = literal #substrait.interval_year_month<2024y 1m>
       %interval_day_second = literal #substrait.interval_day_second<9d 8000s>
-      yield %interval_year_month, %interval_day_second : !substrait.interval_year_month, !substrait.interval_day_second
+      yield %interval_year_month, %interval_day_second : interval_ym, interval_ds
     }
-    yield %1 : rel<si1, !substrait.interval_year_month, !substrait.interval_day_second>
+    yield %1 : rel<si1, interval_ym, interval_ds>
   }
 }
 
@@ -155,22 +155,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.time> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, time> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.time<200000000us>{{$}}
-// CHECK-NEXT:      yield %[[V2]] : !substrait.time
+// CHECK-NEXT:      yield %[[V2]] : time
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.time>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, time>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.time> {
+    %1 = project %0 : rel<si1> -> rel<si1, time> {
     ^bb0(%arg : tuple<si1>):
       %time = literal #substrait.time<200000000us>
-      yield %time : !substrait.time
+      yield %time : time
     }
-    yield %1 : rel<si1, !substrait.time>
+    yield %1 : rel<si1, time>
   }
 }
 
@@ -179,22 +179,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.date> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, date> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.date<200000000>{{$}}
-// CHECK-NEXT:      yield %[[V2]] : !substrait.date
+// CHECK-NEXT:      yield %[[V2]] : date
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.date>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, date>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.date> {
+    %1 = project %0 : rel<si1> -> rel<si1, date> {
     ^bb0(%arg : tuple<si1>):
       %date = literal #substrait.date<200000000>
-      yield %date : !substrait.date
+      yield %date : date
     }
-    yield %1 : rel<si1, !substrait.date>
+    yield %1 : rel<si1, date>
   }
 }
 
@@ -203,24 +203,24 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.timestamp, !substrait.timestamp_tz> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, timestamp, timestamp_tz> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal #substrait.timestamp<10000000000us>{{$}}
 // CHECK-NEXT:      %[[V3:.*]] = literal #substrait.timestamp_tz<10000000000us>{{$}}
-// CHECK-NEXT:      yield %[[V2]], %[[V3]] : !substrait.timestamp, !substrait.timestamp_tz
+// CHECK-NEXT:      yield %[[V2]], %[[V3]] : timestamp, timestamp_tz
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.timestamp, !substrait.timestamp_tz>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, timestamp, timestamp_tz>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.timestamp, !substrait.timestamp_tz> {
+    %1 = project %0 : rel<si1> -> rel<si1, timestamp, timestamp_tz> {
     ^bb0(%arg : tuple<si1>):
       %timestamp = literal #substrait.timestamp<10000000000us>
       %timestamp_tz = literal #substrait.timestamp_tz<10000000000us>
-      yield %timestamp, %timestamp_tz : !substrait.timestamp, !substrait.timestamp_tz
+      yield %timestamp, %timestamp_tz : timestamp, timestamp_tz
     }
-    yield %1 : rel<si1, !substrait.timestamp, !substrait.timestamp_tz>
+    yield %1 : rel<si1, timestamp, timestamp_tz>
   }
 }
 
@@ -229,22 +229,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.binary> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, binary> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal "4,5,6,7" : !substrait.binary
-// CHECK-NEXT:      yield %[[V2]] : !substrait.binary
+// CHECK-NEXT:      yield %[[V2]] : binary
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.binary>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, binary>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.binary> {
+    %1 = project %0 : rel<si1> -> rel<si1, binary> {
     ^bb0(%arg : tuple<si1>):
       %bytes = literal "4,5,6,7" : !substrait.binary
-      yield %bytes : !substrait.binary
+      yield %bytes : binary
     }
-    yield %1 : rel<si1, !substrait.binary>
+    yield %1 : rel<si1, binary>
   }
 }
 
@@ -253,22 +253,22 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK:      substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
-// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, !substrait.string> {
+// CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si1> -> rel<si1, string> {
 // CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si1>):
 // CHECK-NEXT:      %[[V2:.*]] = literal "hi" : !substrait.string
-// CHECK-NEXT:      yield %[[V2]] : !substrait.string
+// CHECK-NEXT:      yield %[[V2]] : string
 // CHECK-NEXT:    }
-// CHECK-NEXT:    yield %[[V1]] : rel<si1, !substrait.string>
+// CHECK-NEXT:    yield %[[V1]] : rel<si1, string>
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
-    %1 = project %0 : rel<si1> -> rel<si1, !substrait.string> {
+    %1 = project %0 : rel<si1> -> rel<si1, string> {
     ^bb0(%arg : tuple<si1>):
       %hi = literal "hi" : !substrait.string
-      yield %hi : !substrait.string
+      yield %hi : string
     }
-    yield %1 : rel<si1, !substrait.string>
+    yield %1 : rel<si1, string>
   }
 }
 
