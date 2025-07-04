@@ -13,6 +13,14 @@ jobs:
   ubuntu-build-and-test:
     name: Ubuntu build and test (Release Asserts)
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        # Build with and without asserts but exclude the latter for PRs.
+        llvm_enable_assertions:
+          - "ON"
+          - "OFF"
+        exclude:
+          - llvm_enable_assertions: ${{ github.event_name != 'push' && 'OFF' }}
     env:
       LLVM_SYMBOLIZER_PATH: /usr/lib/llvm-14/bin/llvm-symbolizer
     steps:
@@ -53,7 +61,7 @@ jobs:
     - name: Ccache for C++ compilation
       uses: hendrikmuhs/ccache-action@53911442209d5c18de8a31615e0923161e435875 # v1.2.16
       with:
-        key: ${{ runner.os }}-substrait-mlir
+        key: ${{ runner.os }}-substrait-mlir-${{ matrix.llvm_enable_assertions }}
         # LLVM needs serious cache size
         max-size: 6G
 
@@ -73,7 +81,7 @@ jobs:
           -DCMAKE_CXX_COMPILER:FILEPATH=clang++ \
           -DLLVM_ENABLE_PROJECTS="mlir;clang;clang-tools-extra" \
           -DLLVM_TARGETS_TO_BUILD="Native" \
-          -DLLVM_ENABLE_ASSERTIONS=ON \
+          -DLLVM_ENABLE_ASSERTIONS=${{ matrix.llvm_enable_assertions }} \
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_INCLUDE_UTILS=ON \
           -DLLVM_INSTALL_UTILS=ON \
