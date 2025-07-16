@@ -36,11 +36,9 @@ void registerSubstraitDialects(DialectRegistry &registry) {
 } // namespace
 
 int main(int argc, char **argv) {
-#ifndef NDEBUG
   static std::string executable =
       llvm::sys::fs::getMainExecutable(nullptr, nullptr);
   llvm::sys::PrintStackTraceOnErrorSignal(executable);
-#endif
 
   registerAllPasses();
 

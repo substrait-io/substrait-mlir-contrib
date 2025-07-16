@@ -22,7 +22,11 @@
 #include "mlir/Tools/mlir-translate/Translation.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/Signals.h"
 #include "llvm/Support/raw_ostream.h"
+
+#include <string>
 
 using namespace mlir;
 using namespace mlir::substrait;
@@ -85,6 +89,10 @@ void registerProtobufToSubstraitPlanVersionTranslation() {
 } // namespace
 
 int main(int argc, char **argv) {
+  static std::string executable =
+      llvm::sys::fs::getMainExecutable(nullptr, nullptr);
+  llvm::sys::PrintStackTraceOnErrorSignal(executable);
+
   mlir::registerAllTranslations();
   registerSubstraitToProtobufTranslation();
   registerProtobufToSubstraitPlanTranslation();
