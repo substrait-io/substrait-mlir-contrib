@@ -1233,6 +1233,7 @@ public:
     }
     anchors.insert(anchor);
     auto [_, hasInserted] = anchorsByOp.try_emplace(op, anchor);
+    (void)hasInserted;
     assert(hasInserted && "op had already been assigned an anchor");
     return anchor;
   }
