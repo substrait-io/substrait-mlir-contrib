@@ -57,3 +57,17 @@ substrait.plan version 0 : 42 : 1 {
     yield %1 : rel<si32, si1>
   }
 }
+
+// -----
+
+substrait.plan version 0 : 42 : 1 {
+  relation {
+    %0 = named_table @t1 as ["a"] : rel<si32>
+    // expected-error@+1 {{'substrait.project' op has 'expressions' region that yields no values}}
+    %1 = project %0 : rel<si32> -> rel<si32> {
+    ^bb0(%arg : tuple<si32>):
+      yield
+    }
+    yield %1 : rel<si32>
+  }
+}

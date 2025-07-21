@@ -1316,6 +1316,10 @@ LogicalResult ProjectOp::verifyRegions() {
            << yieldOp.getOperandTypes() << ")";
   }
 
+  // Verify that there is at least one value yielded.
+  if (yieldOp.getNumOperands() == 0)
+    return emitOpError() << "has 'expressions' region that yields no values";
+
   return success();
 }
 
