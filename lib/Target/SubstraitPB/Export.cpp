@@ -1449,6 +1449,8 @@ SubstraitExporter::exportOperation(ProjectOp op) {
   // Build `Expression` messages.
   auto yieldOp =
       llvm::cast<YieldOp>(op.getExpressions().front().getTerminator());
+  if (yieldOp->getNumOperands() == 0)
+    return op->emitOpError("not supported for export: no expressions");
   for (Value val : yieldOp.getValue()) {
     // Make sure the yielded value was produced by an expression op.
     auto exprRootOp =

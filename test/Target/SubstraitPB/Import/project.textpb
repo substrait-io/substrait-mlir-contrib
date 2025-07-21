@@ -105,6 +105,16 @@ relations {
           }
         }
       }
+      expressions {
+        selection {
+          direct_reference {
+            struct_field {
+            }
+          }
+          root_reference {
+          }
+        }
+      }
       advanced_extension {
         optimization {
           type_url: "type.googleapis.com/google.protobuf.Int32Value"
