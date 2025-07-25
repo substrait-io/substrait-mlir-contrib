@@ -36,7 +36,8 @@ def run(f):
 # CHECK-LABEL: TEST: testJsonFormat
 @run
 def testJsonFormat():
-  plan_module = ss.import_(JSON_PLAN.encode(), ss.SerializationFormat.json)
+  plan_module = ss.from_protobuf(JSON_PLAN.encode(),
+                                 ss.SerializationFormat.json)
   print(plan_module)
   # CHECK: substrait.plan version
 
@@ -48,8 +49,8 @@ def testJsonFormat():
   print(json_plan)
   # CHECK: {"version":{"minorNumber":42,"patchNumber":1}}
 
-  json_plan = ss.export(plan_module.operation,
-                        ss.SerializationFormat.json).decode()
+  json_plan = ss.to_protobuf(plan_module.operation,
+                             ss.SerializationFormat.json).decode()
   print(json_plan)
   # CHECK: {"version":{"minorNumber":42,"patchNumber":1}}
 

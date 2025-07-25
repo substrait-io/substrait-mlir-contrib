@@ -18,6 +18,9 @@
 namespace nb = nanobind;
 using namespace mlir::python::nanobind_adaptors;
 
+#define SERIALIZATION_FORMAT                                                   \
+  "substrait_mlir._mlir_libs._substraitDialects.substrait.SerializationFormat"
+
 NB_MODULE(_substraitDialects, mainModule) {
 #ifndef NDEBUG
   static std::string executable =
@@ -44,7 +47,7 @@ NB_MODULE(_substraitDialects, mainModule) {
       },
       nb::arg("context").none() = nb::none(), nb::arg("load") = true,
       nb::sig("def register_dialect("
-              "context: Optional[substrait_mlir.ir.Context] = None,"
+              "context: Optional[substrait_mlir.ir.Context] = None, "
               "load: bool = True) -> None"),
       "Register and optionally load the dialect with the given context");
 
@@ -84,7 +87,7 @@ NB_MODULE(_substraitDialects, mainModule) {
   // Import
   //
   substraitModule.def(
-      "import_",
+      "from_protobuf",
       [&](const nb::bytes &input, MlirSubstraitSerializationFormat format,
           MlirContext context) {
         MlirStringRef mlirInput{reinterpret_cast<const char *>(input.data()),
@@ -96,9 +99,9 @@ NB_MODULE(_substraitDialects, mainModule) {
       },
       nb::arg("input"), nb::arg("format") = MlirSubstraitTextFormat,
       nb::arg("context") = nb::none(),
-      nb::sig("def import_(input: bytes, "
-              "format: typing.Optional[SerializationFormat] ="
-              " SerializationFormat.text, "
+      nb::sig("def from_protobuf(input: bytes, "
+              "format: typing.Optional[" SERIALIZATION_FORMAT
+              "] = " SERIALIZATION_FORMAT ".text, "
               "context: typing.Optional[substrait_mlir.ir.Context] = None)"
               "-> substrait_mlir.ir.Module"),
       "Import the Substrait plan in the given serialization format");
@@ -108,7 +111,7 @@ NB_MODULE(_substraitDialects, mainModule) {
   //
 
   substraitModule.def(
-      "export",
+      "to_protobuf",
       [&](MlirOperation op, MlirSubstraitSerializationFormat format) {
         MlirAttribute attr = mlirSubstraitExportPlan(op, format);
         if (mlirAttributeIsNull(attr))
@@ -118,10 +121,10 @@ NB_MODULE(_substraitDialects, mainModule) {
         return nb::bytes(sv.data(), sv.size());
       },
       nb::arg("op"), nb::arg("format") = MlirSubstraitTextFormat,
-      nb::sig("def export("
+      nb::sig("def to_protobuf("
               "op: typing.Optional[substrait_mlir.ir.Operation] = None, "
-              "format: typing.Optional[SerializationFormat] ="
-              " SerializationFormat.text)"
+              "format: typing.Optional[" SERIALIZATION_FORMAT
+              "] = " SERIALIZATION_FORMAT ".text)"
               "-> bytes"),
       "Export the Substrait plan into the given format");
 }
