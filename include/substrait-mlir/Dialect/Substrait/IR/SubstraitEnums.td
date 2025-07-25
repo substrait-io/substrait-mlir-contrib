@@ -76,6 +76,18 @@ def JoinType : I32EnumAttr<"JoinType", "", [
   let cppNamespace = "::mlir::substrait";
 }
 
+/// Serialization format for Substrait query plans (after export/befor import).
+def SerializationFormat : I32EnumAttr<"SerializationFormat", "", [
+    // clang-format off
+    I32EnumAttrCase<"text", 0>,
+    I32EnumAttrCase<"binary", 1>,
+    I32EnumAttrCase<"json", 2>,
+    I32EnumAttrCase<"prettyjson", 3>,
+    // clang-format on
+  ]> {
+  let cppNamespace = "::mlir::substrait";
+}
+
 /// Represents the `SetOp` protobuf enum.
 ///
 /// The enum values correspond exactly to those in the `SetRel.SetOp` enum,

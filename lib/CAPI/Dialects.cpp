@@ -48,25 +48,10 @@ MlirType mlirSubstraitRelationTypeGet(MlirContext context, intptr_t numFields,
   return wrap(RelationType::get(unwrap(context), typesRef));
 }
 
-/// Converts the provided enum value into the equivalent value from
-/// `::mlir::substrait::SerdeFormat`.
-SerdeFormat convertSerdeFormat(MlirSubstraitSerdeFormat format) {
-  switch (format) {
-  case MlirSubstraitBinarySerdeFormat:
-    return SerdeFormat::kBinary;
-  case MlirSubstraitTextSerdeFormat:
-    return SerdeFormat::kText;
-  case MlirSubstraitJsonSerdeFormat:
-    return SerdeFormat::kJson;
-  case MlirSubstraitPrettyJsonSerdeFormat:
-    return SerdeFormat::kPrettyJson;
-  }
-}
-
 MlirModule mlirSubstraitImportPlan(MlirContext context, MlirStringRef input,
                                    MlirSubstraitSerdeFormat format) {
   ImportExportOptions options;
-  options.serdeFormat = convertSerdeFormat(format);
+  options.serializationFormat = static_cast<SerializationFormat>(format);
   OwningOpRef<ModuleOp> owning =
       translateProtobufToSubstraitPlan(unwrap(input), unwrap(context), options);
   if (!owning)
@@ -79,7 +64,7 @@ MlirAttribute mlirSubstraitExportPlan(MlirOperation op,
   std::string str;
   llvm::raw_string_ostream stream(str);
   ImportExportOptions options;
-  options.serdeFormat = convertSerdeFormat(format);
+  options.serializationFormat = static_cast<SerializationFormat>(format);
   if (failed(translateSubstraitToProtobuf(unwrap(op), stream, options)))
     return wrap(Attribute());
   MLIRContext *context = unwrap(op)->getContext();

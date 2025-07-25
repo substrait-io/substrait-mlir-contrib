@@ -1279,23 +1279,23 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
   Location loc = UnknownLoc::get(context);
 
   // Parse from serialized form into desired protobuf `MessageType`.
-  switch (options.serdeFormat) {
-  case SerdeFormat::kText:
+  switch (options.serializationFormat) {
+  case SerializationFormat::text:
     if (!pb::TextFormat::ParseFromString(input.str(), &message)) {
       emitError(loc) << "could not parse string as '" << message.GetTypeName()
                      << "' message.";
       return {};
     }
     break;
-  case SerdeFormat::kBinary:
+  case SerializationFormat::binary:
     if (!message.ParseFromString(input.str())) {
       emitError(loc) << "could not deserialize input as '"
                      << message.GetTypeName() << "' message.";
       return {};
     }
     break;
-  case SerdeFormat::kJson:
-  case SerdeFormat::kPrettyJson: {
+  case SerializationFormat::json:
+  case SerializationFormat::prettyjson: {
     absl::Status status = pb::util::JsonStringToMessage(input.str(), &message);
     if (!status.ok()) {
       emitError(loc) << "could not deserialize JSON as '"
