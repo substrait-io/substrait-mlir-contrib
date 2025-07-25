@@ -1280,22 +1280,22 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
 
   // Parse from serialized form into desired protobuf `MessageType`.
   switch (options.serializationFormat) {
-  case SerializationFormat::text:
+  case SerializationFormat::kText:
     if (!pb::TextFormat::ParseFromString(input.str(), &message)) {
       emitError(loc) << "could not parse string as '" << message.GetTypeName()
                      << "' message.";
       return {};
     }
     break;
-  case SerializationFormat::binary:
+  case SerializationFormat::kBinary:
     if (!message.ParseFromString(input.str())) {
       emitError(loc) << "could not deserialize input as '"
                      << message.GetTypeName() << "' message.";
       return {};
     }
     break;
-  case SerializationFormat::json:
-  case SerializationFormat::prettyjson: {
+  case SerializationFormat::kJson:
+  case SerializationFormat::kPrettyJson: {
     absl::Status status = pb::util::JsonStringToMessage(input.str(), &message);
     if (!status.ok()) {
       emitError(loc) << "could not deserialize JSON as '"

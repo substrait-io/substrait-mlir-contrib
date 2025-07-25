@@ -43,12 +43,12 @@ llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
     llvm::cl::desc(
         "Serialization format used when translating Substrait plans."),
     llvm::cl::values(
-        clEnumValN(SerdeFormat::text, "text", "human-readable text format"),
-        clEnumValN(SerdeFormat::binary, "binary", "binary wire format"),
-        clEnumValN(SerdeFormat::json, "json", "compact JSON format"),
-        clEnumValN(SerdeFormat::prettyjson, "pretty-json",
+        clEnumValN(SerdeFormat::kText, "text", "human-readable text format"),
+        clEnumValN(SerdeFormat::kBinary, "binary", "binary wire format"),
+        clEnumValN(SerdeFormat::kJson, "json", "compact JSON format"),
+        clEnumValN(SerdeFormat::kPrettyJson, "pretty-json",
                    "JSON format with new lines")),
-    llvm::cl::init(SerdeFormat::text));
+    llvm::cl::init(SerdeFormat::kText));
 
 void registerSubstraitToProtobufTranslation() {
   TranslateFromMLIRRegistration registration(

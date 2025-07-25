@@ -1660,22 +1660,22 @@ mlir::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
 
   std::string out;
   switch (options.serializationFormat) {
-  case SerializationFormat::text:
+  case SerializationFormat::kText:
     if (!::google::protobuf::TextFormat::PrintToString(*result.value(), &out)) {
       op->emitOpError("could not be serialized to text format");
       return failure();
     }
     break;
-  case SerializationFormat::binary:
+  case SerializationFormat::kBinary:
     if (!result->get()->SerializeToString(&out)) {
       op->emitOpError("could not be serialized to binary format");
       return failure();
     }
     break;
-  case SerializationFormat::json:
-  case SerializationFormat::prettyjson: {
+  case SerializationFormat::kJson:
+  case SerializationFormat::kPrettyJson: {
     ::google::protobuf::util::JsonPrintOptions jsonOptions;
-    if (options.serializationFormat == SerializationFormat::prettyjson)
+    if (options.serializationFormat == SerializationFormat::kPrettyJson)
       jsonOptions.add_whitespace = true;
     absl::Status status = ::google::protobuf::util::MessageToJsonString(
         *result.value(), &out, jsonOptions);

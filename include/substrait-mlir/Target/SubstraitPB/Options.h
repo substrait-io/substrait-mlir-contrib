@@ -9,11 +9,12 @@
 #ifndef SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H
 #define SUBSTRAIT_MLIR_TARGET_SUBSTRAITPB_OPTIONS_H
 
-#include "substrait-mlir/Dialect/Substrait/IR/Substrait.h"
-
 namespace mlir {
 namespace substrait {
 
+/// Serialization formats for serialization and deserialization to and from
+/// protobuf messages.
+enum class SerializationFormat { kText, kBinary, kJson, kPrettyJson };
 struct ImportExportOptions {
   /// Specifies which serialization formats is used for serialization and
   /// deserialization to and from protobuf messages.
