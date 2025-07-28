@@ -60,10 +60,11 @@ substrait.plan version 0 : 42 : 1 {
     %1 = project %0
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
-            : rel<si32> -> rel<si32> {
+            : rel<si32> -> rel<si32, si32> {
     ^bb0(%arg0: tuple<si32>):
-      yield
+      %2 = field_reference %arg0[0] : tuple<si32>
+      yield %2 : si32
     }
-    yield %1 : rel<si32>
+    yield %1 : rel<si32, si32>
   }
 }

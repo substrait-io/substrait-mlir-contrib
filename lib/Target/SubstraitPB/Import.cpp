@@ -1078,6 +1078,7 @@ static FailureOr<PlanVersionOp> importTopLevel(ImplicitLocOpBuilder builder,
 
 static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
                                                    const Rel &message) {
+  Location loc = builder.getLoc();
   const ProjectRel &projectRel = message.project();
 
   // Import input op.
@@ -1094,6 +1095,9 @@ static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
   // Fill `expressions` block with expression trees.
   YieldOp yieldOp;
   {
+    if (projectRel.expressions_size() == 0)
+      return emitError(loc) << "`ProjectRel` must have at least one expression";
+
     OpBuilder::InsertionGuard guard(builder);
     builder.setInsertionPointToEnd(conditionBlock.get());
 

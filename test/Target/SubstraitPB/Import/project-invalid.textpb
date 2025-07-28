@@ -1,0 +1,42 @@
+# RUN: substrait-translate -verify-diagnostics -split-input-file %s \
+# RUN:   -protobuf-to-substrait
+
+# Empty project op: the import can't deal with that.
+# expected-error@unknown {{`ProjectRel` must have at least one expression}}
+
+relations {
+  rel {
+    project {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
