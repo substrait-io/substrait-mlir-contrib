@@ -1,0 +1,3 @@
+# Remove the `__str__` type stub from `SerializationFormat` because it produces
+# an invalid assignment.
+SerializationFormat\.__str__:
