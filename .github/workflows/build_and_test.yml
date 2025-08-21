@@ -13,6 +13,7 @@ jobs:
   ubuntu-build-and-test:
     name: Ubuntu build and test (Release Asserts)
     runs-on: ubuntu-24.04
+    timeout-minutes: 180
     strategy:
       matrix:
         # Build with and without asserts but exclude the latter for PRs.
@@ -120,6 +121,7 @@ jobs:
   windows-build-and-test:
     name: Windows build and test (Release Asserts)
     runs-on: windows-latest
+    timeout-minutes: 180
     steps:
     - name: Set up Python
       uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
