@@ -35,7 +35,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
       with:
-        python-version: 3.11
+        python-version: 3.12
 
     - name: Cache git folder
       uses: actions/cache@v4
@@ -124,7 +124,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
       with:
-        python-version: 3.11
+        python-version: 3.12
 
     - name: Cache git folder
       uses: actions/cache@v4
