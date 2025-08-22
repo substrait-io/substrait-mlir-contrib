@@ -14,12 +14,11 @@ namespace substrait {
 
 /// Serialization formats for serialization and deserialization to and from
 /// protobuf messages.
-enum class SerdeFormat { kText, kBinary, kJson, kPrettyJson };
-
+enum class SerializationFormat { kText, kBinary, kJson, kPrettyJson };
 struct ImportExportOptions {
   /// Specifies which serialization formats is used for serialization and
   /// deserialization to and from protobuf messages.
-  SerdeFormat serdeFormat;
+  SerializationFormat serializationFormat;
 };
 
 } // namespace substrait

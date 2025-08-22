@@ -34,12 +34,14 @@ MlirType mlirSubstraitRelationTypeGet(MlirContext context, intptr_t numFields,
                                       MlirType *fieldTypes);
 
 /// Serialization/deserialization format for exporting/importing Substrait
-/// plans. This corresponds to `::mlir::substrait::SerdeFormat`.
-typedef enum MlirSubstraitSerdeFormat {
-  MlirSubstraitTextSerdeFormat,
-  MlirSubstraitBinarySerdeFormat,
-  MlirSubstraitJsonSerdeFormat,
-  MlirSubstraitPrettyJsonSerdeFormat
+/// plans. The enum values correspond exactly to those in
+/// `mlir::substrait::SerializationFromat`, i.e., conversion through integers
+/// is possible.
+typedef enum MlirSubstraitSerializationFormat {
+  MlirSubstraitTextFormat,
+  MlirSubstraitBinaryFormat,
+  MlirSubstraitJsonFormat,
+  MlirSubstraitPrettyJsonFormat
 } MlirSubstraitSerdeFormat;
 
 /// Imports a `Plan` message from `input`, which must be in the specified

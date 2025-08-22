@@ -18,6 +18,9 @@
 namespace nb = nanobind;
 using namespace mlir::python::nanobind_adaptors;
 
+#define SERIALIZATION_FORMAT                                                   \
+  "substrait_mlir._mlir_libs._substraitDialects.substrait.SerializationFormat"
+
 NB_MODULE(_substraitDialects, mainModule) {
 #ifndef NDEBUG
   static std::string executable =
@@ -44,9 +47,21 @@ NB_MODULE(_substraitDialects, mainModule) {
       },
       nb::arg("context").none() = nb::none(), nb::arg("load") = true,
       nb::sig("def register_dialect("
-              "context: Optional[substrait_mlir.ir.Context] = None,"
+              "context: Optional[substrait_mlir.ir.Context] = None, "
               "load: bool = True) -> None"),
       "Register and optionally load the dialect with the given context");
+
+  //
+  // Enums
+  //
+
+  nb::enum_<MlirSubstraitSerializationFormat>(
+      substraitModule, "SerializationFormat", nb::is_arithmetic(),
+      nb::is_flag())
+      .value("text", MlirSubstraitTextFormat)
+      .value("binary", MlirSubstraitBinaryFormat)
+      .value("json", MlirSubstraitJsonFormat)
+      .value("pretty_json", MlirSubstraitPrettyJsonFormat);
 
   //
   // Types
@@ -71,102 +86,45 @@ NB_MODULE(_substraitDialects, mainModule) {
   //
   // Import
   //
-
-  static const auto importSubstraitPlan = [](MlirStringRef input,
-                                             MlirContext context,
-                                             MlirSubstraitSerdeFormat format) {
-    MlirModule module = mlirSubstraitImportPlan(context, input, format);
-    if (mlirModuleIsNull(module))
-      throw std::invalid_argument("Could not import Substrait plan");
-    return module;
-  };
-
   substraitModule.def(
-      "from_binpb",
-      [&](const nb::bytes &input, MlirContext context) {
+      "from_protobuf",
+      [&](const nb::bytes &input, MlirSubstraitSerializationFormat format,
+          MlirContext context) {
         MlirStringRef mlirInput{reinterpret_cast<const char *>(input.data()),
                                 input.size()};
-        return importSubstraitPlan(mlirInput, context,
-                                   MlirSubstraitBinarySerdeFormat);
+        MlirModule module = mlirSubstraitImportPlan(context, mlirInput, format);
+        if (mlirModuleIsNull(module))
+          throw std::invalid_argument("Could not import Substrait plan");
+        return module;
       },
-      nb::arg("input") = nb::none(), nb::arg("context") = nb::none(),
-      nb::sig("def from_binpb(input: bytes,"
+      nb::arg("input"), nb::arg("format") = MlirSubstraitTextFormat,
+      nb::arg("context") = nb::none(),
+      nb::sig("def from_protobuf(input: bytes, "
+              "format: typing.Optional[" SERIALIZATION_FORMAT
+              "] = " SERIALIZATION_FORMAT ".text, "
               "context: typing.Optional[substrait_mlir.ir.Context] = None)"
               "-> substrait_mlir.ir.Module"),
-      "Import a Substrait plan in the binary protobuf format");
-
-  substraitModule.def(
-      "from_textpb",
-      [&](const std::string &input, MlirContext context) {
-        return importSubstraitPlan({input.data(), input.size()}, context,
-                                   MlirSubstraitTextSerdeFormat);
-      },
-      nb::arg("input") = nb::none(), nb::arg("context") = nb::none(),
-      nb::sig("def from_textpb(input: str,"
-              "context: typing.Optional[substrait_mlir.ir.Context] = None)"
-              "-> substrait_mlir.ir.Module"),
-      "Import a Substrait plan in the textual protobuf format");
-
-  substraitModule.def(
-      "from_json",
-      [&](const std::string &input, MlirContext context) {
-        return importSubstraitPlan({input.data(), input.size()}, context,
-                                   MlirSubstraitJsonSerdeFormat);
-      },
-      nb::arg("input") = nb::none(), nb::arg("context") = nb::none(),
-      nb::sig("def from_json(input: str,"
-              "context: typing.Optional[substrait_mlir.ir.Context] = None)"
-              "-> substrait_mlir.ir.Module"),
-      "Import a Substrait plan in the JSON format");
+      "Import the Substrait plan in the given serialization format");
 
   //
   // Export
   //
 
-  static const auto exportSubstraitPlan = [](MlirOperation op,
-                                             MlirSubstraitSerdeFormat format) {
-    MlirAttribute attr = mlirSubstraitExportPlan(op, format);
-    if (mlirAttributeIsNull(attr))
-      throw std::invalid_argument("Could not export Substrait plan");
-    MlirStringRef strRef = mlirStringAttrGetValue(attr);
-    std::string_view str(strRef.data, strRef.length);
-    return str;
-  };
-
   substraitModule.def(
-      "to_binpb",
-      [&](MlirOperation op) {
-        std::string_view sv =
-            exportSubstraitPlan(op, MlirSubstraitBinarySerdeFormat);
+      "to_protobuf",
+      [&](MlirOperation op, MlirSubstraitSerializationFormat format) {
+        MlirAttribute attr = mlirSubstraitExportPlan(op, format);
+        if (mlirAttributeIsNull(attr))
+          throw std::invalid_argument("Could not export Substrait plan");
+        MlirStringRef strRef = mlirStringAttrGetValue(attr);
+        std::string_view sv(strRef.data, strRef.length);
         return nb::bytes(sv.data(), sv.size());
       },
-      nb::arg("op"),
-      nb::sig("def to_binpb("
-              "op: typing.Optional[substrait_mlir.ir.Operation] = None)"
+      nb::arg("op"), nb::arg("format") = MlirSubstraitTextFormat,
+      nb::sig("def to_protobuf("
+              "op: typing.Optional[substrait_mlir.ir.Operation] = None, "
+              "format: typing.Optional[" SERIALIZATION_FORMAT
+              "] = " SERIALIZATION_FORMAT ".text)"
               "-> bytes"),
-      "Export a Substrait plan into the binary protobuf format");
-
-  substraitModule.def(
-      "to_textpb",
-      [&](MlirOperation op) {
-        return exportSubstraitPlan(op, MlirSubstraitTextSerdeFormat);
-      },
-      nb::arg("op"),
-      nb::sig(
-          "def to_textpb("
-          "op: typing.Optional[substrait_mlir.ir.Operation] = None) -> str"),
-      "Export a Substrait plan into the textual protobuf format");
-
-  substraitModule.def(
-      "to_json",
-      [&](MlirOperation op, bool pretty) {
-        auto format = pretty ? MlirSubstraitPrettyJsonSerdeFormat
-                             : MlirSubstraitJsonSerdeFormat;
-        return exportSubstraitPlan(op, format);
-      },
-      nb::arg("op"), nb::arg("pretty") = false,
-      nb::sig("def to_json("
-              "op: typing.Optional[substrait_mlir.ir.Operation] = None,"
-              "pretty: typing.Optional[bool] = False) -> str"),
-      "Export a Substrait plan into the JSON format");
+      "Export the Substrait plan into the given format");
 }

@@ -19,6 +19,38 @@ except ImportError as e:
   raise RuntimeError("Error loading imports from extension module") from e
 
 
+def from_textpb(input: str, context: Optional[ir.Context] = None) -> ir.Module:
+  """Import the Substrait plan from the textual protobuf format"""
+  return from_protobuf(input.encode(), SerializationFormat.text, context)
+
+
+def from_binpb(input: bytes, context: Optional[ir.Context] = None) -> ir.Module:
+  """Import the Substrait plan from the binary protobuf format"""
+  return from_protobuf(input, SerializationFormat.binary, context)
+
+
+def from_json(input: str, context: Optional[ir.Context] = None) -> ir.Module:
+  """Import the Substrait plan from the JSON protobuf format"""
+  return from_protobuf(input.encode(), SerializationFormat.json, context)
+
+
+def to_textpb(op: ir.Operation) -> str:
+  """Export the Substrait plan into the textual protobuf format"""
+  return to_protobuf(op, SerializationFormat.text).decode()
+
+
+def to_binpb(op: ir.Operation) -> bytes:
+  """Export the Substrait plan into the binary protobuf format"""
+  return to_protobuf(op, SerializationFormat.binary)
+
+
+def to_json(op: ir.Operation, pretty: bool = False) -> str:
+  """Export the Substrait plan into the JSON protobuf format"""
+  if pretty:
+    return to_protobuf(op, SerializationFormat.pretty_json).decode()
+  return to_protobuf(op, SerializationFormat.json).decode()
+
+
 @_ods_cext.register_operation(_Dialect, replace=True)
 class PlanOp(PlanOp):
 

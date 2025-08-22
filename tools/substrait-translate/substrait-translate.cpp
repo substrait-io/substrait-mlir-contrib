@@ -36,6 +36,8 @@ void registerSubstraitDialects(DialectRegistry &registry) {
   registry.insert<mlir::substrait::SubstraitDialect>();
 }
 
+using SerdeFormat = mlir::substrait::SerializationFormat;
+
 llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
     "substrait-protobuf-format", llvm::cl::ValueRequired,
     llvm::cl::desc(
@@ -53,7 +55,7 @@ void registerSubstraitToProtobufTranslation() {
       "substrait-to-protobuf", "translate from Substrait MLIR to protobuf",
       [&](mlir::Operation *op, llvm::raw_ostream &output) {
         ImportExportOptions options;
-        options.serdeFormat = substraitProtobufFormat.getValue();
+        options.serializationFormat = substraitProtobufFormat.getValue();
         return translateSubstraitToProtobuf(op, output, options);
       },
       registerSubstraitDialects);
@@ -68,7 +70,7 @@ void registerProtobufToSubstraitPlanTranslation() {
         "translate a protobuf 'Plan' to Substrait MLIR",
         [&](llvm::StringRef input, mlir::MLIRContext *context) {
           ImportExportOptions options;
-          options.serdeFormat = substraitProtobufFormat.getValue();
+          options.serializationFormat = substraitProtobufFormat.getValue();
           return translateProtobufToSubstraitPlan(input, context, options);
         },
         registerSubstraitDialects);
@@ -81,7 +83,7 @@ void registerProtobufToSubstraitPlanVersionTranslation() {
       "translate a protobuf 'PlanVersion' to Substrait MLIR",
       [&](llvm::StringRef input, mlir::MLIRContext *context) {
         ImportExportOptions options;
-        options.serdeFormat = substraitProtobufFormat.getValue();
+        options.serializationFormat = substraitProtobufFormat.getValue();
         return translateProtobufToSubstraitPlanVersion(input, context, options);
       },
       registerSubstraitDialects);

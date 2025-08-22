@@ -89,6 +89,7 @@ nanobind_add_stub(
   MODULE substrait_mlir._mlir_libs._substraitDialects.substrait
   OUTPUT "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs/_substraitDialects/substrait.pyi"
   PYTHON_PATH "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/"
+  PATTERN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/stubgen.patterns"
   DEPENDS SubstraitMLIRPythonModules
 )
 
