@@ -18,6 +18,9 @@ target_link_libraries(substrait-opt
   ${test_libs}
   MLIRIR
   MLIROptLib
+  MLIRRegisterAllDialects
+  MLIRRegisterAllExtensions
+  MLIRRegisterAllPasses
   MLIRSupport
 )
 
