@@ -16,9 +16,9 @@ target_link_libraries(substrait-translate
   ${translation_libs}
   LLVMSupport
   MLIRIR
+  MLIRSupport
   MLIRTargetSubstraitPB
   MLIRTranslateLib
-  MLIRSupport
   )
 
 mlir_check_all_link_libraries(substrait-translate)

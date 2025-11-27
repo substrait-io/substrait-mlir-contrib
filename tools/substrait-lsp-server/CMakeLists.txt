@@ -19,6 +19,9 @@ target_link_libraries(substrait-lsp-server
   LLVMSupport
   MLIRIR
   MLIRLspServerLib
+  MLIRRegisterAllDialects
+  MLIRRegisterAllExtensions
+  MLIRRegisterAllPasses
   MLIRSupport
 )
 
