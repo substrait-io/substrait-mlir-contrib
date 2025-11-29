@@ -10,7 +10,7 @@ json5==0.12.1
 kiwisolver==1.4.9
 matplotlib==3.10.5
 ml_dtypes==0.5.3
-nanobind==2.8.0
+nanobind==2.9.2
 nodeenv==1.9.1
 numpy==1.26.4
 packaging==25.0
