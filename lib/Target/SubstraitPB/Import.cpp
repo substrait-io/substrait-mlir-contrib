@@ -355,7 +355,7 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
       measuresValues.push_back(callOp.value().getResult());
     }
 
-    builder.create<YieldOp>(measuresValues);
+    YieldOp::create(builder, measuresValues);
   }
 
   // Import groupings if any.
@@ -424,7 +424,7 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
     if (!groupingExprOps.empty()) {
       OpBuilder::InsertionGuard guard(builder);
       builder.setInsertionPointToEnd(groupingsBlock);
-      builder.create<YieldOp>(loc, groupingExprValues);
+      YieldOp::create(builder, loc, groupingExprValues);
     } else {
       // If there aren't any, we should clear the `groupings` region.
       groupingsRegion->getBlocks().clear();
@@ -435,8 +435,9 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   auto groupingSets = ArrayAttr::get(builder.getContext(), groupingSetsAttrs);
 
   // Build `AggregateOp` and move regions into it.
-  auto aggregateOp = builder.create<AggregateOp>(
-      inputVal, groupingSets, groupingsRegion.get(), measuresRegion.get());
+  auto aggregateOp =
+      AggregateOp::create(builder, inputVal, groupingSets,
+                          groupingsRegion.get(), measuresRegion.get());
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, aggregateOp, aggregateRel);
@@ -466,7 +467,7 @@ static mlir::FailureOr<CastOp> importCast(ImplicitLocOpBuilder builder,
 
   // Create `cast` op.
   Value inputVal = inputOp.value()->getResult(0);
-  return builder.create<CastOp>(mlirType.value(), inputVal, failureBehavior);
+  return CastOp::create(builder, mlirType.value(), inputVal, failureBehavior);
 }
 
 static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
@@ -487,7 +488,7 @@ static mlir::FailureOr<CrossOp> importCrossRel(ImplicitLocOpBuilder builder,
   Value leftVal = leftOp.value().getResult();
   Value rightVal = rightOp.value().getResult();
 
-  auto crossOp = builder.create<CrossOp>(leftVal, rightVal);
+  auto crossOp = CrossOp::create(builder, leftVal, rightVal);
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, crossOp, crossRel);
@@ -518,7 +519,7 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   if (!kind)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  auto setOp = builder.create<SetOp>(inputsVal, *kind);
+  auto setOp = SetOp::create(builder, inputsVal, *kind);
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, setOp, setRel);
@@ -573,7 +574,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
   auto resultType =
       RelationType::get(builder.getContext(), tupleType.getTypes());
   auto extensionTableOp =
-      builder.create<ExtensionTableOp>(resultType, fieldNamesAttr, detailAttr);
+      ExtensionTableOp::create(builder, resultType, fieldNamesAttr, detailAttr);
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, extensionTableOp, readRel);
@@ -634,7 +635,7 @@ importFieldReference(ImplicitLocOpBuilder builder,
   }
 
   // Build and return the op.
-  return builder.create<FieldReferenceOp>(container, indices);
+  return FieldReferenceOp::create(builder, container, indices);
 }
 
 static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
@@ -661,7 +662,7 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   if (!joinType)
     return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
 
-  auto joinOp = builder.create<JoinOp>(leftVal, rightVal, *joinType);
+  auto joinOp = JoinOp::create(builder, leftVal, rightVal, *joinType);
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, joinOp, joinRel);
@@ -681,71 +682,71 @@ importLiteral(ImplicitLocOpBuilder builder,
   case Expression::Literal::LiteralTypeCase::kBoolean: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 1, IntegerType::Signed), message.boolean());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kI8: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 8, IntegerType::Signed), message.i8());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kI16: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 16, IntegerType::Signed), message.i16());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kI32: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 32, IntegerType::Signed), message.i32());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kI64: {
     auto attr = IntegerAttr::get(
         IntegerType::get(context, 64, IntegerType::Signed), message.i64());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kFp32: {
     auto attr = FloatAttr::get(Float32Type::get(context), message.fp32());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kFp64: {
     auto attr = FloatAttr::get(Float64Type::get(context), message.fp64());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kString: {
     auto attr = StringAttr::get(message.string(), StringType::get(context));
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kBinary: {
     auto attr = StringAttr::get(message.binary(), BinaryType::get(context));
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kTimestamp: {
     auto attr = TimestampAttr::get(context, message.timestamp());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kTimestampTz: {
     auto attr = TimestampTzAttr::get(context, message.timestamp_tz());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kDate: {
     auto attr = DateAttr::get(context, message.date());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kTime: {
     auto attr = TimeAttr::get(context, message.time());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kIntervalYearToMonth: {
     auto attr = IntervalYearMonthAttr::get(
         context, message.interval_year_to_month().years(),
         message.interval_year_to_month().months());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kIntervalDayToSecond: {
     auto attr = IntervalDaySecondAttr::get(
         context, message.interval_day_to_second().days(),
         message.interval_day_to_second().seconds());
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kUuid: {
     APInt var(128, 0);
@@ -754,14 +755,14 @@ importLiteral(ImplicitLocOpBuilder builder,
     IntegerAttr integerAttr =
         IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = UUIDAttr::get(context, integerAttr);
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kFixedChar: {
     StringAttr stringAttr = StringAttr::get(context, message.fixed_char());
     FixedCharType fixedCharType =
         FixedCharType::get(context, message.fixed_char().size());
     auto attr = FixedCharAttr::get(context, stringAttr, fixedCharType);
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kVarChar: {
     StringAttr stringAttr =
@@ -769,14 +770,14 @@ importLiteral(ImplicitLocOpBuilder builder,
     VarCharType varCharType =
         VarCharType::get(context, message.var_char().value().size());
     auto attr = VarCharAttr::get(context, stringAttr, varCharType);
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kFixedBinary: {
     StringAttr stringAttr = StringAttr::get(context, message.fixed_binary());
     FixedBinaryType fixedBinaryType =
         FixedBinaryType::get(context, message.fixed_binary().size());
     auto attr = FixedBinaryAttr::get(context, stringAttr, fixedBinaryType);
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
   case Expression::Literal::LiteralTypeCase::kDecimal: {
     APInt var(128, 0);
@@ -788,7 +789,7 @@ importLiteral(ImplicitLocOpBuilder builder,
                                         message.decimal().scale());
     IntegerAttr value = IntegerAttr::get(IntegerType::get(context, 128), var);
     auto attr = DecimalAttr::get(context, type, value);
-    return builder.create<LiteralOp>(attr);
+    return LiteralOp::create(builder, attr);
   }
 
   // TODO(ingomueller): Support more types.
@@ -811,7 +812,7 @@ static mlir::FailureOr<FetchOp> importFetchRel(ImplicitLocOpBuilder builder,
   // Build `FetchOp`.
   Value inputVal = inputOp.value().getResult();
   auto fetchOp =
-      builder.create<FetchOp>(inputVal, fetchRel.offset(), fetchRel.count());
+      FetchOp::create(builder, inputVal, fetchRel.offset(), fetchRel.count());
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, fetchOp, fetchRel);
@@ -830,7 +831,7 @@ static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
     return failure();
 
   // Create filter op.
-  auto filterOp = builder.create<FilterOp>(inputOp.value().getResult());
+  auto filterOp = FilterOp::create(builder, inputOp.value().getResult());
   filterOp.getCondition().push_back(new Block);
   Block &conditionBlock = filterOp.getCondition().front();
   RelationType inputType = filterOp.getResult().getType();
@@ -847,7 +848,7 @@ static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
     if (failed(conditionOp))
       return failure();
 
-    builder.create<YieldOp>(conditionOp.value()->getResult(0));
+    YieldOp::create(builder, conditionOp.value()->getResult(0));
   }
 
   // Import advanced extension if it is present.
@@ -915,7 +916,7 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
   // Assemble final op.
   auto resultType = RelationType::get(context, tupleType.getTypes());
   auto namedTableOp =
-      builder.create<NamedTableOp>(resultType, tableName, fieldNamesAttr);
+      NamedTableOp::create(builder, resultType, tableName, fieldNamesAttr);
 
   // Import advanced extension if it is present.
   importAdvancedExtension(builder, namedTableOp, readRel);
@@ -939,9 +940,9 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
   const Version &version = message.version();
 
   // Build `PlanOp`.
-  auto planOp = builder.create<PlanOp>(
-      version.major_number(), version.minor_number(), version.patch_number(),
-      version.git_hash(), version.producer());
+  auto planOp = PlanOp::create(builder, version.major_number(),
+                               version.minor_number(), version.patch_number(),
+                               version.git_hash(), version.producer());
   planOp.getBody().push_back(new Block());
 
   // Import `expected_type_urls` if present.
@@ -964,7 +965,7 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
     int32_t anchor = extUri.extension_uri_anchor();
     StringRef uri = extUri.uri();
     std::string symName = buildUriSymName(anchor);
-    builder.create<ExtensionUriOp>(symName, uri);
+    ExtensionUriOp::create(builder, symName, uri);
   }
 
   // Import `extension`s reconstructing symbol references to URI ops from the
@@ -980,7 +981,7 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
       const std::string &funcName = func.name();
       std::string symName = buildFuncSymName(anchor);
       std::string uriSymName = buildUriSymName(uriRef);
-      builder.create<ExtensionFunctionOp>(symName, uriSymName, funcName);
+      ExtensionFunctionOp::create(builder, symName, uriSymName, funcName);
       break;
     }
     case SimpleExtensionDeclaration::kExtensionType: {
@@ -990,7 +991,7 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
       const std::string &typeName = type.name();
       std::string symName = buildTypeSymName(anchor);
       std::string uriSymName = buildUriSymName(uriRef);
-      builder.create<ExtensionTypeOp>(symName, uriSymName, typeName);
+      ExtensionTypeOp::create(builder, symName, uriSymName, typeName);
       break;
     }
     case SimpleExtensionDeclaration::kExtensionTypeVariation: {
@@ -1000,8 +1001,8 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
       const std::string &typeVarName = typeVar.name();
       std::string symName = buildTypeVarSymName(anchor);
       std::string uriSymName = buildUriSymName(uriRef);
-      builder.create<ExtensionTypeVariationOp>(symName, uriSymName,
-                                               typeVarName);
+      ExtensionTypeVariationOp::create(builder, symName, uriSymName,
+                                       typeVarName);
       break;
     }
     default:
@@ -1034,7 +1035,7 @@ static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
   }
 
   // Create new `PlanRelOp`.
-  auto planRelOp = builder.create<PlanRelOp>();
+  auto planRelOp = PlanRelOp::create(builder);
   planRelOp.getBody().push_back(new Block());
   Block *block = &planRelOp.getBody().front();
 
@@ -1061,7 +1062,7 @@ static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
     return failure();
 
   builder.setInsertionPointToEnd(block);
-  builder.create<YieldOp>(rootRel.value().getResult());
+  YieldOp::create(builder, rootRel.value().getResult());
 
   return planRelOp;
 }
@@ -1072,7 +1073,7 @@ static FailureOr<PlanVersionOp> importTopLevel(ImplicitLocOpBuilder builder,
   auto versionAttr = VersionAttr::get(
       builder.getContext(), version.major_number(), version.minor_number(),
       version.patch_number(), version.git_hash(), version.producer());
-  return builder.create<PlanVersionOp>(versionAttr);
+  return PlanVersionOp::create(builder, versionAttr);
 }
 
 static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
@@ -1112,7 +1113,7 @@ static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
     }
 
     // Create final `yield` op with root expression values.
-    yieldOp = builder.create<YieldOp>(values);
+    yieldOp = YieldOp::create(builder, values);
   }
 
   // Compute output type.
@@ -1124,7 +1125,7 @@ static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
 
   // Create `project` op.
   auto projectOp =
-      builder.create<ProjectOp>(resultType, inputOp.value().getResult());
+      ProjectOp::create(builder, resultType, inputOp.value().getResult());
   projectOp.getExpressions().push_back(conditionBlock.release());
 
   // Import advanced extension if it is present.
@@ -1213,7 +1214,7 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
   SmallVector<int64_t> mapping;
   append_range(mapping, emit.output_mapping());
   ArrayAttr mappingAttr = builder.getI64ArrayAttr(mapping);
-  auto emitOp = builder.create<EmitOp>(op.getResult(), mappingAttr);
+  auto emitOp = EmitOp::create(builder, op.getResult(), mappingAttr);
 
   return {emitOp};
 }
@@ -1266,7 +1267,7 @@ FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
 
   // Create op.
   auto callOp =
-      builder.create<CallOp>(mlirOutputType.value(), calleeSymName, operands);
+      CallOp::create(builder, mlirOutputType.value(), calleeSymName, operands);
 
   return {callOp};
 }
@@ -1309,7 +1310,7 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
   context->loadDialect<SubstraitDialect>();
 
   ImplicitLocOpBuilder builder(loc, context);
-  auto module = builder.create<ModuleOp>(loc);
+  auto module = ModuleOp::create(builder, loc);
   auto moduleRef = OwningOpRef<ModuleOp>(module);
   builder.setInsertionPointToEnd(&module.getBodyRegion().back());
 

@@ -136,7 +136,7 @@ createDeduplicatingEmit(Value input, SmallVector<int64_t> &reverseMapping,
   Location loc = emitOp.getLoc();
   ArrayAttr newInputMappingAttr = rewriter.getI64ArrayAttr(newInputMapping);
   auto newEmitOp =
-      rewriter.create<EmitOp>(loc, emitOp.getInput(), newInputMappingAttr);
+      EmitOp::create(rewriter, loc, emitOp.getInput(), newInputMappingAttr);
 
   return {newEmitOp, newInputMapping.size(), true};
 }
@@ -253,7 +253,7 @@ struct EliminateDuplicateYieldsInProjectPattern
 
     // Create new `project` op with updated region and output type.
     auto newOp =
-        rewriter.create<ProjectOp>(op.getLoc(), newOutputType, op.getInput());
+        ProjectOp::create(rewriter, op.getLoc(), newOutputType, op.getInput());
     rewriter.inlineRegionBefore(op.getExpressions(), newOp.getExpressions(),
                                 newOp.getExpressions().end());
 
@@ -322,7 +322,7 @@ struct EliminateIdentityYieldsInProjectPattern
 
     // Create new `project` op with updated region.
     auto newOp =
-        rewriter.create<ProjectOp>(op.getLoc(), newOutputType, op.getInput());
+        ProjectOp::create(rewriter, op.getLoc(), newOutputType, op.getInput());
     rewriter.inlineRegionBefore(op.getExpressions(), newOp.getExpressions(),
                                 newOp.getExpressions().end());
 
@@ -374,9 +374,8 @@ struct PushDuplicatesThroughCrossPattern : public OpRewritePattern<CrossOp> {
     }
 
     // Create new cross op with the two deduplicated inputs.
-    auto newOp =
-        rewriter.create<CrossOp>(op.getLoc(), newLeftInput, newRightInput,
-                                 op.getAdvancedExtensionAttr());
+    auto newOp = CrossOp::create(rewriter, op.getLoc(), newLeftInput,
+                                 newRightInput, op.getAdvancedExtensionAttr());
 
     // Replace old cross op with emit op that maps back to old emit order.
     ArrayAttr reverseMappingAttr = rewriter.getI64ArrayAttr(reverseMapping);
@@ -416,7 +415,7 @@ struct PushDuplicatesThroughFilterPattern : public OpRewritePattern<FilterOp> {
 
     // Create new `filter` op. Move over the `condition` region. This needs to
     // happen now because replacing the op will destroy the region.
-    auto newOp = rewriter.create<FilterOp>(op.getLoc(), newInput);
+    auto newOp = FilterOp::create(rewriter, op.getLoc(), newInput);
     rewriter.inlineRegionBefore(op.getCondition(), newOp.getCondition(),
                                 newOp.getCondition().end());
 
@@ -485,7 +484,7 @@ struct PushDuplicatesThroughProjectPattern
     // Create new `project` op. Move over the `expressions` region. This needs
     // to happen now because replacing the op will destroy the region.
     auto newOp =
-        rewriter.create<ProjectOp>(op.getLoc(), newOutputType, newInput);
+        ProjectOp::create(rewriter, op.getLoc(), newOutputType, newInput);
     rewriter.inlineRegionBefore(op.getExpressions(), newOp.getExpressions(),
                                 newOp.getExpressions().end());
 
