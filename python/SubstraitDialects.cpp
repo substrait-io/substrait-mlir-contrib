@@ -122,7 +122,7 @@ NB_MODULE(_substraitDialects, mainModule) {
       },
       nb::arg("op"), nb::arg("format") = MlirSubstraitTextFormat,
       nb::sig("def to_protobuf("
-              "op: typing.Optional[substrait_mlir.ir.Operation] = None, "
+              "op: substrait_mlir.ir.Operation | substrait_mlir.ir.OpView, "
               "format: typing.Optional[" SERIALIZATION_FORMAT
               "] = " SERIALIZATION_FORMAT ".text)"
               "-> bytes"),
