@@ -74,6 +74,7 @@ add_mlir_python_modules(SubstraitMLIRPythonModules
   SubstraitMLIRPythonSources
   LLVMSupport
   MLIRPythonExtension.RegisterEverything
+  MLIRPythonExtension.Core.type_stub_gen
   MLIRPythonSources.Core
   MLIRPythonSources.Dialects
   MLIRPythonSources.ExecutionEngine
