@@ -34,17 +34,17 @@ def from_json(input: str, context: Optional[ir.Context] = None) -> ir.Module:
   return from_protobuf(input.encode(), SerializationFormat.json, context)
 
 
-def to_textpb(op: ir.Operation) -> str:
+def to_textpb(op: ir.Operation | ir.OpView) -> str:
   """Export the Substrait plan into the textual protobuf format"""
   return to_protobuf(op, SerializationFormat.text).decode()
 
 
-def to_binpb(op: ir.Operation) -> bytes:
+def to_binpb(op: ir.Operation | ir.OpView) -> bytes:
   """Export the Substrait plan into the binary protobuf format"""
   return to_protobuf(op, SerializationFormat.binary)
 
 
-def to_json(op: ir.Operation, pretty: bool = False) -> str:
+def to_json(op: ir.Operation | ir.OpView, pretty: bool = False) -> str:
   """Export the Substrait plan into the JSON protobuf format"""
   if pretty:
     return to_protobuf(op, SerializationFormat.pretty_json).decode()
@@ -71,13 +71,13 @@ class PlanOp(PlanOp):
     return self.regions[0].blocks[0]
 
   def to_json(self, pretty: bool = False) -> str:
-    return to_json(self.operation, pretty)
+    return to_json(self, pretty)
 
   def to_binpb(self) -> bytes:
-    return to_binpb(self.operation)
+    return to_binpb(self)
 
   def to_textpb(self) -> str:
-    return to_textpb(self.operation)
+    return to_textpb(self)
 
 
 @_ods_cext.register_operation(_Dialect, replace=True)
