@@ -6,9 +6,10 @@
 #
 # ===----------------------------------------------------------------------=== #
 
-load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+load("@buildifier_prebuilt//:rules.bzl", "buildifier")
 load("@llvm-project//mlir:build_defs.bzl", "mlir_c_api_cc_library")
 load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "gentbl_filegroup", "td_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
 
 package(

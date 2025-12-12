@@ -4,7 +4,7 @@
 
 try-import .bazelrc.user
 
-always --noenable_bzlmod
+common --enable_bzlmod
 
 build --action_env=CC=clang
 build --action_env=CXX=clang++
