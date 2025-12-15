@@ -8,7 +8,7 @@
 
 from typing import Optional, Sequence
 
-from ._substrait_ops_gen import *
+from ._substrait_ops_gen import *  # type: ignore
 from ._substrait_ops_gen import _Dialect
 from .._mlir_libs._substraitDialects.substrait import *
 
@@ -67,7 +67,7 @@ class PlanOp(PlanOp):
     self.regions[0].blocks.append()
 
   @property
-  def body(self) -> ir.Block:
+  def body(self) -> ir.Block:  # type: ignore
     return self.regions[0].blocks[0]
 
   def to_json(self, pretty: bool = False) -> str:
@@ -88,5 +88,5 @@ class PlanRelOp(PlanRelOp):
     self.regions[0].blocks.append()
 
   @property
-  def body(self) -> ir.Block:
+  def body(self) -> ir.Block:  # type: ignore
     return self.regions[0].blocks[0]
