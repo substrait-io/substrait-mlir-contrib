@@ -177,14 +177,12 @@ LogicalResult mlir::substrait::DecimalType::verify(
   return success();
 }
 
-namespace {
 // Count the number of digits in an APInt in base 10.
-size_t countDigits(const APInt &value) {
+static size_t countDigits(const APInt &value) {
   llvm::SmallVector<char> buffer;
   value.toString(buffer, 10, /*isSigned=*/false);
   return buffer.size();
 }
-} // namespace
 
 LogicalResult mlir::substrait::DecimalAttr::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError, DecimalType type,
@@ -321,9 +319,7 @@ ParseResult DecimalAttr::parseDecimalString(
 // Custom Parser and Printer for Substrait
 //===----------------------------------------------------------------------===//
 
-namespace {
-
-ParseResult
+static ParseResult
 parseAggregationDetails(OpAsmParser &parser,
                         AggregationPhaseAttr &aggregationPhase,
                         AggregationInvocationAttr &aggregationInvocation) {
@@ -376,9 +372,10 @@ parseAggregationDetails(OpAsmParser &parser,
          << "has invalid aggregate invocation type specification: " << keyword;
 }
 
-void printAggregationDetails(OpAsmPrinter &printer, CallOp op,
-                             AggregationPhaseAttr aggregationPhase,
-                             AggregationInvocationAttr aggregationInvocation) {
+static void
+printAggregationDetails(OpAsmPrinter &printer, CallOp op,
+                        AggregationPhaseAttr aggregationPhase,
+                        AggregationInvocationAttr aggregationInvocation) {
   if (!op.isAggregate())
     return;
   assert(aggregationPhase && aggregationInvocation &&
@@ -404,9 +401,10 @@ void printAggregationDetails(OpAsmPrinter &printer, CallOp op,
   }
 }
 
-ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
-                                  Region &measuresRegion,
-                                  ArrayAttr &groupingSetsAttr) {
+static ParseResult parseAggregateRegions(OpAsmParser &parser,
+                                         Region &groupingsRegion,
+                                         Region &measuresRegion,
+                                         ArrayAttr &groupingSetsAttr) {
   MLIRContext *context = parser.getContext();
 
   // Parse `measures` and `groupings` regions as well as `grouping_sets` attr.
@@ -467,9 +465,10 @@ ParseResult parseAggregateRegions(OpAsmParser &parser, Region &groupingsRegion,
   return success();
 }
 
-void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
-                           Region &groupingsRegion, Region &measuresRegion,
-                           ArrayAttr groupingSetsAttr) {
+static void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
+                                  Region &groupingsRegion,
+                                  Region &measuresRegion,
+                                  ArrayAttr groupingSetsAttr) {
   printer.increaseIndent();
 
   // `groupings` region.
@@ -500,7 +499,7 @@ void printAggregateRegions(OpAsmPrinter &printer, AggregateOp op,
   printer.decreaseIndent();
 }
 
-ParseResult parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
+static ParseResult parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
   // `all` keyword (corresponds to `-1`).
   if (!parser.parseOptionalKeyword("all")) {
     count = parser.getBuilder().getI64IntegerAttr(-1);
@@ -517,7 +516,8 @@ ParseResult parseCountAsAll(OpAsmParser &parser, IntegerAttr &count) {
   return failure();
 }
 
-void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
+static void printCountAsAll(OpAsmPrinter &printer, Operation *op,
+                            IntegerAttr count) {
   if (count.getInt() == -1) {
     printer << "all";
     return;
@@ -529,7 +529,8 @@ void printCountAsAll(OpAsmPrinter &printer, Operation *op, IntegerAttr count) {
 // Parses a VarCharType by extracting the length from the given parser. Assumes
 // the length is surrounded by `<` and `>` symbols, which are removed. On
 // success, assigns the parsed type to `type` and returns success.
-ParseResult parseVarCharTypeByLength(AsmParser &parser, VarCharType &type) {
+static ParseResult parseVarCharTypeByLength(AsmParser &parser,
+                                            VarCharType &type) {
   // remove `<` and `>` symbols
   int64_t result;
   if (parser.parseInteger(result))
@@ -541,13 +542,13 @@ ParseResult parseVarCharTypeByLength(AsmParser &parser, VarCharType &type) {
 }
 
 // Prints the VarCharType by outputting its length to the given printer.
-void printVarCharTypeByLength(AsmPrinter &printer, VarCharType type) {
+static void printVarCharTypeByLength(AsmPrinter &printer, VarCharType type) {
   // Normal integer.
   printer << type.getLength();
 }
 
-ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
-                               IntegerAttr &value) {
+static ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
+                                      IntegerAttr &value) {
   llvm::SMLoc loc = parser.getCurrentLocation();
 
   // Parse decimal value as quoted string.
@@ -580,14 +581,14 @@ ParseResult parseDecimalNumber(AsmParser &parser, DecimalType &type,
   return success();
 }
 
-void printDecimalNumber(AsmPrinter &printer, DecimalType type,
-                        IntegerAttr value) {
+static void printDecimalNumber(AsmPrinter &printer, DecimalType type,
+                               IntegerAttr value) {
   printer << "\"" << DecimalAttr::toDecimalString(type, value) << "\", ";
   printer << "P = " << type.getPrecision() << ", S = " << type.getScale();
 }
 
-ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
-                                    FixedBinaryType &type) {
+static ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
+                                           FixedBinaryType &type) {
   std::string valueStr;
   // Parse fixed binary value as quoted string.
   if (parser.parseString(&valueStr))
@@ -607,12 +608,12 @@ ParseResult parseFixedBinaryLiteral(AsmParser &parser, StringAttr &value,
   return success();
 }
 
-void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
-                             FixedBinaryType type) {
+static void printFixedBinaryLiteral(AsmPrinter &printer, StringAttr value,
+                                    FixedBinaryType type) {
   printer << value;
 }
 
-StringRef getTypeKeyword(Type type) {
+static StringRef getTypeKeyword(Type type) {
   return TypeSwitch<Type, StringRef>(type)
       .Case<AnyType>([&](Type) { return "any"; })
       .Case<BinaryType>([&](Type) { return "binary"; })
@@ -632,7 +633,7 @@ StringRef getTypeKeyword(Type type) {
       .Default([](Type) -> StringRef { return ""; });
 }
 
-ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
+static ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
   SMLoc loc = parser.getCurrentLocation();
 
   // Try parsing any MLIR type in full form.
@@ -676,8 +677,8 @@ ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
   return success(valueType != Type());
 }
 
-ParseResult parseSubstraitType(AsmParser &parser,
-                               SmallVectorImpl<Type> &valueTypes) {
+static ParseResult parseSubstraitType(AsmParser &parser,
+                                      SmallVectorImpl<Type> &valueTypes) {
   return parser.parseCommaSeparatedList([&]() {
     Type type;
     if (failed(parseSubstraitType(parser, type)))
@@ -687,7 +688,8 @@ ParseResult parseSubstraitType(AsmParser &parser,
   });
 }
 
-void printSubstraitType(AsmPrinter &printer, Operation * /*op*/, Type type) {
+static void printSubstraitType(AsmPrinter &printer, Operation * /*op*/,
+                               Type type) {
   StringRef keyword = getTypeKeyword(type);
 
   // No short-hand version available: print type in regular form.
@@ -719,8 +721,6 @@ void printSubstraitType(AsmPrinter &printer, Operation *op,
   });
 }
 
-} // namespace
-
 //===----------------------------------------------------------------------===//
 // Substrait operations
 //===----------------------------------------------------------------------===//
@@ -728,21 +728,17 @@ void printSubstraitType(AsmPrinter &printer, Operation *op,
 #define GET_OP_CLASSES
 #include "substrait-mlir/Dialect/Substrait/IR/SubstraitOps.cpp.inc" // IWYU pragma: keep
 
-namespace {
-
 /// Computes the type of the nested field of the given `type` identified by
 /// `position`. Each entry `n` in the given index array `position` corresponds
 /// to the `n`-th entry in that level.
-FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
-                                      ArrayRef<int64_t> position);
-
-namespace impl {
+static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
+                                             ArrayRef<int64_t> position);
 
 /// Helper that extracts computes the type at a position given a container type.
 template <typename ContainerType>
-FailureOr<Type> computeTypeAtPositionHelper(Location loc,
-                                            ContainerType containerType,
-                                            ArrayRef<int64_t> position) {
+static FailureOr<Type> computeTypeAtPositionHelper(Location loc,
+                                                   ContainerType containerType,
+                                                   ArrayRef<int64_t> position) {
   assert(!position.empty() && "expected to be called with non-empty position");
 
   // Recurse into fields of first index in position array.
@@ -754,7 +750,6 @@ FailureOr<Type> computeTypeAtPositionHelper(Location loc,
 
   return ::computeTypeAtPosition(loc, fieldTypes[index], position.drop_front());
 }
-} // namespace impl
 
 // Implementation of `computeTypeAtPosition`.
 //
@@ -764,14 +759,14 @@ FailureOr<Type> computeTypeAtPositionHelper(Location loc,
 // function handles the leaf case and type-switches into the helper, which is
 // templated using the container type such that the extraction of the nested
 // types can use the concrete container type.
-FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
-                                      ArrayRef<int64_t> position) {
+static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
+                                             ArrayRef<int64_t> position) {
   if (position.empty())
     return type;
 
   return TypeSwitch<Type, FailureOr<Type>>(type)
       .Case<RelationType, TupleType>([&](auto type) {
-        return impl::computeTypeAtPositionHelper(loc, type, position);
+        return computeTypeAtPositionHelper(loc, type, position);
       })
       .Default([&](auto type) {
         return emitError(loc) << "can't extract element from type " << type;
@@ -785,9 +780,9 @@ FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
 /// own). Furthermore, the names on each nesting level need to be unique. For
 /// details, see
 /// https://substrait.io/tutorial/sql_to_substrait/#types-and-schemas.
-FailureOr<int> verifyNamedStructHelper(Location loc,
-                                       llvm::ArrayRef<Attribute> fieldNames,
-                                       TypeRange fieldTypes) {
+static FailureOr<int>
+verifyNamedStructHelper(Location loc, llvm::ArrayRef<Attribute> fieldNames,
+                        TypeRange fieldTypes) {
   int numConsumedNames = 0;
   llvm::SmallSet<llvm::StringRef, 8> currentLevelNames;
   for (Type type : fieldTypes) {
@@ -815,9 +810,9 @@ FailureOr<int> verifyNamedStructHelper(Location loc,
   return numConsumedNames;
 }
 
-LogicalResult verifyNamedStruct(Operation *op,
-                                llvm::ArrayRef<Attribute> fieldNames,
-                                TupleType tupleType) {
+static LogicalResult verifyNamedStruct(Operation *op,
+                                       llvm::ArrayRef<Attribute> fieldNames,
+                                       TupleType tupleType) {
   Location loc = op->getLoc();
   TypeRange fieldTypes = tupleType.getTypes();
 
@@ -847,9 +842,6 @@ LogicalResult verifyNamedStruct(Operation *op,
 
   return success();
 }
-
-} // namespace
-
 namespace mlir::substrait {
 
 void AggregateOp::build(OpBuilder &builder, OperationState &result, Value input,

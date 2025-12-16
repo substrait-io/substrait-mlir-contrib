@@ -12,7 +12,8 @@ Checks: >
     -misc-unused-parameters,
     -misc-non-private-member-variables-in-classes,
     readability-braces-around-statements,
-    readability-identifier-naming
+    readability-identifier-naming,
+    llvm-prefer-static-over-anonymous-namespace,
 
 CheckOptions:
 - key: llvm-namespace-comment.ShortNamespaceLines
