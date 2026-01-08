@@ -29,7 +29,6 @@ declare_mlir_python_extension(SubstraitMLIRPythonSources.DialectExtension
   SubstraitMLIRCAPI
   PRIVATE_LINK_LIBS
   LLVMSupport
-  PYTHON_BINDINGS_LIBRARY nanobind
 )
 
 declare_mlir_python_sources(SubstraitMLIRPythonSources.MLIRLibs
