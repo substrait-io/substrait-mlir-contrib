@@ -204,6 +204,12 @@ jobs:
         cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target substrait-mlir-all
         sccache --show-stats
 
+    - name: Debug Windows CI
+      run: |
+        ls $env:GITHUB_WORKSPACE\substrait-mlir/build/tools/mlir/python_packages/mlir_core/mlir/_mlir_libs
+        cmake --build $env:GITHUB_WORKSPACE\substrait-mlir/build --target MLIRPythonModules.extension._mlir.dso
+        ls $env:GITHUB_WORKSPACE\substrait-mlir/build/tools/mlir/python_packages/mlir_core/mlir/_mlir_libs
+
     - name: Run lit tests
       run: |
         & "$env:GITHUB_WORKSPACE\substrait-mlir\utils\find_vs.ps1"
