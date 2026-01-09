@@ -1,0 +1,49 @@
+# This file is licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://llvm.org/LICENSE.txt for license information.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+module(
+    name = "substrait_mlir",
+)
+
+bazel_dep(name = "abseil-cpp", version = "20250512.1", repo_name = "com_google_absl")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.1")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "protobuf", version = "33.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "rules_cc", version = "0.2.14")
+bazel_dep(name = "rules_license", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_shell", version = "0.6.1")
+
+substrait_mlir_deps = use_extension("//:extensions.bzl", "substrait_mlir_deps")
+use_repo(
+    substrait_mlir_deps,
+    "llvm-raw",
+    "llvm_zlib",
+    "llvm_zstd",
+    "nanobind",
+    "robin_map",
+    "substrait-cpp",
+)
+
+_LLVM_TARGETS = [
+    "X86",
+    # The bazel dependency graph for mlir-opt fails to load (at the analysis
+    # step) without the NVPTX target in this list, because mlir/test:TestGPU
+    # depends on the //llvm:NVPTXCodeGen target, which is not defined unless this
+    # is included. @j2kun asked the LLVM maintiners for tips on how to fix this,
+    # see https://github.com/llvm/llvm-project/issues/63135
+    "NVPTX",
+]
+
+# Configure LLVM project using use_repo_rule
+llvm_configure = use_repo_rule(
+    "@llvm-raw//utils/bazel:configure.bzl",
+    "llvm_configure",
+)
+
+llvm_configure(
+    name = "llvm-project",
+    targets = _LLVM_TARGETS,
+)
