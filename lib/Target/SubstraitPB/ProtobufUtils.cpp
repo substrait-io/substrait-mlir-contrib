@@ -27,12 +27,10 @@ namespace mlir::substrait::protobuf_utils {
 
 namespace pb = ::google::protobuf;
 
-namespace {
 template <typename RelType>
 static const RelCommon *getCommon(const RelType &rel) {
   return &rel.common();
 }
-} // namespace
 
 FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
   Rel::RelTypeCase relType = rel.rel_type_case();
@@ -60,12 +58,10 @@ FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
   }
 }
 
-namespace {
 template <typename RelType>
 static RelCommon *getMutableCommon(RelType *rel) {
   return rel->mutable_common();
 }
-} // namespace
 
 FailureOr<RelCommon *> getMutableCommon(Rel *rel, Location loc) {
   Rel::RelTypeCase relType = rel->rel_type_case();
