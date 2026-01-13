@@ -43,6 +43,19 @@ jobs:
         git submodule foreach --recursive git reset --hard  # undo changes in submodules
         git diff --exit-code || (echo 'Please reformat the bazel files, add them to this PR, and run CI again.'; false)
 
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+      with:
+        tool-cache: false     # These are often needed.
+        large-packages: false # This includes LLVM, so we need it.
+        android: true         # This is the largest category.
+
+        # Don't remove the remaining ones to save time.
+        docker-images: false
+        dotnet: false
+        haskell: false
+        swap-storage: false
+
     - name: Compile
       run: |
         cd substrait-mlir
