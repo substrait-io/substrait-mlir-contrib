@@ -238,7 +238,7 @@ def Substrait_PlanRelOp : Substrait_Op<"relation", [
     reprents the root of the query tree that this op contains.
   }];
   let arguments = (ins OptionalAttr<StringArrayAttr>:$fieldNames);
-  let regions = (region RegionOf<RelationBodyOp>:$body);
+  let regions = (region AnyRegion:$body);
   let assemblyFormat = "(`as` $fieldNames^)? attr-dict-with-keyword $body";
   let hasRegionVerifier = 1;
   let builders = [
