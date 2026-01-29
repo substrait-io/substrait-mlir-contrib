@@ -124,6 +124,7 @@ DECLARE_IMPORT_FUNC(ExtensionTable, Rel, ExtensionTableOp)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
                     FieldReferenceOp)
 DECLARE_IMPORT_FUNC(JoinRel, Rel, JoinOp)
+DECLARE_IMPORT_FUNC(HashJoinRel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(Literal, Expression::Literal, LiteralOp)
 DECLARE_IMPORT_FUNC(NamedStruct, NamedStruct, ImportedNamedStruct)
 DECLARE_IMPORT_FUNC(NamedTable, Rel, NamedTableOp)
@@ -134,6 +135,11 @@ DECLARE_IMPORT_FUNC(Rel, Rel, RelOpInterface)
 DECLARE_IMPORT_FUNC(ScalarFunction, Expression::ScalarFunction, CallOp)
 DECLARE_IMPORT_FUNC(TopLevel, Plan, PlanOp)
 DECLARE_IMPORT_FUNC(TopLevel, PlanVersion, PlanVersionOp)
+
+// If post join filter is present, wrap the given `hashJoin` op in a filter op
+static mlir::FailureOr<RelOpInterface>
+wrapFilterOnJoin(ImplicitLocOpBuilder builder, RelOpInterface hashJoin,
+                 const HashJoinRel &rel);
 
 /// If present, imports the `advanced_extension` or `advanced_extensions` field
 /// from the given message and sets the obtained attribute on the given op.
@@ -617,7 +623,10 @@ importFieldReference(ImplicitLocOpBuilder builder,
     // For the `root_reference` case, that's the current block argument.
     mlir::Block::BlockArgListType blockArgs =
         builder.getInsertionBlock()->getArguments();
-    assert(blockArgs.size() == 1 && "expected a single block argument");
+    if (blockArgs.empty()) {
+      return emitError(loc)
+             << "root reference requires at least one block argument";
+    }
     container = blockArgs.front();
   } else if (message.has_expression()) {
     // For the `expression` case, recursively import the expression.
@@ -668,6 +677,115 @@ static mlir::FailureOr<JoinOp> importJoinRel(ImplicitLocOpBuilder builder,
   importAdvancedExtension(builder, joinOp, joinRel);
 
   return joinOp;
+}
+
+static mlir::FailureOr<RelOpInterface>
+wrapFilterOnJoin(ImplicitLocOpBuilder builder, RelOpInterface hashJoin,
+                 const HashJoinRel &rel) {
+  if (!rel.has_post_join_filter()) {
+    return hashJoin;
+  }
+  // Create filter op.
+  auto filterOp = builder.create<FilterOp>(hashJoin->getResult(0));
+  filterOp.getCondition().push_back(new Block);
+  Block &conditionBlock = filterOp.getCondition().front();
+  conditionBlock.addArgument(filterOp.getResult().getType(),
+                             filterOp->getLoc());
+
+  // Create condition region.
+  const Expression &expression = rel.post_join_filter();
+  {
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToEnd(&conditionBlock);
+
+    FailureOr<ExpressionOpInterface> conditionOp =
+        importExpression(builder, expression);
+    if (failed(conditionOp))
+      return failure();
+
+    builder.create<YieldOp>(conditionOp.value()->getResult(0));
+  }
+
+  return {filterOp};
+}
+
+static mlir::FailureOr<RelOpInterface>
+importHashJoinRel(ImplicitLocOpBuilder builder, const Rel &message) {
+  const HashJoinRel &hashJoinRel = message.hash_join();
+  const Rel &leftRel = hashJoinRel.left();
+  const Rel &rightRel = hashJoinRel.right();
+
+  mlir::FailureOr<RelOpInterface> leftOp = importRel(builder, leftRel);
+  mlir::FailureOr<RelOpInterface> rightOp = importRel(builder, rightRel);
+
+  if (failed(leftOp) || failed(rightOp))
+    return failure();
+
+  Value leftVal = leftOp.value()->getResult(0);
+  Value rightVal = rightOp.value()->getResult(0);
+
+  std::optional<JoinType> join_type = static_cast<JoinType>(hashJoinRel.type());
+
+  if (!join_type)
+    return mlir::emitError(builder.getLoc(), "unexpected 'operation' found");
+
+  mlir::FailureOr<HashJoinOp> hashJoinOp =
+      builder.create<HashJoinOp>(leftVal, rightVal, *join_type);
+
+  if (failed(hashJoinOp)) {
+    return failure();
+  }
+
+  hashJoinOp->getCondition().push_back(new Block);
+  Block &conditionBlock = hashJoinOp->getCondition().front();
+  conditionBlock.addArgument(leftVal.getType(), hashJoinOp->getLoc());
+  conditionBlock.addArgument(rightVal.getType(), hashJoinOp->getLoc());
+
+  OpBuilder::InsertionGuard guard(builder);
+  builder.setInsertionPointToEnd(&conditionBlock);
+
+  FailureOr<FieldReferenceOp> leftKeyOp =
+      importFieldReference(builder, hashJoinRel.keys()[0].left());
+  if (failed(leftKeyOp))
+    return failure();
+
+  FailureOr<FieldReferenceOp> rightKeyOp =
+      importFieldReference(builder, hashJoinRel.keys()[0].right());
+  if (failed(rightKeyOp))
+    return failure();
+
+  // Create the comparison operation
+  Value condition;
+  if (hashJoinRel.keys()[0].comparison().has_simple()) {
+    auto simpleComparisonType = static_cast<SimpleComparisonType>(
+        hashJoinRel.keys()[0].comparison().simple());
+
+    Value leftKey = leftKeyOp.value();
+    Value rightKey = rightKeyOp.value();
+
+    condition = builder.create<KeyComparisonOp>(leftKey, rightKey,
+                                                simpleComparisonType);
+  } else {
+    // TODO(trion): Handle custom function if present
+    return mlir::emitError(builder.getLoc(),
+                           "custom comparison functions not yet supported");
+  }
+
+  // Yield the condition from the region
+  builder.create<YieldOp>(condition);
+
+  // Import advanced extension if it is present.
+  if (auto extensibleOp =
+          dyn_cast<ExtensibleOpInterface>(hashJoinOp->getOperation())) {
+    importAdvancedExtension(builder, extensibleOp, hashJoinRel);
+  }
+
+  mlir::FailureOr<RelOpInterface> wrappedOp = wrapFilterOnJoin(
+      builder, cast<RelOpInterface>(hashJoinOp->getOperation()), hashJoinRel);
+  if (failed(wrappedOp)) {
+    return failure();
+  }
+  return wrappedOp;
 }
 
 static mlir::FailureOr<LiteralOp>
@@ -1176,6 +1294,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     break;
   case Rel::RelTypeCase::kJoin:
     maybeOp = importJoinRel(builder, message);
+    break;
+  case Rel::RelTypeCase::kHashJoin:
+    maybeOp = importHashJoinRel(builder, message);
     break;
   case Rel::RelTypeCase::kProject:
     maybeOp = importProjectRel(builder, message);

@@ -260,7 +260,8 @@ def Substrait_YieldOp : Substrait_Op<"yield", [
       "::mlir::substrait::AggregateOp",
       "::mlir::substrait::FilterOp",
       "::mlir::substrait::PlanRelOp",
-      "::mlir::substrait::ProjectOp"
+      "::mlir::substrait::ProjectOp",
+      "::mlir::substrait::HashJoinOp"
     ]>
   ]> {
   let summary = "Yields the result of a `PlanRelOp`";
@@ -715,6 +716,109 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
     attr-dict `:` custom<SubstraitType>(type($input)) $condition
   }];
   let hasRegionVerifier = 1;
+  let extraClassDefinition = [{
+    /// Implement OpAsmOpInterface.
+    ::llvm::StringRef $cppClass::getDefaultDialect() {
+      return SubstraitDialect::getDialectNamespace();
+    }
+  }];
+}
+
+def Substrait_KeyComparisonOp : Substrait_ExpressionOp<"compare", [
+    DeclareOpInterfaceMethods<InferTypeOpInterface>
+  ]> {
+  let summary = "Key comparison expression";
+  let description = [{
+    Represents a comparison between two field references or expressions
+    used in join conditions.
+    
+    Example:
+    
+    ```mlir
+    %3 = field_reference %arg0[0] : tuple<si32, si32>
+    %4 = field_reference %arg1[0] : tuple<si32, si32, si32>
+    %5 = compare not_distinct_from %3, %4 : (si32, si32) -> si1
+    ```
+  }];
+  
+  let arguments = (ins
+    Substrait_ExpressionType:$lhs,
+    Substrait_ExpressionType:$rhs,
+    OptionalAttr<SimpleComparisonType>:$comparison_type,
+    OptionalAttr<UI32Attr>:$custom_function_id
+  );
+  
+  let results = (outs SI1:$result);
+  
+  let assemblyFormat = [{
+    $comparison_type $lhs `,` $rhs attr-dict `:` `(` type($lhs) `,` type($rhs) `)` `->` type($result)
+  }];
+  
+  let builders = [
+    OpBuilder<(ins 
+      "::mlir::Value":$lhs,
+      "::mlir::Value":$rhs,
+      "SimpleComparisonType":$comparison_type), [{
+      // Convert SimpleComparisonType to SimpleComparisonTypeAttr
+      auto comparisonAttr = ::mlir::substrait::SimpleComparisonTypeAttr::get($_builder.getContext(), comparison_type);
+      auto si1Type = ::mlir::IntegerType::get($_builder.getContext(), 1, ::mlir::IntegerType::Signed);
+      build($_builder, $_state, si1Type, lhs, rhs, comparisonAttr, {});
+    }]>
+  ];
+
+  let hasVerifier = 1;
+}
+
+def Substrait_HashJoinOp : Substrait_RelOp<"hash_join", [
+  DeclareOpInterfaceMethods<InferTypeOpInterface>,
+  DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+  SingleBlockImplicitTerminator<"::mlir::substrait::YieldOp">,
+  DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>
+  ]> {
+  let summary = "hash join operation";
+  let description = [{
+  Represents a `HashJoinRel` message together with the `RelCommon`, left and
+  right `Rel` messages and `JoinType` enumeration it contains. The join condition
+  is represented as a region where expressions can compare fields from both sides.
+  Join keys are stored as field references used for the hash join implementation.
+
+  Example:
+
+  ```mlir
+  %0 = ...
+  %1 = ...
+  %2 = hash_join inner %0, %1 on {
+  ^bb0(%arg0: tuple<si32, si32>, %arg1: tuple<si32, si32, si32>):
+    %3 = field_reference %arg0[0] : tuple<si32, si32>
+    %4 = field_reference %arg1[0] : tuple<si32, si32, si32>
+    %5 = compare not_distinct_from %3, %4 : (si32, si32) -> si1
+    // or depending if custom function is provided.
+    //TODO: the custom function is not yet supported.
+    %5 = call @cmp(%3, %4) : (si32, si32) -> si1
+    yield %5 : si1
+  }
+  ```
+  }];
+  let arguments = (ins
+    Substrait_Relation:$left,
+    Substrait_Relation:$right,
+    JoinType:$join_type,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+  );
+  let regions = (region AnyRegion:$condition);
+  let hasRegionVerifier = 1;
+  let results = (outs Substrait_Relation:$result);
+  let assemblyFormat = [{
+    $join_type $left `,` $right
+    (`advanced_extension` `` $advanced_extension^)?
+    attr-dict `:` type($left) `,` type($right) `->` type($result) $condition
+  }];
+  let builders = [    
+    OpBuilder<(ins "::mlir::Value":$left, "::mlir::Value":$right,
+          "JoinType":$join_type), [{
+    build($_builder, $_state, left, right, join_type, /*advanced_extension=*/{});
+    }]>,
+  ];
   let extraClassDefinition = [{
     /// Implement OpAsmOpInterface.
     ::llvm::StringRef $cppClass::getDefaultDialect() {

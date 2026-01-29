@@ -1197,6 +1197,107 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 }
 
 LogicalResult
+HashJoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
+                             ValueRange operands, DictionaryAttr attributes,
+                             OpaqueProperties properties, RegionRange regions,
+                             llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
+  Value leftInput = operands[0];
+  Value rightInput = operands[1];
+
+  TypeRange leftFieldTypes = cast<TupleType>(leftInput.getType()).getTypes();
+  TypeRange rightFieldTypes = cast<TupleType>(rightInput.getType()).getTypes();
+
+  // Get accessor to `join_type`.
+  Adaptor adaptor(operands, attributes, properties, regions);
+  JoinType join_type = adaptor.getJoinType();
+
+  SmallVector<mlir::Type> fieldTypes;
+
+  switch (join_type) {
+  case JoinType::unspecified:
+  case JoinType::inner:
+  case JoinType::outer:
+  case JoinType::right:
+  case JoinType::left:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  case JoinType::semi:
+  case JoinType::anti:
+    llvm::append_range(fieldTypes, leftFieldTypes);
+    break;
+  case JoinType::single:
+    llvm::append_range(fieldTypes, rightFieldTypes);
+    break;
+  }
+
+  auto resultType = TupleType::get(context, fieldTypes);
+
+  inferredReturnTypes = SmallVector<Type>{resultType};
+
+  return success();
+}
+
+LogicalResult KeyComparisonOp::verify() {
+  auto &res =
+      llvm::TypeSwitch<mlir::Type, LogicalResult>(getLhs().getType())
+          .Case<substrait::VarCharType, substrait::StringType>([&](auto) {
+            if (!mlir::isa<substrait::VarCharType, substrait::StringType>(
+                    getRhs()))
+              return this->emitError("Invalid rhs type for string comparison, "
+                                     "expected string-like type but got")
+                     << getRhs().getType();
+            return success();
+          })
+          .Case<IntegerType>([&](auto) {
+            if (!mlir::isa<IntegerType, substrait::DecimalType>(getRhs()))
+              return this->emitError("Invalid rhs type for integer comparison, "
+                                     "expected integer-like type but got")
+                     << getRhs().getType();
+            return success();
+          });
+  if (failed(res))
+    return res;
+
+  return success();
+}
+
+LogicalResult HashJoinOp::verifyRegions() {
+  if (getCondition().empty())
+    return emitOpError() << "hash join must have a condition region";
+
+  // Verify that we have exactly two arguments in the region, matching the left
+  // and right relations
+  Block &block = getCondition().front();
+  if (block.getNumArguments() != 2)
+    return emitOpError() << "condition region must have exactly two arguments";
+
+  if (block.getArgument(0).getType() != getLeft().getType())
+    return emitOpError()
+           << "first block argument type must match left relation type";
+  if (block.getArgument(1).getType() != getRight().getType())
+    return emitOpError()
+           << "second block argument type must match right relation type";
+
+  auto yieldOp = cast<YieldOp>(block.getTerminator());
+  if (yieldOp.getValue().size() != 1)
+    return emitOpError() << "condition region must yield exactly one value";
+
+  Type yieldedType = yieldOp.getValue()[0].getType();
+  MLIRContext *context = getContext();
+  Type si1Type = IntegerType::get(context, 1, IntegerType::Signed);
+  if (yieldedType != si1Type)
+    return emitOpError() << "condition region must yield a boolean (si1) value";
+
+  Value conditionValue = yieldOp.getValue()[0];
+  if (!isa<KeyComparisonOp>(conditionValue.getDefiningOp())) {
+    return emitOpError() << "condition must be produced by a comparison";
+  }
+
+  return success();
+}
+
+LogicalResult
 JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                          ValueRange operands, DictionaryAttr attributes,
                          OpaqueProperties properties, RegionRange regions,

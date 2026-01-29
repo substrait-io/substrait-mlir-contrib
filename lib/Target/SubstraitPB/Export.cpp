@@ -96,6 +96,7 @@ public:
   DECLARE_EXPORT_FUNC(FieldReferenceOp, Expression)
   DECLARE_EXPORT_FUNC(FetchOp, Rel)
   DECLARE_EXPORT_FUNC(FilterOp, Rel)
+  DECLARE_EXPORT_FUNC(HashJoinOp, Rel)
   DECLARE_EXPORT_FUNC(JoinOp, Rel)
   DECLARE_EXPORT_FUNC(LiteralOp, Expression)
   DECLARE_EXPORT_FUNC(ModuleOp, pb::Message)
@@ -789,6 +790,86 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(JoinOp op) {
   auto rel = std::make_unique<Rel>();
   rel->set_allocated_join(joinRel.release());
 
+  return rel;
+}
+
+FailureOr<std::unique_ptr<Rel>>
+SubstraitExporter::exportOperation(HashJoinOp op) {
+  auto relCommon = std::make_unique<RelCommon>();
+  auto direct = std::make_unique<RelCommon::Direct>();
+  relCommon->set_allocated_direct(direct.release());
+
+  auto leftOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getLeft().getDefiningOp());
+  if (!leftOp)
+    return op->emitOpError(
+        "left input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> leftRel = exportOperation(leftOp);
+  if (failed(leftRel))
+    return failure();
+
+  auto rightOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getRight().getDefiningOp());
+  if (!rightOp)
+    return op->emitOpError(
+        "right input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> rightRel = exportOperation(rightOp);
+  if (failed(rightRel))
+    return failure();
+
+  auto hashJoinRel = std::make_unique<HashJoinRel>();
+  hashJoinRel->set_allocated_common(relCommon.release());
+  hashJoinRel->set_allocated_left(leftRel->release());
+  hashJoinRel->set_allocated_right(rightRel->release());
+  hashJoinRel->set_type(static_cast<HashJoinRel::JoinType>(op.getJoinType()));
+
+  if (op.getCondition().empty()) {
+    return op->emitOpError("missing join condition");
+  }
+
+  Block &conditionBlock = op.getCondition().front();
+  Operation *terminator = conditionBlock.getTerminator();
+  Value conditionValue = cast<YieldOp>(terminator).getValue()[0];
+
+  auto compareOp =
+      dyn_cast_or_null<KeyComparisonOp>(conditionValue.getDefiningOp());
+  if (!compareOp) {
+    return op->emitOpError("join condition must be a KeyComparisonOp");
+  }
+
+  Value leftKey = compareOp.getLhs();
+  Value rightKey = compareOp.getRhs();
+  FailureOr<std::unique_ptr<Expression>> leftKeyExpr;
+  if (auto leftFieldRef =
+          dyn_cast_or_null<FieldReferenceOp>(leftKey.getDefiningOp())) {
+    leftKeyExpr = exportOperation(leftFieldRef);
+  } else {
+    return op->emitOpError() << "left key must be a field reference";
+  }
+
+  FailureOr<std::unique_ptr<Expression>> rightKeyExpr;
+  if (auto rightFieldRef =
+          dyn_cast_or_null<FieldReferenceOp>(rightKey.getDefiningOp())) {
+    rightKeyExpr = exportOperation(rightFieldRef);
+  } else {
+    return op->emitOpError() << "right key must be a field reference";
+  }
+
+  auto keyComparison = hashJoinRel->add_keys();
+  keyComparison->set_allocated_left(leftKeyExpr->get()->release_selection());
+  keyComparison->set_allocated_right(rightKeyExpr->get()->release_selection());
+
+  // TODO(trion): support custom function comparison types.
+  keyComparison->mutable_comparison()->set_simple(
+      static_cast<ComparisonJoinKey_SimpleComparisonType>(
+          compareOp.getComparisonType().value()));
+
+  exportAdvancedExtension(op, *hashJoinRel);
+
+  auto rel = std::make_unique<Rel>();
+  rel->set_allocated_hash_join(hashJoinRel.release());
   return rel;
 }
 
@@ -1619,6 +1700,7 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           FieldReferenceOp,
           FilterOp,
           JoinOp,
+          HashJoinOp,
           NamedTableOp,
           ProjectOp,
           SetOp
