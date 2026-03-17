@@ -172,6 +172,7 @@ jobs:
     # functionality, however, it does end up becoming a transitive include for
     # all libraries that we generate. This is especially problematic for
     # nanobind libraries on Windows.
+    # TODO(#195): Fix stubgen targets and reenable DMLIR_PYTHON_STUBGEN_ENABLED.
     - name: Configure CMake
       run: |
         $ErrorActionPreference = 'Stop'
@@ -194,6 +195,7 @@ jobs:
           -DMLIR_INCLUDE_INTEGRATION_TESTS=ON `
           -DMLIR_ENABLE_BINDINGS_PYTHON=ON `
           -DMLIR_ENABLE_PYTHON_BENCHMARKS=ON `
+          -DMLIR_PYTHON_STUBGEN_ENABLED=OFF `
           -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=OFF `
           -DCMAKE_C_COMPILER_LAUNCHER=sccache `
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache `

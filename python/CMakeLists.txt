@@ -67,6 +67,10 @@ set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
 # Disable clang-tidy because it also builds upstream sources.
 unset(CMAKE_CXX_CLANG_TIDY)
 
+if(${MLIR_PYTHON_STUBGEN_ENABLED})
+  set(MLIR_CORE_STUBGEN_TARGET MLIRPythonExtension.Core.type_stub_gen)
+endif()
+
 add_mlir_python_modules(SubstraitMLIRPythonModules
   ROOT_PREFIX "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir"
   INSTALL_PREFIX "python_packages/substrait_mlir"
@@ -74,7 +78,7 @@ add_mlir_python_modules(SubstraitMLIRPythonModules
   SubstraitMLIRPythonSources
   LLVMSupport
   MLIRPythonExtension.RegisterEverything
-  MLIRPythonExtension.Core.type_stub_gen
+  ${MLIR_CORE_STUBGEN_TARGET}
   MLIRPythonSources.Core
   MLIRPythonSources.Dialects
   MLIRPythonSources.ExecutionEngine
