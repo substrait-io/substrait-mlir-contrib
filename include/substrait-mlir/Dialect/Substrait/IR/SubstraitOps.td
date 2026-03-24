@@ -184,7 +184,7 @@ def Substrait_PlanOp : Substrait_Op<"plan", [
   let assemblyFormat = [{
     `version` $major_number `:` $minor_number `:` $patch_number
     (`git_hash` $git_hash^)? (`producer` $producer^)?
-    (`advanced_extension` `` $advanced_extension^)?
+    (`advanced_extension` $advanced_extension^)?
     (`expected_type_urls` `` $expected_type_urls^)?
     attr-dict-with-keyword $body
   }];
@@ -521,7 +521,7 @@ def Substrait_AggregateOp : Substrait_RelOp<"aggregate", [
     AnyRegion:$measures
   );
   let assemblyFormat = [{
-    $input (`advanced_extension` `` $advanced_extension^)? attr-dict
+    $input (`advanced_extension` $advanced_extension^)? attr-dict
     `:` custom<SubstraitType>(type($input))
       `->` custom<SubstraitType>(type($result))
     custom<AggregateRegions>($groupings, $measures, $grouping_sets)
@@ -565,7 +565,7 @@ def Substrait_CrossOp : Substrait_RelOp<"cross", [
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $left `x` $right (`advanced_extension` `` $advanced_extension^)?
+    $left `x` $right (`advanced_extension` $advanced_extension^)?
     attr-dict `:`
     custom<SubstraitType>(type($left)) `x` custom<SubstraitType>(type($right))
   }];
@@ -636,7 +636,7 @@ def Substrait_ExtensionTableOp : Substrait_RelOp<"extension_table", [
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $detail `as` $field_names (`advanced_extension` `` $advanced_extension^)?
+    $detail `as` $field_names (`advanced_extension` $advanced_extension^)?
     attr-dict `:` custom<SubstraitType>(type($result))
   }];
   let hasVerifier = true;
@@ -667,7 +667,7 @@ def Substrait_FetchOp : Substrait_RelOp<"fetch", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     custom<CountAsAll>($count) (`offset` $offset^)? `from` $input
-    (`advanced_extension` `` $advanced_extension^)? attr-dict
+    (`advanced_extension` $advanced_extension^)? attr-dict
     `:` custom<SubstraitType>(type($input))
   }];
   let builders = [
@@ -711,7 +711,7 @@ def Substrait_FilterOp : Substrait_RelOp<"filter", [
   //                    assembly by writing custom printers/parsers similar to
   //                    `scf.for` etc.
   let assemblyFormat = [{
-    $input (`advanced_extension` `` $advanced_extension^)?
+    $input (`advanced_extension` $advanced_extension^)?
     attr-dict `:` custom<SubstraitType>(type($input)) $condition
   }];
   let hasRegionVerifier = 1;
@@ -742,7 +742,7 @@ def Substrait_JoinOp : Substrait_RelOp<"join", [
   );
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $join_type $left `,` $right (`advanced_extension` `` $advanced_extension^)?
+    $join_type $left `,` $right (`advanced_extension` $advanced_extension^)?
     attr-dict
     `:` custom<SubstraitType>(type($left)) `,`
         custom<SubstraitType>(type($right))
@@ -781,7 +781,7 @@ def Substrait_NamedTableOp : Substrait_RelOp<"named_table", [
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
     $table_name `as` $field_names
-    (`advanced_extension` `` $advanced_extension^)? attr-dict
+    (`advanced_extension` $advanced_extension^)? attr-dict
     `:` custom<SubstraitType>(type($result))
   }];
   let hasVerifier = true;
@@ -832,7 +832,7 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   //                    assembly by writing custom printers/parsers similar to
   //                    `scf.for` etc.
   let assemblyFormat = [{
-    $input (`advanced_extension` `` $advanced_extension^)? attr-dict
+    $input (`advanced_extension` $advanced_extension^)? attr-dict
     `:` custom<SubstraitType>(type($input))
       `->` custom<SubstraitType>(type($result))
     $expressions
@@ -868,7 +868,7 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
 
   let results = (outs Substrait_Relation:$result);
   let assemblyFormat = [{
-    $kind $inputs (`advanced_extension` `` $advanced_extension^)?
+    $kind $inputs (`advanced_extension` $advanced_extension^)?
     attr-dict `:` custom<SubstraitType>(type($result))
   }];
   let builders = [
