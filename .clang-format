@@ -9,8 +9,10 @@ IncludeCategories:
     Priority:        3
   - Regex:           '^"(substrait-mlir|substrait-mlir-c)/'
     Priority:        2
-  - Regex:           '<[-[:alnum:]_.]+>'
+  - Regex:           '<[-[:alnum:]_]+>'
     Priority:        5
+  - Regex:           '<[-[:alnum:]_./]+>'
+    Priority:        4
   - Regex:           '.*'
     Priority:        0
     SortPriority:    1
