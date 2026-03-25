@@ -35,7 +35,7 @@ MlirType mlirSubstraitRelationTypeGet(MlirContext context, intptr_t numFields,
 
 /// Serialization/deserialization format for exporting/importing Substrait
 /// plans. The enum values correspond exactly to those in
-/// `mlir::substrait::SerializationFromat`, i.e., conversion through integers
+/// `mlir::substrait::SerializationFormat`, i.e., conversion through integers
 /// is possible.
 typedef enum MlirSubstraitSerializationFormat {
   MlirSubstraitTextFormat,

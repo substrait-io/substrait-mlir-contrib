@@ -10,10 +10,18 @@
 
 #include "mlir-c/BuiltinAttributes.h"
 #include "mlir-c/IR.h"
+#include "mlir-c/Support.h"
 #include "mlir/Bindings/Python/Nanobind.h"         // IWYU pragma: keep
 #include "mlir/Bindings/Python/NanobindAdaptors.h" // IWYU pragma: keep
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Signals.h"
+
+#include <nanobind/nanobind.h>
+
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace nb = nanobind;
 using namespace mlir::python::nanobind_adaptors;
