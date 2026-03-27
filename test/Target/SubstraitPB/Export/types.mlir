@@ -352,6 +352,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:                    nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:                  }
 // CHECK-NEXT:                }
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
 // CHECK-NEXT:            }
 // CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
@@ -437,6 +438,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:                    nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:                  }
 // CHECK-NEXT:                }
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
 // CHECK-NEXT:            }
 // CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
