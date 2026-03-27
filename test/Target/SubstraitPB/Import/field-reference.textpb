@@ -49,6 +49,7 @@ relations {
                       nullability: NULLABILITY_REQUIRED
                     }
                   }
+                  nullability: NULLABILITY_REQUIRED
                 }
               }
               nullability: NULLABILITY_REQUIRED
@@ -125,6 +126,7 @@ relations {
                       nullability: NULLABILITY_REQUIRED
                     }
                   }
+                  nullability: NULLABILITY_REQUIRED
                 }
               }
               nullability: NULLABILITY_REQUIRED
