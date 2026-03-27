@@ -123,6 +123,25 @@ def Substrait_VarCharType : Substrait_Type<"VarChar", "var_char"> {
   let assemblyFormat = [{ `<` $length `>` }];
 }
 
+def Substrait_NullableType : Substrait_Type<"Nullable", "nullable"> {
+  let summary = "Nullable wrapper for a Substrait expression type";
+  let description = [{
+    Wraps any Substrait expression type to indicate that values of this type may
+    be null. The absence of this wrapper implies `NULLABILITY_REQUIRED`.
+    `NULLABILITY_UNSPECIFIED` is imported as `NULLABILITY_NULLABLE`.
+
+    The type is printed using the `T?` sugar syntax via a custom printer/parser
+    in `Substrait.cpp`. The canonical assembly format `!substrait.nullable<T>`
+    is used as a fallback when `T` has no Substrait short-hand keyword (e.g.,
+    when it is a type from another dialect).
+  }];
+  let parameters = (ins "::mlir::Type":$innerType);
+  // Default assembly format: "!substrait.nullable<T>".
+  // The pretty "T?" form is handled by the custom SubstraitType printer/parser.
+  let assemblyFormat = "`<` $innerType `>`";
+  let genVerifyDecl = 1;
+}
+
 /// Currently supported simple types, listed in order of the Substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
@@ -181,8 +200,10 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicType :
   AnyTypeOf<Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types>;
 
-/// Any container type, i.e., structs, maps, lists, and nestings thereof.
-def Substrait_ContainerType : NestedTupleOf<Substrait_AtomicTypes.types>;
+/// Any container type, i.e., structs, maps, lists, and nestings thereof,
+/// including those with nullable elements (e.g., `tuple<si32?>`).
+def Substrait_ContainerType : NestedTupleOf<
+    Substrait_AtomicTypes.types#[Substrait_NullableType]>;
 
 /// Currently supported expression types.
 def Substrait_ExpressionTypes {
@@ -197,6 +218,7 @@ def Substrait_ExpressionTypes {
 def Substrait_ExpressionType : AnyTypeOf<[
   Substrait_AtomicType,
   Substrait_ContainerType,
+  Substrait_NullableType,
 ]>;
 
 //===----------------------------------------------------------------------===//

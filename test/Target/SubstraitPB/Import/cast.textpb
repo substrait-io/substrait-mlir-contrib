@@ -100,3 +100,67 @@ version {
   minor_number: 42
   patch_number: 1
 }
+
+# -----
+
+# Check that a cast with NULLABILITY_NULLABLE output type is imported as
+# a cast to si64? (i.e., importType honours nullability for cast output types).
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    relation
+# CHECK-NEXT:      named_table
+# CHECK-NEXT:      project
+# CHECK-NEXT:      (%[[V0:.*]]: tuple<si32>):
+# CHECK-NEXT:        %[[V1:.*]] = cast %{{.*}} or return_null : si32 to si64?
+# CHECK-NEXT:        yield %[[V1]] : si64?
+
+relations {
+  rel {
+    project {
+      common {
+        direct {
+        }
+      }
+      input {
+        read {
+          common {
+            direct {
+            }
+          }
+          base_schema {
+            names: "a"
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table {
+            names: "t1"
+          }
+        }
+      }
+      expressions {
+        cast {
+          type {
+            i64 {
+              nullability: NULLABILITY_NULLABLE
+            }
+          }
+          input {
+            literal {
+              i32: 42
+            }
+          }
+          failure_behavior: FAILURE_BEHAVIOR_RETURN_NULL
+        }
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
