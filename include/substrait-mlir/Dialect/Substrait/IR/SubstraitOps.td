@@ -303,12 +303,11 @@ def Substrait_CastOp : Substrait_ExpressionOp<"cast", [
     Substrait_ExpressionType:$input,
     FailureBehavior:$failure_behavior
   );
-  // TODO(ingomueller): verify that result type is nullable if
-  // `failure_behavior` is set to `return_null` once we have implemented
-  // nullability.
   let results = (outs Substrait_ExpressionType:$result);
+  let hasVerifier = 1;
   let assemblyFormat = [{
-    $input `or` $failure_behavior attr-dict `:` type($input) `to` type($result)
+    $input `or` $failure_behavior attr-dict
+        `:` type($input) `to` custom<SubstraitType>(type($result))
   }];
   let extraClassDefinition = [{
     /// Implement `CastOpInterface`.
@@ -847,7 +846,10 @@ def Substrait_ProjectOp : Substrait_RelOp<"project", [
   }];
 }
 
- //TODO(daliashaaban): Change type inference logic once nullability is supported.
+// TODO(ingomueller-net): Compute the result type as the per-field nullability
+// union across all inputs. This is deferred to the Option A migration. Until
+// then, all inputs to `SetOp` must share the same `RelationType`
+// (enforced via `SameOperandsAndResultType`).
 def Substrait_SetOp : Substrait_RelOp<"set", [
     DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
     SameOperandsAndResultType,
