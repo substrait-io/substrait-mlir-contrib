@@ -19,6 +19,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Diagnostics.h"
+#include "mlir/IR/IRMapping.h"
 #include "mlir/IR/Location.h"
 #include "mlir/IR/OperationSupport.h"
 #include "mlir/IR/OwningOpRef.h"
@@ -119,6 +120,7 @@ DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
 DECLARE_IMPORT_FUNC(FilterRel, Rel, FilterOp)
 DECLARE_IMPORT_FUNC(SetRel, Rel, SetOp)
+DECLARE_IMPORT_FUNC(SortRel, Rel, SortOp)
 DECLARE_IMPORT_FUNC(Expression, Expression, ExpressionOpInterface)
 DECLARE_IMPORT_FUNC(ExtensionTable, Rel, ExtensionTableOp)
 DECLARE_IMPORT_FUNC(FieldReference, Expression::FieldReference,
@@ -525,6 +527,99 @@ static mlir::FailureOr<SetOp> importSetRel(ImplicitLocOpBuilder builder,
   importAdvancedExtension(builder, setOp, setRel);
 
   return setOp;
+}
+
+static mlir::FailureOr<SortOp> importSortRel(ImplicitLocOpBuilder builder,
+                                             const Rel &message) {
+  const SortRel &sortRel = message.sort();
+
+  // Import input.
+  const Rel &inputRel = sortRel.input();
+  mlir::FailureOr<RelOpInterface> inputOp = importRel(builder, inputRel);
+  if (failed(inputOp))
+    return failure();
+
+  Value inputVal = inputOp.value().getResult();
+  TupleType inputTupleType =
+      mlir::cast<RelationType>(inputVal.getType()).getStructType();
+
+  // Create SortOp.
+  auto sortOp = SortOp::create(builder, inputVal);
+  Region &sortsRegion = sortOp.getSorts();
+
+  for (const SortField &sortField : sortRel.sorts()) {
+    Block *block = new Block();
+    sortsRegion.push_back(block);
+    block->addArguments({inputTupleType, inputTupleType},
+                        {builder.getLoc(), builder.getLoc()});
+
+    // Create a temporary block to import the expression once.
+    // We use a separate region to ensure we can delete it easily.
+    // The expression must be imported into a block with exactly one argument
+    // (representing the input row), as required by `importExpression`.
+    // The resulting operations are then cloned twice into the `SortOp` block
+    // (which has two arguments): once for the LHS row and once for the RHS row.
+    Region dummyRegion;
+    Block *dummyBlock = new Block();
+    dummyRegion.push_back(dummyBlock);
+    dummyBlock->addArgument(inputTupleType, builder.getLoc());
+
+    Value exprResult;
+    {
+      OpBuilder::InsertionGuard guard(builder);
+      builder.setInsertionPointToStart(dummyBlock);
+      FailureOr<ExpressionOpInterface> exprOp =
+          importExpression(builder, sortField.expr());
+      if (failed(exprOp))
+        return failure();
+      exprResult = exprOp.value()->getResult(0);
+    }
+
+    // Clone expression for LHS (arg0).
+    IRMapping mapperLHS;
+    mapperLHS.map(dummyBlock->getArgument(0), block->getArgument(0));
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToEnd(block);
+
+    for (Operation &op : *dummyBlock) {
+      builder.clone(op, mapperLHS);
+    }
+    Value lhs = mapperLHS.lookup(exprResult);
+
+    // Clone expression for RHS (arg1).
+    IRMapping mapperRHS;
+    mapperRHS.map(dummyBlock->getArgument(0), block->getArgument(1));
+    for (Operation &op : *dummyBlock) {
+      builder.clone(op, mapperRHS);
+    }
+    Value rhs = mapperRHS.lookup(exprResult);
+
+    // Create comparison op.
+    if (sortField.has_comparison_function_reference()) {
+      // TODO(xwkuang5): Support `comparison_function_reference`
+      return emitError(builder.getLoc())
+             << "custom comparison functions are not supported yet";
+    }
+
+    SortField::SortDirection direction = sortField.direction();
+    std::optional<SortFieldComparisonType> comparisonType =
+        symbolizeSortFieldComparisonType(static_cast<int32_t>(direction));
+    if (!comparisonType) {
+      return emitError(builder.getLoc())
+             << "unsupported sort direction: " << direction;
+    }
+
+    auto compareOp = builder.create<SortFieldComparisonOp>(
+        builder.getLoc(),
+        IntegerType::get(builder.getContext(), 8, IntegerType::Signed),
+        *comparisonType, lhs, rhs);
+
+    builder.create<YieldOp>(builder.getLoc(), compareOp.getResult());
+  }
+
+  importAdvancedExtension(builder, sortOp, sortRel);
+  return sortOp;
 }
 
 static mlir::FailureOr<ExpressionOpInterface>
@@ -1185,6 +1280,9 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     break;
   case Rel::RelTypeCase::kSet:
     maybeOp = importSetRel(builder, message);
+    break;
+  case Rel::RelTypeCase::kSort:
+    maybeOp = importSortRel(builder, message);
     break;
   default:
     const pb::FieldDescriptor *desc =

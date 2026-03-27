@@ -1319,6 +1319,41 @@ LogicalResult ProjectOp::verifyRegions() {
   return success();
 }
 
+LogicalResult SortOp::verifyRegions() {
+  MLIRContext *context = getContext();
+  Type si8 = IntegerType::get(context, /*width=*/8, IntegerType::Signed);
+  Region &sorts = getSorts();
+
+  RelationType relationType = getResult().getType();
+  TupleType tupleType = relationType.getStructType();
+
+  for (Block &block : sorts) {
+    // Verify block arguments: (tuple, tuple)
+    if (block.getNumArguments() != 2) {
+      return emitOpError() << "sort block must have exactly 2 arguments";
+    }
+    if (block.getArgument(0).getType() != tupleType ||
+        block.getArgument(1).getType() != tupleType) {
+      return emitOpError()
+             << "sort block arguments must be of type " << tupleType;
+    }
+
+    // Verify yield
+    auto yieldOp = llvm::dyn_cast<YieldOp>(block.getTerminator());
+    if (!yieldOp) {
+      return emitOpError() << "sort block must end with a yield op";
+    }
+    if (yieldOp.getNumOperands() != 1) {
+      return emitOpError() << "sort block yield must return exactly 1 value";
+    }
+    if (yieldOp.getOperand(0).getType() != si8) {
+      return emitOpError() << "sort block yield must return si8";
+    }
+  }
+
+  return success();
+}
+
 Type RelationType::parse(AsmParser &parser) {
   // Parse `<` literal.
   if (failed(parser.parseLess()))

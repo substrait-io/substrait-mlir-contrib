@@ -53,6 +53,8 @@ FailureOr<const RelCommon *> getCommon(const Rel &rel, Location loc) {
     return getCommon(rel.read());
   case Rel::RelTypeCase::kSet:
     return getCommon(rel.set());
+  case Rel::RelTypeCase::kSort:
+    return getCommon(rel.sort());
   default:
     const pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);
@@ -86,6 +88,8 @@ FailureOr<RelCommon *> getMutableCommon(Rel *rel, Location loc) {
     return getMutableCommon(rel->mutable_read());
   case Rel::RelTypeCase::kSet:
     return getMutableCommon(rel->mutable_set());
+  case Rel::RelTypeCase::kSort:
+    return getMutableCommon(rel->mutable_sort());
   default:
     const pb::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);

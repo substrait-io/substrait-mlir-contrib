@@ -260,7 +260,8 @@ def Substrait_YieldOp : Substrait_Op<"yield", [
       "::mlir::substrait::AggregateOp",
       "::mlir::substrait::FilterOp",
       "::mlir::substrait::PlanRelOp",
-      "::mlir::substrait::ProjectOp"
+      "::mlir::substrait::ProjectOp",
+      "::mlir::substrait::SortOp"
     ]>
   ]> {
   let summary = "Yields the result of a `PlanRelOp`";
@@ -876,6 +877,83 @@ def Substrait_SetOp : Substrait_RelOp<"set", [
         build($_builder, $_state, inputs, kind, /*advanced_extension=*/{});
       }]>,
     ];
+}
+
+def Substrait_SortFieldComparisonOp : Substrait_Op<"sort_field_compare", [
+    Pure
+  ]> {
+  let summary = "Sort field comparison operation";
+  let description = [{
+    Represents a comparison between two values for sorting purposes.
+  }];
+  let arguments = (ins
+    SortFieldComparisonType:$comparison_type,
+    AnyType:$left,
+    AnyType:$right
+  );
+  let results = (outs SI8:$result);
+  let assemblyFormat = [{
+    $comparison_type $left `,` $right attr-dict `:` `(` type($left) `,` type($right) `)` `->` type($result)
+  }];
+}
+
+def Substrait_SortOp : Substrait_RelOp<"sort", [
+    DeclareOpInterfaceMethods<OpAsmOpInterface, ["getDefaultDialect"]>,
+    DeclareOpInterfaceMethods<Substrait_ExtensibleOpInterface>,
+    SameOperandsAndResultType
+  ]> {
+  let summary = "Sort operation";
+  let description = [{
+    Represents a `SortRel` message.
+
+    The repeated `sorts` field from the message is represented by the `sorts`
+    region. Each basic block in the `sorts` region corresponds to one `SortField`.
+    Each block takes two arguments, representing the two rows being compared
+    (LHS and RHS). The block must yield a single `si8` value (produced by a
+    `sort_field_compare` op) indicating the comparison result.
+
+    Example:
+
+    ```mlir
+    %0 = ...
+    %1 = sort %0 : rel<si32, si32> by {
+      // Sort by the first column in ascending order.
+      ^bb0(%arg0 : tuple<si32, si32>, %arg1 : tuple<si32, si32>):
+        %2 = field_reference %arg0[0] : tuple<si32, si32>
+        %3 = field_reference %arg1[0] : tuple<si32, si32>
+        %4 = sort_field_compare asc_nulls_first %2, %3: (si32, si32) -> si8
+        yield %4 : si8
+      // Then sort by the second column in descending order.
+      ^bb1(%arg2 : tuple<si32, si32>, %arg3 : tuple<si32, si32>):
+        %5 = field_reference %arg2[1] : tuple<si32, si32>
+        %6 = field_reference %arg3[1] : tuple<si32, si32>
+        %7 = sort_field_compare desc_nulls_last %5, %6: (si32, si32) -> si8
+        yield %7 : si8
+    }
+    ```
+  }];
+  let arguments = (ins
+    Substrait_Relation:$input,
+    OptionalAttr<Substrait_AdvancedExtensionAttr>:$advanced_extension
+  );
+  let results = (outs Substrait_Relation:$result);
+  let regions = (region AnyRegion:$sorts);
+  let assemblyFormat = [{
+    $input (`advanced_extension` `` $advanced_extension^)? attr-dict
+    `:` custom<SubstraitType>(type($input)) `by` $sorts
+  }];
+  let hasRegionVerifier = 1;
+  let builders = [
+      OpBuilder<(ins "::mlir::Value":$input), [{
+        build($_builder, $_state, input, /*advanced_extension=*/{});
+      }]>,
+    ];
+  let extraClassDefinition = [{
+    /// Implement OpAsmOpInterface.
+    ::llvm::StringRef $cppClass::getDefaultDialect() {
+      return SubstraitDialect::getDialectNamespace();
+    }
+  }];
 }
 
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITOPS

@@ -105,6 +105,7 @@ public:
   DECLARE_EXPORT_FUNC(ProjectOp, Rel)
   DECLARE_EXPORT_FUNC(RelOpInterface, Rel)
   DECLARE_EXPORT_FUNC(SetOp, Rel)
+  DECLARE_EXPORT_FUNC(SortOp, Rel)
 
   template <typename MessageType>
   void exportAdvancedExtension(ExtensibleOpInterface op, MessageType &message);
@@ -1606,6 +1607,74 @@ FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SetOp op) {
   return rel;
 }
 
+FailureOr<std::unique_ptr<Rel>> SubstraitExporter::exportOperation(SortOp op) {
+  // Build `RelCommon` message.
+  auto relCommon = std::make_unique<RelCommon>();
+  auto direct = std::make_unique<RelCommon::Direct>();
+  relCommon->set_allocated_direct(direct.release());
+
+  // Build input `Rel` message.
+  auto inputOp =
+      llvm::dyn_cast_if_present<RelOpInterface>(op.getInput().getDefiningOp());
+  if (!inputOp)
+    return op->emitOpError("input was not produced by Substrait relation op");
+
+  FailureOr<std::unique_ptr<Rel>> inputRel = exportOperation(inputOp);
+  if (failed(inputRel))
+    return failure();
+
+  // Build `SortRel` message.
+  auto sortRel = std::make_unique<SortRel>();
+  sortRel->set_allocated_common(relCommon.release());
+  sortRel->set_allocated_input(inputRel->release());
+
+  // Iterate over blocks in `sorts` region.
+  for (Block &block : op.getSorts()) {
+    auto yieldOp = llvm::cast<YieldOp>(block.getTerminator());
+    Value result = yieldOp.getOperand(0);
+
+    // Find defining op of the result. It must be `sort_field_compare`.
+    auto compareOp =
+        llvm::dyn_cast_if_present<SortFieldComparisonOp>(result.getDefiningOp());
+    if (!compareOp) {
+      return op->emitOpError(
+          "sort block yield value must be produced by 'sort_field_compare'");
+    }
+
+    // Extract sort kind.
+    SortFieldComparisonType kind = compareOp.getComparisonType();
+
+    // Extract expression from left operand.
+    Value leftVal = compareOp.getLeft();
+    // Verify it's an expression op.
+    auto definingOp =
+        llvm::dyn_cast_if_present<ExpressionOpInterface>(leftVal.getDefiningOp());
+    if (!definingOp) {
+      return op->emitOpError(
+          "sort comparison operand must be produced by an expression op");
+    }
+
+    FailureOr<std::unique_ptr<Expression>> expression =
+        exportOperation(definingOp);
+    if (failed(expression))
+      return failure();
+
+    // Create SortField.
+    SortField *sortField = sortRel->add_sorts();
+    sortField->set_allocated_expr(expression->release());
+    sortField->set_direction(static_cast<SortField::SortDirection>(kind));
+  }
+
+  // Attach the `AdvancedExtension` message if the attribute exists.
+  exportAdvancedExtension(op, *sortRel);
+
+  // Build `Rel` message.
+  auto rel = std::make_unique<Rel>();
+  rel->set_allocated_sort(sortRel.release());
+
+  return rel;
+}
+
 FailureOr<std::unique_ptr<Rel>>
 SubstraitExporter::exportOperation(RelOpInterface op) {
   return llvm::TypeSwitch<Operation *, FailureOr<std::unique_ptr<Rel>>>(op)
@@ -1621,7 +1690,8 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
           JoinOp,
           NamedTableOp,
           ProjectOp,
-          SetOp
+          SetOp,
+          SortOp
           // clang-format on
           >([&](auto op) { return exportOperation(op); })
       .Default([](auto op) {
