@@ -10,16 +10,6 @@ add_compile_options(
        $<$<CXX_COMPILER_ID:MSVC>:/FIcstdint>
        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include;cstdint>>")
 
-if(LLVM_ENABLE_LLD AND BUILD_SHARED_LIB)
-  # If system GAS generates .sframe sections (GAS >= 2.40 on ELF platforms) and
-  # building with `BUILD_SHARED_LIB`, we get lld linker errors in ANTLR during
-  # LTO, where static libs are linked into shared libs. Workaround: suppress
-  # .sframe generation in that situation.
-  set(ANTLR4_CPP_EXTRA_FLAGS
-      "-Wa,--no-gsframe"
-      CACHE INTERNAL "")
-endif()
-
 # The way how Substrait uses sanitizers seems to be incompatible with some flags
 # set by LLVM, leading to linker errors, so we deactivate them.
 set(SUBSTRAIT_CPP_SANITIZE_DEBUG_BUILD OFF)
