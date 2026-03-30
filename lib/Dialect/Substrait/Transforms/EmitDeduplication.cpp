@@ -67,6 +67,8 @@ void SubstraitEmitDeduplicationPass::runOnOperation() {
   }
 }
 
+} // namespace
+
 /// If the given `input` was produced by an `emit` op with duplicates, creates a
 /// new `emit` op without duplicates and returns the result of the new `emit`.
 /// Otherwise, i.e., if the `input` was not produced by an `emit` op or that op
@@ -74,7 +76,7 @@ void SubstraitEmitDeduplicationPass::runOnOperation() {
 /// populates `reverseMapping` with the mapping that re-establishes the original
 /// order of the fields from the deduplicated order and returns the number of
 /// fields after deduplication and whether the `input` was deduplicated.
-std::tuple<Value, int64_t, bool>
+static std::tuple<Value, int64_t, bool>
 createDeduplicatingEmit(Value input, SmallVector<int64_t> &reverseMapping,
                         PatternRewriter &rewriter) {
   // Handles the bases cases where the input either has no `emit` op or an
@@ -149,8 +151,9 @@ createDeduplicatingEmit(Value input, SmallVector<int64_t> &reverseMapping,
 /// argument to work on the deduplicated type.
 // TODO(ingomueller): We could add an overload for this function that computes
 // `newElementType` from the type of the region argument and the mapping.
-void deduplicateRegionArgs(Region &region, ArrayAttr newMapping,
-                           Type newElementType, PatternRewriter &rewriter) {
+static void deduplicateRegionArgs(Region &region, ArrayAttr newMapping,
+                                  Type newElementType,
+                                  PatternRewriter &rewriter) {
   assert(region.getNumArguments() == 1 &&
          "only regions with 1 argument are supported");
   auto oldElementType = cast<TupleType>(region.getArgument(0).getType());
@@ -511,8 +514,6 @@ struct PushDuplicatesThroughProjectPattern
     return failure();
   }
 };
-
-} // namespace
 
 namespace mlir {
 namespace substrait {

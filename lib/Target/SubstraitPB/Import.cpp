@@ -69,8 +69,6 @@ using namespace ::substrait::proto;
 
 namespace {
 
-namespace pb = ::google::protobuf;
-
 using ImportedNamedStruct = std::tuple<ArrayAttr, TupleType>;
 
 // Copied from
@@ -97,6 +95,8 @@ struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
   }
 };
 
+} // namespace
+
 // Forward declaration for the import function of the given message type.
 //
 // We need one such function for most message types that we want to import. The
@@ -113,7 +113,7 @@ struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
 
 DECLARE_IMPORT_FUNC(AggregateFunction, AggregateFunction, CallOp)
 DECLARE_IMPORT_FUNC(AggregateRel, Rel, AggregateOp)
-DECLARE_IMPORT_FUNC(Any, pb::Any, StringAttr)
+DECLARE_IMPORT_FUNC(Any, ::google::protobuf::Any, StringAttr)
 DECLARE_IMPORT_FUNC(Cast, Expression::Cast, CastOp)
 DECLARE_IMPORT_FUNC(CrossRel, Rel, CrossOp)
 DECLARE_IMPORT_FUNC(FetchRel, Rel, FetchOp)
@@ -138,18 +138,18 @@ DECLARE_IMPORT_FUNC(TopLevel, PlanVersion, PlanVersionOp)
 /// If present, imports the `advanced_extension` or `advanced_extensions` field
 /// from the given message and sets the obtained attribute on the given op.
 template <typename MessageType>
-void importAdvancedExtension(ImplicitLocOpBuilder builder,
-                             ExtensibleOpInterface op,
-                             const MessageType &message);
+static void importAdvancedExtension(ImplicitLocOpBuilder builder,
+                                    ExtensibleOpInterface op,
+                                    const MessageType &message);
 
 template <typename MessageType>
 static FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
                                               const MessageType &message);
 
 template <typename MessageType>
-void importAdvancedExtension(ImplicitLocOpBuilder builder,
-                             ExtensibleOpInterface op,
-                             const MessageType &message) {
+static void importAdvancedExtension(ImplicitLocOpBuilder builder,
+                                    ExtensibleOpInterface op,
+                                    const MessageType &message) {
   using Trait = AdvancedExtensionTrait<MessageType>;
   if (!Trait::hasAdvancedExtension(message))
     return;
@@ -161,14 +161,16 @@ void importAdvancedExtension(ImplicitLocOpBuilder builder,
   // Import `optimization` field if present.
   StringAttr optimizationAttr;
   if (advancedExtension.has_optimization()) {
-    const pb::Any &optimization = advancedExtension.optimization();
+    const ::google::protobuf::Any &optimization =
+        advancedExtension.optimization();
     optimizationAttr = importAny(builder, optimization).value();
   }
 
   // Import `enhancement` field if present.
   StringAttr enhancementAttr;
   if (advancedExtension.has_enhancement()) {
-    const pb::Any &enhancement = advancedExtension.enhancement();
+    const ::google::protobuf::Any &enhancement =
+        advancedExtension.enhancement();
     enhancementAttr = importAny(builder, enhancement).value();
   }
 
@@ -179,8 +181,8 @@ void importAdvancedExtension(ImplicitLocOpBuilder builder,
   op.setAdvancedExtensionAttr(advancedExtensionAttr);
 }
 
-FailureOr<StringAttr> importAny(ImplicitLocOpBuilder builder,
-                                const pb::Any &message) {
+static FailureOr<StringAttr> importAny(ImplicitLocOpBuilder builder,
+                                       const ::google::protobuf::Any &message) {
   MLIRContext *context = builder.getContext();
   auto typeUrlAttr = StringAttr::get(context, message.type_url());
   auto anyType = AnyType::get(context, typeUrlAttr);
@@ -276,7 +278,7 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
     // TODO(ingomueller): Support more types.
   default: {
     auto loc = UnknownLoc::get(context);
-    const pb::FieldDescriptor *desc =
+    const google::protobuf::FieldDescriptor *desc =
         proto::Type::GetDescriptor()->FindFieldByNumber(kindCase);
     assert(desc && "could not get field descriptor");
     return emitError(loc) << "could not import unsupported type "
@@ -544,7 +546,7 @@ importExpression(ImplicitLocOpBuilder builder, const Expression &message) {
   case Expression::REX_TYPE_NOT_SET:
     return emitError(loc) << Twine("expression type not set");
   default: {
-    const pb::FieldDescriptor *desc =
+    const ::google::protobuf::FieldDescriptor *desc =
         Expression::GetDescriptor()->FindFieldByNumber(rexType);
     return emitError(loc) << Twine("unsupported expression type: ") +
                                  desc->name();
@@ -567,7 +569,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
   auto [fieldNamesAttr, tupleType] = importedNamedStruct.value();
 
   // Import `detail` attribute.
-  const pb::Any &detail = extensionTable.detail();
+  const ::google::protobuf::Any &detail = extensionTable.detail();
   auto detailAttr = importAny(builder, detail).value();
 
   // Assemble final op.
@@ -794,7 +796,7 @@ importLiteral(ImplicitLocOpBuilder builder,
 
   // TODO(ingomueller): Support more types.
   default: {
-    const pb::FieldDescriptor *desc =
+    const ::google::protobuf::FieldDescriptor *desc =
         Expression::Literal::GetDescriptor()->FindFieldByNumber(literalType);
     return emitError(loc) << Twine("unsupported Literal type: ") + desc->name();
   }
@@ -1006,7 +1008,7 @@ static FailureOr<PlanOp> importTopLevel(ImplicitLocOpBuilder builder,
       break;
     }
     default:
-      const pb::FieldDescriptor *desc =
+      const ::google::protobuf::FieldDescriptor *desc =
           SimpleExtensionDeclaration::GetDescriptor()->FindFieldByNumber(
               mappingCase);
       return emitError(loc)
@@ -1029,7 +1031,7 @@ static FailureOr<PlanRelOp> importPlanRel(ImplicitLocOpBuilder builder,
 
   if (!message.has_rel() && !message.has_root()) {
     PlanRel::RelTypeCase relType = message.rel_type_case();
-    const pb::FieldDescriptor *desc =
+    const ::google::protobuf::FieldDescriptor *desc =
         PlanRel::GetDescriptor()->FindFieldByNumber(relType);
     return emitError(loc) << Twine("unsupported PlanRel type: ") + desc->name();
   }
@@ -1148,7 +1150,7 @@ importReadRel(ImplicitLocOpBuilder builder, const Rel &message) {
     return importNamedTable(builder, message);
   }
   default:
-    const pb::FieldDescriptor *desc =
+    const ::google::protobuf::FieldDescriptor *desc =
         ReadRel::GetDescriptor()->FindFieldByNumber(readType);
     return emitError(loc) << Twine("unsupported ReadRel type: ") + desc->name();
   }
@@ -1187,7 +1189,7 @@ static mlir::FailureOr<RelOpInterface> importRel(ImplicitLocOpBuilder builder,
     maybeOp = importSetRel(builder, message);
     break;
   default:
-    const pb::FieldDescriptor *desc =
+    const ::google::protobuf::FieldDescriptor *desc =
         Rel::GetDescriptor()->FindFieldByNumber(relType);
     return emitError(loc) << Twine("unsupported Rel type: ") + desc->name();
   }
@@ -1229,8 +1231,8 @@ importScalarFunction(ImplicitLocOpBuilder builder,
 }
 
 template <typename MessageType>
-FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
-                                       const MessageType &message) {
+static FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
+                                              const MessageType &message) {
   MLIRContext *context = builder.getContext();
   Location loc = builder.getLoc();
 
@@ -1246,7 +1248,7 @@ FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
     // Error out on unsupported cases.
     // TODO(ingomueller): Support other function argument types.
     if (!arg.has_value()) {
-      const pb::FieldDescriptor *desc =
+      const ::google::protobuf::FieldDescriptor *desc =
           FunctionArgument::GetDescriptor()->FindFieldByNumber(
               arg.arg_type_case());
       return emitError(loc) << Twine("unsupported arg type: ") + desc->name();
@@ -1273,7 +1275,7 @@ FailureOr<CallOp> importFunctionCommon(ImplicitLocOpBuilder builder,
 }
 
 template <typename MessageType>
-OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
+static OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
     llvm::StringRef input, MLIRContext *context, ImportExportOptions options,
     MessageType &message) {
   Location loc = UnknownLoc::get(context);
@@ -1281,7 +1283,8 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
   // Parse from serialized form into desired protobuf `MessageType`.
   switch (options.serializationFormat) {
   case SerializationFormat::kText:
-    if (!pb::TextFormat::ParseFromString(input.str(), &message)) {
+    if (!::google::protobuf::TextFormat::ParseFromString(input.str(),
+                                                         &message)) {
       emitError(loc) << "could not parse string as '" << message.GetTypeName()
                      << "' message.";
       return {};
@@ -1296,7 +1299,8 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
     break;
   case SerializationFormat::kJson:
   case SerializationFormat::kPrettyJson: {
-    absl::Status status = pb::util::JsonStringToMessage(input.str(), &message);
+    absl::Status status =
+        ::google::protobuf::util::JsonStringToMessage(input.str(), &message);
     if (!status.ok()) {
       emitError(loc) << "could not deserialize JSON as '"
                      << message.GetTypeName() << "' message:\n"
@@ -1320,8 +1324,6 @@ OwningOpRef<ModuleOp> translateProtobufToSubstraitTopLevel(
 
   return moduleRef;
 }
-
-} // namespace
 
 OwningOpRef<ModuleOp> mlir::substrait::translateProtobufToSubstraitPlan(
     llvm::StringRef input, MLIRContext *context, ImportExportOptions options) {
