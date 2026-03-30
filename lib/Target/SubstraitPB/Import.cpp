@@ -150,13 +150,13 @@ template <typename MessageType>
 void importAdvancedExtension(ImplicitLocOpBuilder builder,
                              ExtensibleOpInterface op,
                              const MessageType &message) {
-  using Trait = advanced_extension_trait<MessageType>;
-  if (!Trait::has_advanced_extension(message))
+  using Trait = AdvancedExtensionTrait<MessageType>;
+  if (!Trait::hasAdvancedExtension(message))
     return;
 
   // Get the `advanced_extension(s)` field.
   const extensions::AdvancedExtension &advancedExtension =
-      Trait::advanced_extension(message);
+      Trait::advancedExtension(message);
 
   // Import `optimization` field if present.
   StringAttr optimizationAttr;

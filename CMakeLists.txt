@@ -56,7 +56,9 @@ if(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
   # Assemble command line.
   set(CLANG_TIDY_CONFIG_FILE "${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/.clang-tidy")
   set(SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND
-      "${CLANG_TIDY_EXE};--config-file=${CLANG_TIDY_CONFIG_FILE}")
+      "${CLANG_TIDY_EXE};--config-file=${CLANG_TIDY_CONFIG_FILE};"
+      "--header-filter=${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/(include|lib|python|test|tools)/.*"
+  )
   if(${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
     set(SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND
         "${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND};--warnings-as-errors=*")

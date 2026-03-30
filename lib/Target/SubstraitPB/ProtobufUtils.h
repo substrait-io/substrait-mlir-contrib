@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LIB_TARGET_SUBSTRAITPB_PROTOBUFUTILS_H
-#define LIB_TARGET_SUBSTRAITPB_PROTOBUFUTILS_H
+#ifndef LIB_TARGET_SUBSTRAITPB_PROTOBUFUTILS_H // NOLINT: can't detect root dir
+#define LIB_TARGET_SUBSTRAITPB_PROTOBUFUTILS_H // NOLINT: can't detect root dir
 
 #include "mlir/IR/Location.h"
 
@@ -36,7 +36,7 @@ getMutableCommon(::substrait::proto::Rel *rel, Location loc);
 /// `advanced_extensions`, that are used for the same thing across different
 /// message types in the Substrait spec.
 template <typename T>
-class has_advanced_extensions {
+class HasAdvancedExtensions {
   template <typename C>
   static std::true_type test(decltype(&C::advanced_extensions));
   template <typename C>
@@ -51,35 +51,35 @@ public:
 /// `advanced_extension`; the specialization below is automatically used for
 /// message types that call it `advanced_extensions`.
 template <typename T, typename = void>
-struct advanced_extension_trait {
-  static auto has_advanced_extension(const T &message) {
+struct AdvancedExtensionTrait {
+  static auto hasAdvancedExtension(const T &message) {
     return message.has_advanced_extension();
   }
-  static auto advanced_extension(const T &message) {
+  static auto advancedExtension(const T &message) {
     return message.advanced_extension();
   }
   template <typename S>
-  static auto set_allocated_advanced_extension(T &message,
-                                               S &&advanced_extensions) {
+  static auto setAllocatedAdvancedExtension(T &message,
+                                            S &&advancedExtensions) {
     message.set_allocated_advanced_extension(
-        std::forward<S>(advanced_extensions));
+        std::forward<S>(advancedExtensions));
   }
 };
 
 template <typename T>
-struct advanced_extension_trait<
-    T, std::enable_if_t<has_advanced_extensions<T>::value>> {
-  static auto has_advanced_extension(const T &message) {
+struct AdvancedExtensionTrait<
+    T, std::enable_if_t<HasAdvancedExtensions<T>::value>> {
+  static auto hasAdvancedExtension(const T &message) {
     return message.has_advanced_extensions();
   }
-  static auto advanced_extension(const T &message) {
+  static auto advancedExtension(const T &message) {
     return message.advanced_extensions();
   }
   template <typename S>
-  static auto set_allocated_advanced_extension(T &message,
-                                               S &&advanced_extensions) {
+  static auto setAllocatedAdvancedExtension(T &message,
+                                            S &&advancedExtensions) {
     message.set_allocated_advanced_extensions(
-        std::forward<S>(advanced_extensions));
+        std::forward<S>(advancedExtensions));
   }
 };
 

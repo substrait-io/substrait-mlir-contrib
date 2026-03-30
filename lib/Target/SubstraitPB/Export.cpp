@@ -179,8 +179,8 @@ void SubstraitExporter::exportAdvancedExtension(ExtensibleOpInterface op,
   }
 
   // Set the `advanced_extension` field in the provided message.
-  using Trait = advanced_extension_trait<MessageType>;
-  Trait::set_allocated_advanced_extension(message, extension.release());
+  using Trait = AdvancedExtensionTrait<MessageType>;
+  Trait::setAllocatedAdvancedExtension(message, extension.release());
 }
 
 std::unique_ptr<pb::Any> SubstraitExporter::exportAny(StringAttr attr) {
@@ -1104,8 +1104,9 @@ SubstraitExporter::exportOperation(LiteralOp op) {
     decimal->set_precision(decimalType.getPrecision());
     decimal->set_value(res);
     literal->set_allocated_decimal(decimal.release());
-  } else
+  } else {
     op->emitOpError("has unsupported value");
+  }
 
   // Build `Expression` message.
   auto expression = std::make_unique<Expression>();
