@@ -19,12 +19,6 @@ class Substrait_Type<string name, string typeMnemonic, list<Trait> traits = []>
   let mnemonic = typeMnemonic;
 }
 
-// TODO(ingomueller-net): The types below (Binary, Date, Decimal, FixedBinary,
-// FixedChar, IntervalDaySecond, IntervalYearMonth, String, Time, Timestamp,
-// TimestampTz, UUID, VarChar, AnyType, RelationType) are missing Python binding
-// tests. See test/python/dialects/substrait/types.py for the test that covers
-// NullableType and RelationType.
-
 def Substrait_BinaryType : Substrait_Type<"Binary", "binary"> {
   let summary = "Substrait binary type";
   let description = [{

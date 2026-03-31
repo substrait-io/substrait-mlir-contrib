@@ -75,6 +75,120 @@ NB_MODULE(_substraitDialects, mainModule) {
   // Types
   //
 
+  mlir_type_subclass(substraitModule, "AnyType", mlirTypeIsASubstraitAnyType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, std::string typeUrl, MlirContext context) {
+            MlirStringRef urlRef{typeUrl.data(), typeUrl.size()};
+            return cls(mlirSubstraitAnyTypeGet(context, urlRef));
+          },
+          nb::arg("cls"), nb::arg("type_url"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, type_url: str, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> AnyType"));
+
+  mlir_type_subclass(substraitModule, "BinaryType",
+                     mlirTypeIsASubstraitBinaryType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitBinaryTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> BinaryType"));
+
+  mlir_type_subclass(substraitModule, "DateType", mlirTypeIsASubstraitDateType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitDateTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> DateType"));
+
+  mlir_type_subclass(substraitModule, "DecimalType",
+                     mlirTypeIsASubstraitDecimalType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, uint32_t precision, uint32_t scale,
+             MlirContext context) {
+            return cls(mlirSubstraitDecimalTypeGet(context, precision, scale));
+          },
+          nb::arg("cls"), nb::arg("precision"), nb::arg("scale"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, precision: int, scale: int, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> DecimalType"));
+
+  mlir_type_subclass(substraitModule, "FixedBinaryType",
+                     mlirTypeIsASubstraitFixedBinaryType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, int32_t length, MlirContext context) {
+            return cls(mlirSubstraitFixedBinaryTypeGet(context, length));
+          },
+          nb::arg("cls"), nb::arg("length"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, length: int, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> FixedBinaryType"));
+
+  mlir_type_subclass(substraitModule, "FixedCharType",
+                     mlirTypeIsASubstraitFixedCharType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, int32_t length, MlirContext context) {
+            return cls(mlirSubstraitFixedCharTypeGet(context, length));
+          },
+          nb::arg("cls"), nb::arg("length"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, length: int, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> FixedCharType"));
+
+  mlir_type_subclass(substraitModule, "IntervalDaySecondType",
+                     mlirTypeIsASubstraitIntervalDaySecondType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitIntervalDaySecondTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> IntervalDaySecondType"));
+
+  mlir_type_subclass(substraitModule, "IntervalYearMonthType",
+                     mlirTypeIsASubstraitIntervalYearMonthType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitIntervalYearMonthTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> IntervalYearMonthType"));
+
+  mlir_type_subclass(substraitModule, "NullableType",
+                     mlirTypeIsASubstraitNullableType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirType innerType, MlirContext context) {
+            return cls(mlirSubstraitNullableTypeGet(context, innerType));
+          },
+          nb::arg("cls"), nb::arg("inner_type"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "inner_type: substrait_mlir.ir.Type, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> NullableType"));
+
   mlir_type_subclass(substraitModule, "RelationType",
                      mlirTypeIsASubstraitRelationType)
       .def_classmethod(
@@ -91,19 +205,17 @@ NB_MODULE(_substraitDialects, mainModule) {
                   "context: typing.Optional[substrait_mlir.ir.Context] = None) "
                   "-> RelationType"));
 
-  mlir_type_subclass(substraitModule, "NullableType",
-                     mlirTypeIsASubstraitNullableType)
+  mlir_type_subclass(substraitModule, "StringType",
+                     mlirTypeIsASubstraitStringType)
       .def_classmethod(
           "get",
-          [](const nb::object &cls, MlirType innerType, MlirContext context) {
-            return cls(mlirSubstraitNullableTypeGet(context, innerType));
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitStringTypeGet(context));
           },
-          nb::arg("cls"), nb::arg("inner_type"),
-          nb::arg("context").none() = nb::none(),
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
           nb::sig("def get(cls: object, "
-                  "inner_type: substrait_mlir.ir.Type, "
                   "context: typing.Optional[substrait_mlir.ir.Context] = None) "
-                  "-> NullableType"));
+                  "-> StringType"));
 
   mlir_type_subclass(substraitModule, "StructType",
                      mlirTypeIsASubstraitStructType)
@@ -120,6 +232,65 @@ NB_MODULE(_substraitDialects, mainModule) {
                   "field_types: typing.Sequence[substrait_mlir.ir.Type], "
                   "context: typing.Optional[substrait_mlir.ir.Context] = None) "
                   "-> StructType"));
+
+  mlir_type_subclass(substraitModule, "TimeType", mlirTypeIsASubstraitTimeType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitTimeTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> TimeType"));
+
+  mlir_type_subclass(substraitModule, "TimestampType",
+                     mlirTypeIsASubstraitTimestampType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitTimestampTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> TimestampType"));
+
+  mlir_type_subclass(substraitModule, "TimestampTzType",
+                     mlirTypeIsASubstraitTimestampTzType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitTimestampTzTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> TimestampTzType"));
+
+  mlir_type_subclass(substraitModule, "UUIDType", mlirTypeIsASubstraitUUIDType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirContext context) {
+            return cls(mlirSubstraitUUIDTypeGet(context));
+          },
+          nb::arg("cls"), nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> UUIDType"));
+
+  mlir_type_subclass(substraitModule, "VarCharType",
+                     mlirTypeIsASubstraitVarCharType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, int32_t length, MlirContext context) {
+            return cls(mlirSubstraitVarCharTypeGet(context, length));
+          },
+          nb::arg("cls"), nb::arg("length"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, length: int, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> VarCharType"));
 
   //
   // Import
