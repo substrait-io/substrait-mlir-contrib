@@ -59,14 +59,76 @@ def testNamedTable():
   # CHECK: named_table @t
 
 
-# CHECK-LABEL: TEST: testRelationType
+# CHECK-LABEL: TEST: testAnyType
 @run
-def testRelationType():
-  si32 = ir.IntegerType.get_signed(32)
-  result_type = ss.RelationType.get([si32, si32])
-  print(result_type)
-  # CHECK: !substrait.relation<si32, si32>
-  assert isinstance(result_type, ss.RelationType)
+def testAnyType():
+  t = ss.AnyType.get(type_url="type.googleapis.com/MyMessage")
+  print(t)
+  # CHECK: !substrait.any<"type.googleapis.com/MyMessage">
+  assert isinstance(t, ss.AnyType)
+
+
+# CHECK-LABEL: TEST: testBinaryType
+@run
+def testBinaryType():
+  t = ss.BinaryType.get()
+  print(t)
+  # CHECK: !substrait.binary
+  assert isinstance(t, ss.BinaryType)
+
+
+# CHECK-LABEL: TEST: testDateType
+@run
+def testDateType():
+  t = ss.DateType.get()
+  print(t)
+  # CHECK: !substrait.date
+  assert isinstance(t, ss.DateType)
+
+
+# CHECK-LABEL: TEST: testDecimalType
+@run
+def testDecimalType():
+  t = ss.DecimalType.get(precision=38, scale=10)
+  print(t)
+  # CHECK: !substrait.decimal<38, 10>
+  assert isinstance(t, ss.DecimalType)
+
+
+# CHECK-LABEL: TEST: testFixedBinaryType
+@run
+def testFixedBinaryType():
+  t = ss.FixedBinaryType.get(length=16)
+  print(t)
+  # CHECK: !substrait.fixed_binary<16>
+  assert isinstance(t, ss.FixedBinaryType)
+
+
+# CHECK-LABEL: TEST: testFixedCharType
+@run
+def testFixedCharType():
+  t = ss.FixedCharType.get(length=32)
+  print(t)
+  # CHECK: !substrait.fixed_char<32>
+  assert isinstance(t, ss.FixedCharType)
+
+
+# CHECK-LABEL: TEST: testIntervalDaySecondType
+@run
+def testIntervalDaySecondType():
+  t = ss.IntervalDaySecondType.get()
+  print(t)
+  # CHECK: !substrait.interval_day_second
+  assert isinstance(t, ss.IntervalDaySecondType)
+
+
+# CHECK-LABEL: TEST: testIntervalYearMonthType
+@run
+def testIntervalYearMonthType():
+  t = ss.IntervalYearMonthType.get()
+  print(t)
+  # CHECK: !substrait.interval_year_month
+  assert isinstance(t, ss.IntervalYearMonthType)
 
 
 # CHECK-LABEL: TEST: testNullableType
@@ -77,6 +139,25 @@ def testNullableType():
   print(nullable_type)
   # CHECK: !substrait.nullable<si32>
   assert isinstance(nullable_type, ss.NullableType)
+
+
+# CHECK-LABEL: TEST: testRelationType
+@run
+def testRelationType():
+  si32 = ir.IntegerType.get_signed(32)
+  result_type = ss.RelationType.get([si32, si32])
+  print(result_type)
+  # CHECK: !substrait.relation<si32, si32>
+  assert isinstance(result_type, ss.RelationType)
+
+
+# CHECK-LABEL: TEST: testStringType
+@run
+def testStringType():
+  t = ss.StringType.get()
+  print(t)
+  # CHECK: !substrait.string
+  assert isinstance(t, ss.StringType)
 
 
 # CHECK-LABEL: TEST: testStructType
@@ -110,3 +191,48 @@ def testStructType():
   print(outer)
   # CHECK: !substrait.struct<struct<si32>, si64>
   assert isinstance(outer, ss.StructType)
+
+
+# CHECK-LABEL: TEST: testTimeType
+@run
+def testTimeType():
+  t = ss.TimeType.get()
+  print(t)
+  # CHECK: !substrait.time
+  assert isinstance(t, ss.TimeType)
+
+
+# CHECK-LABEL: TEST: testTimestampType
+@run
+def testTimestampType():
+  t = ss.TimestampType.get()
+  print(t)
+  # CHECK: !substrait.timestamp
+  assert isinstance(t, ss.TimestampType)
+
+
+# CHECK-LABEL: TEST: testTimestampTzType
+@run
+def testTimestampTzType():
+  t = ss.TimestampTzType.get()
+  print(t)
+  # CHECK: !substrait.timestamp_tz
+  assert isinstance(t, ss.TimestampTzType)
+
+
+# CHECK-LABEL: TEST: testUUIDType
+@run
+def testUUIDType():
+  t = ss.UUIDType.get()
+  print(t)
+  # CHECK: !substrait.uuid
+  assert isinstance(t, ss.UUIDType)
+
+
+# CHECK-LABEL: TEST: testVarCharType
+@run
+def testVarCharType():
+  t = ss.VarCharType.get(length=255)
+  print(t)
+  # CHECK: !substrait.var_char<255>
+  assert isinstance(t, ss.VarCharType)
