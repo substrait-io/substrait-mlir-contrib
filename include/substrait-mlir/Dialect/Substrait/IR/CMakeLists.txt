@@ -23,10 +23,9 @@ mlir_tablegen(SubstraitTypeInterfaces.h.inc -gen-type-interface-decls)
 mlir_tablegen(SubstraitTypeInterfaces.cpp.inc -gen-type-interface-defs)
 add_public_tablegen_target(MLIRSubstraitInterfacesIncGen)
 
-add_custom_target(MLIRSubstraitIncGen
-  DEPENDS
-  MLIRSubstraitOpsIncGen
-  MLIRSubstraitEnumsIncGen
-  MLIRSubstraitAttrsIncGen
-  MLIRSubstraitInterfacesIncGen
-)
+add_custom_target(
+  MLIRSubstraitIncGen
+  DEPENDS MLIRSubstraitOpsIncGen
+          MLIRSubstraitEnumsIncGen
+          MLIRSubstraitAttrsIncGen
+          MLIRSubstraitInterfacesIncGen)
