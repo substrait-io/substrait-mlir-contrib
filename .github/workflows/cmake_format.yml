@@ -1,0 +1,24 @@
+name: CMake formatting
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Run cmake-format
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Format CMake files
+      uses: puneetmatharu/cmake-format-lint-action@960ee17edd4678e2793d49b96ae7608a91a78a5a # v1.0.6
+      with:
+        args: --in-place
+    - name: Check for diff
+      run: |
+        git diff --exit-code || (echo 'Please reformat the CMake files, add them to this PR, and run CI again.'; false)

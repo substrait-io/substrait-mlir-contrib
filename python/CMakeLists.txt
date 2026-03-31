@@ -1,68 +1,79 @@
 include(AddMLIRPython)
 
-# Specifies that all MLIR packages are co-located under the `substrait_mlir`
-# top level package (the API has been embedded in a relocatable way).
+# Specifies that all MLIR packages are co-located under the `substrait_mlir` top
+# level package (the API has been embedded in a relocatable way).
 add_compile_definitions("MLIR_PYTHON_PACKAGE_PREFIX=substrait_mlir.")
 
-# ###############################################################################
+# ##############################################################################
 # Sources
-# ###############################################################################
+# ##############################################################################
 declare_mlir_python_sources(SubstraitMLIRPythonSources)
-declare_mlir_python_sources(SubstraitMLIRPythonSources.Dialects
-  ADD_TO_PARENT SubstraitMLIRPythonSources)
+declare_mlir_python_sources(SubstraitMLIRPythonSources.Dialects ADD_TO_PARENT
+                            SubstraitMLIRPythonSources)
 
 declare_mlir_dialect_python_bindings(
-  ADD_TO_PARENT SubstraitMLIRPythonSources.Dialects
-  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
-  TD_FILE dialects/SubstraitOps.td
+  ADD_TO_PARENT
+  SubstraitMLIRPythonSources.Dialects
+  ROOT_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
+  TD_FILE
+  dialects/SubstraitOps.td
   SOURCES
   dialects/substrait.py
-  DIALECT_NAME substrait
-)
+  DIALECT_NAME
+  substrait)
 
-declare_mlir_python_extension(SubstraitMLIRPythonSources.DialectExtension
-  MODULE_NAME _substraitDialects
-  ADD_TO_PARENT SubstraitMLIRPythonSources
+declare_mlir_python_extension(
+  SubstraitMLIRPythonSources.DialectExtension
+  MODULE_NAME
+  _substraitDialects
+  ADD_TO_PARENT
+  SubstraitMLIRPythonSources
   SOURCES
   SubstraitDialects.cpp
   EMBED_CAPI_LINK_LIBS
   SubstraitMLIRCAPI
   PRIVATE_LINK_LIBS
-  LLVMSupport
-)
+  LLVMSupport)
 
-declare_mlir_python_sources(SubstraitMLIRPythonSources.MLIRLibs
-  ADD_TO_PARENT SubstraitMLIRPythonSources
-  ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
+declare_mlir_python_sources(
+  SubstraitMLIRPythonSources.MLIRLibs
+  ADD_TO_PARENT
+  SubstraitMLIRPythonSources
+  ROOT_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/substrait_mlir"
   SOURCES
-    _mlir_libs/_substraitDialects/__init__.pyi
-)
+  _mlir_libs/_substraitDialects/__init__.pyi)
 
-# ###############################################################################
+# ##############################################################################
 # Common CAPI
-# ###############################################################################
+# ##############################################################################
 
 # Disable clang-tidy because it also builds upstream sources.
 unset(CMAKE_CXX_CLANG_TIDY)
 
-add_mlir_python_common_capi_library(SubstraitMLIRPythonCAPI
-  INSTALL_COMPONENT SubstraitMLIRPythonModules
-  INSTALL_DESTINATION python_packages/substrait_mlir/_mlir_libs
-  OUTPUT_DIRECTORY "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs"
-  RELATIVE_INSTALL_ROOT "../../../.."
+add_mlir_python_common_capi_library(
+  SubstraitMLIRPythonCAPI
+  INSTALL_COMPONENT
+  SubstraitMLIRPythonModules
+  INSTALL_DESTINATION
+  python_packages/substrait_mlir/_mlir_libs
+  OUTPUT_DIRECTORY
+  "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs"
+  RELATIVE_INSTALL_ROOT
+  "../../../.."
   DECLARED_SOURCES
   SubstraitMLIRPythonSources
   MLIRPythonExtension.RegisterEverything
   MLIRPythonSources.Core
   MLIRPythonSources.Dialects
-  MLIRPythonSources.ExecutionEngine
-)
+  MLIRPythonSources.ExecutionEngine)
 
 set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
 
-# ###############################################################################
+# ##############################################################################
 # Instantiation of all Python modules
-# ###############################################################################
+# ##############################################################################
 
 # Disable clang-tidy because it also builds upstream sources.
 unset(CMAKE_CXX_CLANG_TIDY)
@@ -71,9 +82,12 @@ if(${MLIR_PYTHON_STUBGEN_ENABLED})
   set(MLIR_CORE_STUBGEN_TARGET MLIRPythonExtension.Core.type_stub_gen)
 endif()
 
-add_mlir_python_modules(SubstraitMLIRPythonModules
-  ROOT_PREFIX "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir"
-  INSTALL_PREFIX "python_packages/substrait_mlir"
+add_mlir_python_modules(
+  SubstraitMLIRPythonModules
+  ROOT_PREFIX
+  "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir"
+  INSTALL_PREFIX
+  "python_packages/substrait_mlir"
   DECLARED_SOURCES
   SubstraitMLIRPythonSources
   LLVMSupport
@@ -83,21 +97,22 @@ add_mlir_python_modules(SubstraitMLIRPythonModules
   MLIRPythonSources.Dialects
   MLIRPythonSources.ExecutionEngine
   COMMON_CAPI_LINK_LIBS
-  SubstraitMLIRPythonCAPI
-)
+  SubstraitMLIRPythonCAPI)
 
 set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
 
 nanobind_add_stub(
   SubstraitMLIRPythonModuleStubs
-  MODULE substrait_mlir._mlir_libs._substraitDialects.substrait
-  OUTPUT "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs/_substraitDialects/substrait.pyi"
-  PYTHON_PATH "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/"
-  PATTERN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/stubgen.patterns"
-  DEPENDS SubstraitMLIRPythonModules
-)
+  MODULE
+  substrait_mlir._mlir_libs._substraitDialects.substrait
+  OUTPUT
+  "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/substrait_mlir/_mlir_libs/_substraitDialects/substrait.pyi"
+  PYTHON_PATH
+  "${SUBSTRAIT_MLIR_BINARY_DIR}/python_packages/"
+  PATTERN_FILE
+  "${CMAKE_CURRENT_SOURCE_DIR}/stubgen.patterns"
+  DEPENDS
+  SubstraitMLIRPythonModules)
 
-add_dependencies(substrait-mlir-all
-  SubstraitMLIRPythonModules
-  SubstraitMLIRPythonModuleStubs
-)
+add_dependencies(substrait-mlir-all SubstraitMLIRPythonModules
+                 SubstraitMLIRPythonModuleStubs)
