@@ -14,9 +14,9 @@
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      named_table
 # CHECK-NEXT:      filter
-# CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si1, tuple<si1>>)
+# CHECK-NEXT:        (%[[ARG0:.*]]: !substrait.struct<si1, struct<si1>>):
 # CHECK-NEXT:          %[[V0:.*]] = field_reference %[[ARG0]][1, 0]
-# CHECK-SAME:            : tuple<si1, tuple<si1>>
+# CHECK-SAME:            : !substrait.struct<si1, struct<si1>>
 # CHECK-NEXT:          yield %[[V0]] : si1
 
 relations {
@@ -89,11 +89,11 @@ version {
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      named_table
 # CHECK-NEXT:      filter
-# CHECK-NEXT:        (%[[ARG0:.*]]: tuple<si1, tuple<si1>>)
+# CHECK-NEXT:        (%[[ARG0:.*]]: !substrait.struct<si1, struct<si1>>):
 # CHECK-NEXT:          %[[V0:.*]] = field_reference %[[ARG0]][1]
-# CHECK-SAME:            : tuple<si1, tuple<si1>>
+# CHECK-SAME:            : !substrait.struct<si1, struct<si1>>
 # CHECK-NEXT:          %[[V1:.*]] = field_reference %[[V0]][0]
-# CHECK-SAME:            : tuple<si1>
+# CHECK-SAME:            : !substrait.struct<si1>
 # CHECK-NEXT:          yield %[[V1]] : si1
 
 relations {

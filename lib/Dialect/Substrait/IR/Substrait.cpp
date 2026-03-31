@@ -636,6 +636,7 @@ static StringRef getTypeKeyword(Type type) {
       .Case<IntervalYearMonthType>([&](Type) { return "interval_ym"; })
       .Case<RelationType>([&](Type) { return "rel"; })
       .Case<StringType>([&](Type) { return "string"; })
+      .Case<StructType>([&](Type) { return "struct"; })
       .Case<TimeType>([&](Type) { return "time"; })
       .Case<TimestampType>([&](Type) { return "timestamp"; })
       .Case<TimestampTzType>([&](Type) { return "timestamp_tz"; })
@@ -683,6 +684,7 @@ static ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
                 [&] { return IntervalYearMonthType::get(context); })
           .Case("rel", [&] { return RelationType::parse(parser); })
           .Case("string", [&] { return StringType::get(context); })
+          .Case("struct", [&] { return StructType::parse(parser); })
           .Case("time", [&] { return TimeType::get(context); })
           .Case("timestamp", [&] { return TimestampType::get(context); })
           .Case("timestamp_tz", [&] { return TimestampTzType::get(context); })
@@ -741,6 +743,7 @@ static void printSubstraitType(AsmPrinter &printer, Operation * /*op*/,
           FixedBinaryType,
           FixedCharType,
           RelationType,
+          StructType,
           VarCharType
           // clang-format on
           >([&](auto type) { type.print(printer); });
@@ -751,6 +754,36 @@ static void printSubstraitType(AsmPrinter &printer, Operation *op,
   llvm::interleaveComma(valueTypes, printer, [&](Type type) {
     printSubstraitType(printer, op, type);
   });
+}
+
+// StructType custom assembly format.
+Type StructType::parse(AsmParser &parser) {
+  SmallVector<Type> fieldTypes;
+  if (parser.parseLess())
+    return {};
+  // Allow empty struct<>.
+  if (succeeded(parser.parseOptionalGreater()))
+    return StructType::get(parser.getContext(), fieldTypes);
+  if (parser.parseCommaSeparatedList(
+          AsmParser::Delimiter::None,
+          [&]() -> ParseResult {
+            Type fieldType;
+            if (failed(parseSubstraitType(parser, fieldType)))
+              return failure();
+            fieldTypes.push_back(fieldType);
+            return success();
+          }) ||
+      parser.parseGreater())
+    return {};
+  return StructType::get(parser.getContext(), fieldTypes);
+}
+
+void StructType::print(AsmPrinter &printer) const {
+  printer << "<";
+  llvm::interleaveComma(getFieldTypes(), printer, [&](Type t) {
+    printSubstraitType(printer, /*op=*/nullptr, t);
+  });
+  printer << ">";
 }
 
 //===----------------------------------------------------------------------===//
@@ -768,32 +801,24 @@ static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
 
 namespace {
 
-/// Helper that extracts computes the type at a position given a container type.
-template <typename ContainerType>
+/// Helper that computes the type at a position given a list of field types.
 FailureOr<Type> computeTypeAtPositionHelper(Location loc,
-                                            ContainerType containerType,
+                                            ArrayRef<Type> fieldTypes,
                                             ArrayRef<int64_t> position) {
   assert(!position.empty() && "expected to be called with non-empty position");
 
   // Recurse into fields of first index in position array.
   int64_t index = position[0];
-  ArrayRef<Type> fieldTypes = containerType.getTypes();
   if (index >= static_cast<int64_t>(fieldTypes.size()) || index < 0)
-    return emitError(loc) << index << " is not a valid index for "
-                          << containerType;
+    return emitError(loc) << index << " is not a valid index for a struct with "
+                          << fieldTypes.size() << " fields";
 
   return computeTypeAtPosition(loc, fieldTypes[index], position.drop_front());
 }
 } // namespace
 
-// Implementation of `computeTypeAtPosition`.
-//
-// The function is implemented corecursively with `computeTypeAtPositionHelper`,
-// where each recursion level extracts the type of the outer-most level
-// identified by the first index in the `position` array. In each level, this
-// function handles the leaf case and type-switches into the helper, which is
-// templated using the container type such that the extraction of the nested
-// types can use the concrete container type.
+// Corecursive with `computeTypeAtPositionHelper`; each call peels one index off
+// the `position` array, dispatching into the appropriate container type.
 static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
                                              ArrayRef<int64_t> position) {
   if (position.empty())
@@ -804,8 +829,8 @@ static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
     type = nullable.getInnerType();
 
   return TypeSwitch<Type, FailureOr<Type>>(type)
-      .Case<RelationType, TupleType>([&](auto type) {
-        return computeTypeAtPositionHelper(loc, type, position);
+      .Case<RelationType, StructType>([&](auto t) {
+        return computeTypeAtPositionHelper(loc, t.getFieldTypes(), position);
       })
       .Default([&](auto type) {
         return emitError(loc) << "can't extract element from type " << type;
@@ -834,12 +859,12 @@ verifyNamedStructHelper(Location loc, llvm::ArrayRef<Attribute> fieldNames,
                                 currentName.getValue() + "'");
     numConsumedNames++;
 
-    // Recurse for nested structs/tuples, also through NullableType.
+    // Recurse for nested structs, also through NullableType.
     Type innerType = type;
     if (auto nullableType = llvm::dyn_cast<NullableType>(type))
       innerType = nullableType.getInnerType();
-    if (auto tupleType = llvm::dyn_cast<TupleType>(innerType)) {
-      llvm::ArrayRef<Type> nestedFieldTypes = tupleType.getTypes();
+    if (auto structType = llvm::dyn_cast<StructType>(innerType)) {
+      llvm::ArrayRef<Type> nestedFieldTypes = structType.getFieldTypes();
       llvm::ArrayRef<Attribute> remainingNames =
           fieldNames.drop_front(numConsumedNames);
       FailureOr<int> res =
@@ -854,16 +879,16 @@ verifyNamedStructHelper(Location loc, llvm::ArrayRef<Attribute> fieldNames,
 
 static LogicalResult verifyNamedStruct(Operation *op,
                                        llvm::ArrayRef<Attribute> fieldNames,
-                                       TupleType tupleType) {
+                                       StructType structType) {
   Location loc = op->getLoc();
-  TypeRange fieldTypes = tupleType.getTypes();
+  ArrayRef<Type> fieldTypes = structType.getFieldTypes();
 
   // Emits error message with context on failure.
   auto emitErrorMessage = [&]() {
     InFlightDiagnostic error = op->emitOpError()
                                << "has mismatching 'field_names' ([";
     llvm::interleaveComma(fieldNames, error);
-    error << "]) and result type (" << tupleType << ")";
+    error << "]) and result type (" << structType << ")";
     return error;
   };
 
@@ -951,16 +976,16 @@ LogicalResult AggregateOp::inferReturnTypes(
 LogicalResult AggregateOp::verifyRegions() {
   // Verify properties that need to hold for both regions.
   RelationType inputType = getInput().getType();
-  TupleType inputTupleType = inputType.getStructType();
+  StructType inputStructType = inputType.getStructType();
   for (auto [idx, region] : llvm::enumerate(getRegions())) {
     if (region->empty()) // Regions are allowed to be empty.
       continue;
 
     // Verify that the regions have the input struct as argument.
-    if (region->getArgumentTypes() != TypeRange{inputTupleType}) {
+    if (region->getArgumentTypes() != TypeRange{inputStructType}) {
       return emitOpError() << "has region #" << idx
                            << " with invalid argument types (expected: "
-                           << inputTupleType
+                           << inputStructType
                            << ", got: " << region->getArgumentTypes() << ")";
     }
 
@@ -1158,8 +1183,8 @@ EmitOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 LogicalResult ExtensionTableOp::verify() {
   llvm::ArrayRef<Attribute> fieldNames = getFieldNames().getValue();
   RelationType relationType = getResult().getType();
-  TupleType tupleType = relationType.getStructType();
-  return verifyNamedStruct(getOperation(), fieldNames, tupleType);
+  StructType structType = relationType.getStructType();
+  return verifyNamedStruct(getOperation(), fieldNames, structType);
 }
 
 LogicalResult FieldReferenceOp::inferReturnTypes(
@@ -1208,12 +1233,12 @@ LogicalResult FilterOp::verifyRegions() {
 
   // Verify that block has argument of input tuple type.
   RelationType relationType = getResult().getType();
-  TupleType tupleType = relationType.getStructType();
+  StructType structType = relationType.getStructType();
   if (condition.getNumArguments() != 1 ||
-      condition.getArgument(0).getType() != tupleType) {
+      condition.getArgument(0).getType() != structType) {
     InFlightDiagnostic diag = emitOpError()
                               << "must have 'condition' region taking "
-                              << tupleType << " as argument (takes ";
+                              << structType << " as argument (takes ";
     if (condition.getNumArguments() == 0)
       diag << "no arguments)";
     else
@@ -1290,8 +1315,8 @@ JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 LogicalResult NamedTableOp::verify() {
   llvm::ArrayRef<Attribute> fieldNames = getFieldNames().getValue();
   RelationType relationType = getResult().getType();
-  TupleType tupleType = relationType.getStructType();
-  return verifyNamedStruct(getOperation(), fieldNames, tupleType);
+  StructType structType = relationType.getStructType();
+  return verifyNamedStruct(getOperation(), fieldNames, structType);
 }
 
 LogicalResult PlanRelOp::verifyRegions() {
@@ -1311,8 +1336,8 @@ LogicalResult PlanRelOp::verifyRegions() {
   // Otherwise, use helper to verify.
   llvm::ArrayRef<Attribute> fieldNames = getFieldNames()->getValue();
   auto relationType = cast<RelationType>(yieldOp.getValue().getTypes()[0]);
-  TupleType tupleType = relationType.getStructType();
-  return verifyNamedStruct(getOperation(), fieldNames, tupleType);
+  StructType structType = relationType.getStructType();
+  return verifyNamedStruct(getOperation(), fieldNames, structType);
 }
 
 OpFoldResult ProjectOp::fold(FoldAdaptor adaptor) {
@@ -1329,12 +1354,12 @@ OpFoldResult ProjectOp::fold(FoldAdaptor adaptor) {
 LogicalResult ProjectOp::verifyRegions() {
   // Verify that the expression block has a matching argument type.
   RelationType inputType = getInput().getType();
-  TupleType inputTupleType = inputType.getStructType();
+  StructType inputStructType = inputType.getStructType();
   TypeRange blockArgTypes = getExpressions().front().getArgumentTypes();
-  if (blockArgTypes != TypeRange{inputTupleType}) {
+  if (blockArgTypes != TypeRange{inputStructType}) {
     return emitOpError()
            << "has 'expressions' region with mismatching argument type"
-           << " (has: " << blockArgTypes << ", expected: " << inputTupleType
+           << " (has: " << blockArgTypes << ", expected: " << inputStructType
            << ")";
   }
 

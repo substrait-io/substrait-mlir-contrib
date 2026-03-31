@@ -29,7 +29,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, decimal<9, 2>> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %hi = literal #substrait.decimal<"0.05", P = 9, S = 2>
       yield %hi : decimal<9, 2>
     }
@@ -56,7 +56,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, fixed_binary<10>> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %fixed_binary = literal #substrait.fixed_binary<"8181818181">
       yield %fixed_binary : fixed_binary<10>
     }
@@ -87,7 +87,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, var_char<6>> {
-    ^bb0(%arg0: tuple<si1>):
+    ^bb0(%arg0: !substrait.struct<si1>):
       %2 = literal #substrait.var_char<"hello", 6>
       yield %2 : var_char<6>
     }
@@ -116,7 +116,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, fixed_char<5>> {
-    ^bb0(%arg0: tuple<si1>):
+    ^bb0(%arg0: !substrait.struct<si1>):
       %2 = literal #substrait.fixed_char<"hello">
       yield %2 : fixed_char<5>
     }
@@ -143,7 +143,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, uuid> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %uuid = literal #substrait.uuid<1000000000 : i128>
       yield %uuid : uuid
     }
@@ -180,7 +180,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, interval_ym, interval_ds> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %interval_year_month = literal #substrait.interval_year_month<2024y 1m>
       %interval_day_second = literal #substrait.interval_day_second<9d 8000s>
       yield %interval_year_month, %interval_day_second : interval_ym, interval_ds
@@ -210,7 +210,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, time> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %time = literal #substrait.time<200000000us>
       yield %time : time
     }
@@ -237,7 +237,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, date> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %date = literal #substrait.date<200000000>
       yield %date : date
     }
@@ -269,7 +269,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, timestamp, timestamp_tz> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %timestamp = literal #substrait.timestamp<10000000000us>
       %timestamp_tz = literal #substrait.timestamp_tz<10000000000us>
       yield %timestamp, %timestamp_tz : timestamp, timestamp_tz
@@ -297,7 +297,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, binary> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %bytes = literal "4,5,6,7" : !substrait.binary
       yield %bytes : binary
     }
@@ -324,7 +324,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, string> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %hi = literal "hi" : !substrait.string
       yield %hi : string
     }
@@ -356,7 +356,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<f32>
     %1 = project %0 : rel<f32> -> rel<f32, f32, f64> {
-    ^bb0(%arg : tuple<f32>):
+    ^bb0(%arg : !substrait.struct<f32>):
       %35 = literal 35.35 : f32
       %42 = literal 42.42 : f64
       yield %35, %42 : f32, f64
@@ -404,7 +404,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si1>
     %1 = project %0 : rel<si1> -> rel<si1, si1, si8, si16, si32, si64> {
-    ^bb0(%arg : tuple<si1>):
+    ^bb0(%arg : !substrait.struct<si1>):
       %false = literal 0 : si1
       %2 = literal 2 : si8
       %-1 = literal -1 : si16

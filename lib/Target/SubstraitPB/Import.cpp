@@ -69,7 +69,7 @@ using namespace ::substrait::proto;
 
 namespace {
 
-using ImportedNamedStruct = std::tuple<ArrayAttr, TupleType>;
+using ImportedNamedStruct = std::tuple<ArrayAttr, StructType>;
 
 // Copied from
 // https://github.com/llvm/llvm-project/blob/dea33c/mlir/lib/Transforms/CSE.cpp.
@@ -323,7 +323,7 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
         return failure();
       fieldTypes.push_back(mlirFieldType.value());
     }
-    baseType = TupleType::get(context, fieldTypes);
+    baseType = StructType::get(context, fieldTypes);
     nullable = isNullable(type.struct_());
     break;
   }
@@ -390,13 +390,13 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(inputOp))
     return failure();
   TypedValue<RelationType> inputVal = inputOp.value().getResult();
-  TupleType inputTupleType = inputVal.getType().getStructType();
+  StructType inputStructType = inputVal.getType().getStructType();
 
   // Import measures if any.
   auto measuresRegion = std::make_unique<Region>();
   if (aggregateRel.measures_size() > 0) {
     Block *measuresBlock = &measuresRegion->emplaceBlock();
-    measuresBlock->addArgument(inputTupleType, loc);
+    measuresBlock->addArgument(inputStructType, loc);
 
     OpBuilder::InsertionGuard guard(builder);
     builder.setInsertionPointToStart(measuresBlock);
@@ -421,7 +421,7 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   SmallVector<Attribute> groupingSetsAttrs;
   if (aggregateRel.groupings_size() > 0) {
     Block *groupingsBlock = &groupingsRegion->emplaceBlock();
-    groupingsBlock->addArgument(inputTupleType, loc);
+    groupingsBlock->addArgument(inputStructType, loc);
 
     // Grouping expressions, i.e., values yielded from `groupings`.
     SmallVector<Value> groupingExprValues;
@@ -622,7 +622,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
       importNamedStruct(builder, baseSchema);
   if (failed(importedNamedStruct))
     return failure();
-  auto [fieldNamesAttr, tupleType] = importedNamedStruct.value();
+  auto [fieldNamesAttr, structType] = importedNamedStruct.value();
 
   // Import `detail` attribute.
   const ::google::protobuf::Any &detail = extensionTable.detail();
@@ -630,7 +630,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
 
   // Assemble final op.
   auto resultType =
-      RelationType::get(builder.getContext(), tupleType.getTypes());
+      RelationType::get(builder.getContext(), structType.getFieldTypes());
   auto extensionTableOp =
       ExtensionTableOp::create(builder, resultType, fieldNamesAttr, detailAttr);
 
@@ -938,7 +938,7 @@ importNamedStruct(ImplicitLocOpBuilder builder, const NamedStruct &message) {
       return failure();
     resultTypes.push_back(mlirType.value());
   }
-  auto resultType = TupleType::get(context, resultTypes);
+  auto resultType = StructType::get(context, resultTypes);
 
   return ImportedNamedStruct{fieldNamesAttr, resultType};
 }
@@ -969,10 +969,10 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
       importNamedStruct(builder, baseSchema);
   if (failed(importedNamedStruct))
     return failure();
-  auto [fieldNamesAttr, tupleType] = importedNamedStruct.value();
+  auto [fieldNamesAttr, structType] = importedNamedStruct.value();
 
   // Assemble final op.
-  auto resultType = RelationType::get(context, tupleType.getTypes());
+  auto resultType = RelationType::get(context, structType.getFieldTypes());
   auto namedTableOp =
       NamedTableOp::create(builder, resultType, tableName, fieldNamesAttr);
 

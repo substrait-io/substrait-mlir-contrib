@@ -77,3 +77,36 @@ def testNullableType():
   print(nullable_type)
   # CHECK: !substrait.nullable<si32>
   assert isinstance(nullable_type, ss.NullableType)
+
+
+# CHECK-LABEL: TEST: testStructType
+@run
+def testStructType():
+  si32 = ir.IntegerType.get_signed(32)
+  si64 = ir.IntegerType.get_signed(64)
+
+  # Plain struct with two fields.
+  struct_type = ss.StructType.get([si32, si64])
+  print(struct_type)
+  # CHECK: !substrait.struct<si32, si64>
+  assert isinstance(struct_type, ss.StructType)
+
+  # Empty struct.
+  empty_struct = ss.StructType.get([])
+  print(empty_struct)
+  # CHECK: !substrait.struct<>
+  assert isinstance(empty_struct, ss.StructType)
+
+  # Nullable field inside a struct.
+  nullable_si32 = ss.NullableType.get(si32)
+  struct_with_nullable = ss.StructType.get([si32, nullable_si32])
+  print(struct_with_nullable)
+  # CHECK: !substrait.struct<si32, si32?>
+  assert isinstance(struct_with_nullable, ss.StructType)
+
+  # Nested struct.
+  inner = ss.StructType.get([si32])
+  outer = ss.StructType.get([inner, si64])
+  print(outer)
+  # CHECK: !substrait.struct<struct<si32>, si64>
+  assert isinstance(outer, ss.StructType)

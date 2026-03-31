@@ -23,7 +23,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = filter %0 : rel<si32> {
-    ^bb0(%arg : tuple<si32>):
+    ^bb0(%arg : !substrait.struct<si32>):
       %2 = literal -1 : si1
       yield %2 : si1
     }
@@ -49,7 +49,7 @@ substrait.plan version 0 : 42 : 1 {
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32> {
-    ^bb0(%arg : tuple<si32>):
+    ^bb0(%arg : !substrait.struct<si32>):
       %2 = literal -1 : si1
       yield %2 : si1
     }

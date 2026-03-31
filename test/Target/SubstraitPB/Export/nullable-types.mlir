@@ -52,9 +52,9 @@ substrait.plan version 0 : 42 : 1 {
 
 // -----
 
-// Check that a nullable tuple<si32> is exported with the struct sub-message
-// having nullability: NULLABILITY_NULLABLE, covering the exportType path for
-// tuple types wrapped in NullableType.
+// Check that a nullable !substrait.struct<si32> is exported with the struct
+// sub-message having nullability: NULLABILITY_NULLABLE, covering the
+// exportType path for tuple types wrapped in NullableType.
 
 // CHECK-LABEL: relations {
 // CHECK:         struct {
@@ -64,8 +64,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b"] : rel<tuple<si32>?>
-    yield %0 : rel<tuple<si32>?>
+    %0 = named_table @t1 as ["a", "b"] : rel<struct<si32>?>
+    yield %0 : rel<struct<si32>?>
   }
 }
 

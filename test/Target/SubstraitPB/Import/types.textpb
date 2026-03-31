@@ -471,7 +471,7 @@ version {
 
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table {{.*}} : rel<f32, tuple<f32>>
+# CHECK-NEXT:     named_table {{.*}} : rel<f32, struct<f32>>
 
 relations {
   rel {
@@ -577,7 +577,7 @@ version {
 
 # CHECK:      substrait.plan
 # CHECK-NEXT:   relation
-# CHECK-NEXT:     named_table {{.*}} : rel<si1, tuple<si1>>
+# CHECK-NEXT:     named_table {{.*}} : rel<si1, struct<si1>>
 
 relations {
   rel {
