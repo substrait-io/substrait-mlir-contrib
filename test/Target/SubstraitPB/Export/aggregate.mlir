@@ -80,15 +80,15 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = aggregate %0 : rel<si32> -> rel<si1, si1, si32, si32>
       groupings {
-      ^bb0(%arg : tuple<si32>):
+      ^bb0(%arg : !substrait.struct<si32>):
         %2 = literal 0 : si1
         %3 = literal -1 : si1
         yield %2, %3 : si1, si1
       }
       grouping_sets [[0], [0, 1], [1], []]
       measures {
-      ^bb0(%arg : tuple<si32>):
-        %2 = field_reference %arg[0] : tuple<si32>
+      ^bb0(%arg : !substrait.struct<si32>):
+        %2 = field_reference %arg[0] : !substrait.struct<si32>
         %3 = call @function(%2) aggregate : (si32) -> si32
         yield %3 : si32
       }
@@ -113,7 +113,7 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = aggregate %0 : rel<si32> -> rel<si1>
       groupings {
-      ^bb0(%arg : tuple<si32>):
+      ^bb0(%arg : !substrait.struct<si32>):
         %2 = literal 0 : si1
         yield %2 : si1
       }
@@ -141,8 +141,8 @@ substrait.plan version 0 : 42 : 1 {
     %1 = aggregate %0 : rel<si32> -> rel<si32>
       grouping_sets []
       measures {
-      ^bb0(%arg : tuple<si32>):
-        %2 = field_reference %arg[0] : tuple<si32>
+      ^bb0(%arg : !substrait.struct<si32>):
+        %2 = field_reference %arg[0] : !substrait.struct<si32>
         %4 = call @function(%2) aggregate : (si32) -> si32
         yield %4 : si32
       }
@@ -168,8 +168,8 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = aggregate %0 : rel<si32> -> rel<si32>
       measures {
-      ^bb0(%arg : tuple<si32>):
-        %2 = field_reference %arg[0] : tuple<si32>
+      ^bb0(%arg : !substrait.struct<si32>):
+        %2 = field_reference %arg[0] : !substrait.struct<si32>
         %4 = call @function(%2) aggregate : (si32) -> si32
         yield %4 : si32
       }
@@ -227,8 +227,8 @@ substrait.plan version 0 : 42 : 1 {
     %1 = aggregate %0 : rel<si32>
           -> rel<si32, si32, si32, si32, si32, si32, si32>
       measures {
-      ^bb0(%arg : tuple<si32>):
-        %2 = field_reference %arg[0] : tuple<si32>
+      ^bb0(%arg : !substrait.struct<si32>):
+        %2 = field_reference %arg[0] : !substrait.struct<si32>
         %3 = call @function(%2) aggregate initial_to_intermediate all : (si32) -> si32
         %4 = call @function(%2) aggregate intermediate_to_intermediate all : (si32) -> si32
         %5 = call @function(%2) aggregate intermediate_to_result all : (si32) -> si32
@@ -266,7 +266,7 @@ substrait.plan version 0 : 42 : 1 {
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32> -> rel<si1>
       groupings {
-      ^bb0(%arg : tuple<si32>):
+      ^bb0(%arg : !substrait.struct<si32>):
         %2 = literal 0 : si1
         yield %2 : si1
       }

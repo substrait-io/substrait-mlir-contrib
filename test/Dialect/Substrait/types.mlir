@@ -199,13 +199,13 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b", "c"] : rel<f32, tuple<f32>>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b", "c"] : rel<f32, struct<f32>>
 // CHECK-NEXT:    yield %[[V0]] :
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c"] : rel<f32, tuple<f32>>
-    yield %0 : rel<f32, tuple<f32>>
+    %0 = named_table @t1 as ["a", "b", "c"] : rel<f32, struct<f32>>
+    yield %0 : rel<f32, struct<f32>>
   }
 }
 
@@ -227,12 +227,12 @@ substrait.plan version 0 : 42 : 1 {
 
 // CHECK-LABEL: substrait.plan
 // CHECK:         relation
-// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b", "c"] : rel<si1, tuple<si1>>
+// CHECK:         %[[V0:.*]] = named_table @t1 as ["a", "b", "c"] : rel<si1, struct<si1>>
 // CHECK-NEXT:    yield %[[V0]] :
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c"] : rel<si1, tuple<si1>>
-    yield %0 : rel<si1, tuple<si1>>
+    %0 = named_table @t1 as ["a", "b", "c"] : rel<si1, struct<si1>>
+    yield %0 : rel<si1, struct<si1>>
   }
 }

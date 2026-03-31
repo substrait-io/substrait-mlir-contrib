@@ -10,11 +10,14 @@
 # RUN:   --split-input-file="# ""-----" --output-split-marker="// -----" \
 # RUN: | FileCheck %s
 
-# Check that a nullable i32 field is imported as si32?.
+# Tests importing `Type.struct` from protobuf as `StructType`.
+
+# Check that a required struct column with one field is imported as
+# struct<si32>.
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<si32?>
+# CHECK-SAME:       : rel<struct<si32>>
 
 relations {
   rel {
@@ -24,11 +27,17 @@ relations {
         }
       }
       base_schema {
-        names: "a"
+        names: "s"
+        names: "x"
         struct {
           types {
-            i32 {
-              nullability: NULLABILITY_NULLABLE
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
             }
           }
           nullability: NULLABILITY_REQUIRED
@@ -47,11 +56,11 @@ version {
 
 # -----
 
-# Check that NULLABILITY_UNSPECIFIED is also imported as nullable (T?).
+# Check that mixed-nullability fields are imported with per-field nullability.
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
-# CHECK-SAME:       : rel<f64?>
+# CHECK-SAME:       : rel<struct<si32, string?>>
 
 relations {
   rel {
@@ -61,11 +70,23 @@ relations {
         }
       }
       base_schema {
-        names: "a"
+        names: "s"
+        names: "x"
+        names: "y"
         struct {
           types {
-            fp64 {
-              nullability: NULLABILITY_UNSPECIFIED
+            struct {
+              types {
+                i32 {
+                  nullability: NULLABILITY_REQUIRED
+                }
+              }
+              types {
+                string {
+                  nullability: NULLABILITY_NULLABLE
+                }
+              }
+              nullability: NULLABILITY_REQUIRED
             }
           }
           nullability: NULLABILITY_REQUIRED
@@ -84,7 +105,8 @@ version {
 
 # -----
 
-# Check that a nullable struct is imported as !substrait.struct<si32>?.
+# Check that NULLABILITY_NULLABLE on the struct sub-message is imported
+# as struct<si32>?.
 # CHECK-LABEL: substrait.plan
 # CHECK-NEXT:   relation
 # CHECK-NEXT:     named_table
@@ -98,8 +120,8 @@ relations {
         }
       }
       base_schema {
-        names: "a"
-        names: "b"
+        names: "s"
+        names: "x"
         struct {
           types {
             struct {
