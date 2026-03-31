@@ -51,7 +51,7 @@ def testNamedTable():
       result_type = ss.RelationType.get([si32, si32])
       field_names = ir.ArrayAttr.get([ir.StringAttr.get(n) for n in ["a", "b"]])
       named_table = ss.NamedTableOp(result_type, "t", field_names)
-      ss.YieldOp(named_table)
+      ss.YieldOp([named_table.result])
 
   print(plan)
   # CHECK: substrait.plan
