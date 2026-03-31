@@ -55,14 +55,16 @@ if(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
 
   # Assemble command line.
   set(CLANG_TIDY_CONFIG_FILE "${SUBSTRAIT_MLIR_MAIN_SRC_DIR}/.clang-tidy")
-  set(CLANG_TIDY_COMMAND
+  set(SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND
       "${CLANG_TIDY_EXE};--config-file=${CLANG_TIDY_CONFIG_FILE}")
   if(${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
-    set(CLANG_TIDY_COMMAND "${CLANG_TIDY_COMMAND};--warnings-as-errors=*")
+    set(SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND
+        "${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND};--warnings-as-errors=*")
   endif()
   set(CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR
       "${SUBSTRAIT_MLIR_BINARY_DIR}/clang-tidy-fixes")
-  message(STATUS "clang-tidy enabled, command: ${CLANG_TIDY_COMMAND}")
+  message(
+    STATUS "clang-tidy enabled, command: ${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND}")
 endif(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
 
 # ##############################################################################
@@ -98,7 +100,7 @@ add_custom_target(substrait-mlir-all)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
 
 # Enable clang-tidy for our targets.
-set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND})
+set(CMAKE_CXX_CLANG_TIDY ${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND})
 
 add_subdirectory(lib)
 add_subdirectory(include)

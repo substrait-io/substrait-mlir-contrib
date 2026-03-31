@@ -69,7 +69,8 @@ add_mlir_python_common_capi_library(
   MLIRPythonSources.Dialects
   MLIRPythonSources.ExecutionEngine)
 
-set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
+# Re-enable clang-tidy.
+set(CMAKE_CXX_CLANG_TIDY ${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND})
 
 # ##############################################################################
 # Instantiation of all Python modules
@@ -99,7 +100,8 @@ add_mlir_python_modules(
   COMMON_CAPI_LINK_LIBS
   SubstraitMLIRPythonCAPI)
 
-set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_COMMAND}) # Re-enable clang-tidy.
+# Re-enable clang-tidy.
+set(CMAKE_CXX_CLANG_TIDY ${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND})
 
 nanobind_add_stub(
   SubstraitMLIRPythonModuleStubs
