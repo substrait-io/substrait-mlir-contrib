@@ -123,6 +123,37 @@ def Substrait_VarCharType : Substrait_Type<"VarChar", "var_char"> {
   let assemblyFormat = [{ `<` $length `>` }];
 }
 
+def Substrait_StructType : Substrait_Type<"Struct", "struct"> {
+  let summary = "Substrait struct type";
+  let description = [{
+    Represents a Substrait `Type.struct` — an ordered sequence of field types.
+    The nullability of the struct value itself is indicated by wrapping this
+    type in `NullableType` (e.g., `struct<i32, string?>?` is a nullable struct
+    with a required `i32` field and a nullable `string` field). Individual
+    field nullability is expressed the same way as for any expression type.
+  }];
+  let parameters = (ins
+    ArrayRefParameter<"::mlir::Type", "field types">:$fieldTypes
+  );
+  let hasCustomAssemblyFormat = 1;
+}
+
+def Substrait_NullableType : Substrait_Type<"Nullable", "nullable"> {
+  let summary = "Nullable wrapper for a Substrait expression type";
+  let description = [{
+    Wraps any Substrait expression type to indicate that values of this type may
+    be null. The absence of this wrapper implies `NULLABILITY_REQUIRED`.
+    `NULLABILITY_UNSPECIFIED` is imported as `NULLABILITY_NULLABLE`. The type is
+    printed using the `T?` sugar syntax via a custom printer/parser in
+    `Substrait.cpp`.
+  }];
+  let parameters = (ins "::mlir::Type":$innerType);
+  // Default assembly format: "!substrait.nullable<T>".
+  // The pretty "T?" form is handled by the custom SubstraitType printer/parser.
+  let assemblyFormat = "`<` $innerType `>`";
+  let genVerifyDecl = 1;
+}
+
 /// Currently supported simple types, listed in order of the Substrait specification.
 /// These correspond directly to the types in
 /// https://github.com/substrait-io/substrait/blob/main/proto/substrait/type.proto.
@@ -181,8 +212,8 @@ def Substrait_AtomicTypes {
 def Substrait_AtomicType :
   AnyTypeOf<Substrait_SimpleTypes.types#Substrait_ParametrizedTypes.types>;
 
-/// Any container type, i.e., structs, maps, lists, and nestings thereof.
-def Substrait_ContainerType : NestedTupleOf<Substrait_AtomicTypes.types>;
+/// Any container type; currently only `StructType` (`MapType`/`ListType` TBD).
+def Substrait_ContainerType : AnyTypeOf<[Substrait_StructType]>;
 
 /// Currently supported expression types.
 def Substrait_ExpressionTypes {
@@ -197,6 +228,7 @@ def Substrait_ExpressionTypes {
 def Substrait_ExpressionType : AnyTypeOf<[
   Substrait_AtomicType,
   Substrait_ContainerType,
+  Substrait_NullableType,
 ]>;
 
 //===----------------------------------------------------------------------===//
@@ -207,13 +239,14 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
   let summary = "Substrait relation, i.e., result of `RelOpInterface` ops";
   let description = [{
   }];
-  let parameters = (ins AnyTuple:$structType);
+  let parameters = (ins Substrait_StructType:$structType);
   let builders = [
     TypeBuilder<(ins "TypeRange":$fieldTypes), [{
-      return $_get($_ctxt, ::mlir::TupleType::get($_ctxt, fieldTypes));
+      return $_get($_ctxt, StructType::get($_ctxt,
+          SmallVector<Type>(fieldTypes.begin(), fieldTypes.end())));
     }]>,
     TypeBuilder<(ins), [{
-      return $_get($_ctxt, ::mlir::TupleType::get($_ctxt));
+      return $_get($_ctxt, StructType::get($_ctxt, SmallVector<Type>{}));
     }]>,
   ];
   let skipDefaultBuilders = 1;
@@ -221,11 +254,8 @@ def Substrait_Relation : Substrait_Type<"Relation", "relation"> {
   let extraClassDeclaration = [{
     /// Get the field types of the relation.
     ArrayRef<Type> getFieldTypes() const {
-      return getStructType().getTypes();
+      return getStructType().getFieldTypes();
     }
-
-    /// Get the field types of the relation (for symmetry with `TupleType`).
-    ArrayRef<Type> getTypes() const { return getFieldTypes(); }
 
     /// Return the number of fields.
     size_t size() const { return getFieldTypes().size(); }

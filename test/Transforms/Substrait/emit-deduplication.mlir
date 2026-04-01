@@ -173,25 +173,25 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c", "d", "e"] : rel<si1, si1, tuple<si1, si32>>
+    %0 = named_table @t1 as ["a", "b", "c", "d", "e"] : rel<si1, si1, struct<si1, si32>>
     // Fields in position 1 and 3 are duplicates of field in position 0, so we
     // expect all references to the former to be replaced by the latter and an
     // `emit` re-establishing the original fields after the `filter`.
     %1 = emit [1, 1, 2, 1, 0] from %0
-        : rel<si1, si1, tuple<si1, si32>> -> rel<si1, si1, tuple<si1, si32>, si1, si1>
-    %2 = filter %1 : rel<si1, si1, tuple<si1, si32>, si1, si1> {
-    ^bb0(%arg0: tuple<si1, si1, tuple<si1, si32>, si1, si1>):
-      %3 = field_reference %arg0[0] : tuple<si1, si1, tuple<si1, si32>, si1, si1>
-      %4 = field_reference %arg0[1] : tuple<si1, si1, tuple<si1, si32>, si1, si1>
-      %5 = field_reference %arg0[2, 0] : tuple<si1, si1, tuple<si1, si32>, si1, si1>
-      %6 = field_reference %arg0[2] : tuple<si1, si1, tuple<si1, si32>, si1, si1>
-      %7 = field_reference %6[1] : tuple<si1, si32>
-      %8 = field_reference %arg0[3] : tuple<si1, si1, tuple<si1, si32>, si1, si1>
-      %9 = field_reference %arg0[4] : tuple<si1, si1, tuple<si1, si32>, si1, si1>
+        : rel<si1, si1, struct<si1, si32>> -> rel<si1, si1, struct<si1, si32>, si1, si1>
+    %2 = filter %1 : rel<si1, si1, struct<si1, si32>, si1, si1> {
+    ^bb0(%arg0: !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>):
+      %3 = field_reference %arg0[0] : !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>
+      %4 = field_reference %arg0[1] : !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>
+      %5 = field_reference %arg0[2, 0] : !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>
+      %6 = field_reference %arg0[2] : !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>
+      %7 = field_reference %6[1] : !substrait.struct<si1, si32>
+      %8 = field_reference %arg0[3] : !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>
+      %9 = field_reference %arg0[4] : !substrait.struct<si1, si1, struct<si1, si32>, si1, si1>
       %a = "test.op"(%3, %4, %5, %7, %8, %9) : (si1, si1, si1, si32, si1, si1) -> si1
       yield %a : si1
     }
-    yield %2 : rel<si1, si1, tuple<si1, si32>, si1, si1>
+    yield %2 : rel<si1, si1, struct<si1, si32>, si1, si1>
   }
 }
 
@@ -216,9 +216,9 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a", "b"] : rel<si1, si32>
     %1 = emit [1, 1] from %0 : rel<si1, si32> -> rel<si32, si32>
     %2 = project %1 : rel<si32, si32> -> rel<si32, si32, si1> {
-    ^bb0(%arg : tuple<si32, si32>):
-      %3 = field_reference %arg[0] : tuple<si32, si32>
-      %4 = field_reference %arg[1] : tuple<si32, si32>
+    ^bb0(%arg : !substrait.struct<si32, si32>):
+      %3 = field_reference %arg[0] : !substrait.struct<si32, si32>
+      %4 = field_reference %arg[1] : !substrait.struct<si32, si32>
       %5 = "test.op"(%3, %4) : (si32, si32) -> si1
       yield %5 : si1
     }
@@ -245,8 +245,8 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = project %0 : rel<si32> -> rel<si32, si1, si1> {
-    ^bb0(%arg : tuple<si32>):
-      %2 = field_reference %arg[0] : tuple<si32>
+    ^bb0(%arg : !substrait.struct<si32>):
+      %2 = field_reference %arg[0] : !substrait.struct<si32>
       %3 = "test.op"(%2) : (si32) -> si1
       // We yield two times the same value. This pattern should remove one of
       // the two and re-establish the duplicate with an `amit` after the
@@ -276,8 +276,8 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : rel<si32, si1>
     %1 = project %0 : rel<si32, si1> -> rel<si32, si1, si32, si1> {
-    ^bb0(%arg0: tuple<si32, si1>):
-      %2 = field_reference %arg0[0] : tuple<si32, si1>
+    ^bb0(%arg0: !substrait.struct<si32, si1>):
+      %2 = field_reference %arg0[0] : !substrait.struct<si32, si1>
       %3 = "test.op"(%2) : (si32) -> si1
       // `%2` yields an input field without modifications. This pattern removes
       // that yielding and re-establishes the duplicated field with an `emit`
@@ -311,9 +311,9 @@ substrait.plan version 0 : 42 : 1 {
     %0 = named_table @t1 as ["a", "b"] : rel<si1, si32>
     %1 = emit [1, 1] from %0 : rel<si1, si32> -> rel<si32, si32>
     %2 = project %1 : rel<si32, si32> -> rel<si32, si32, si32, si32> {
-    ^bb0(%arg : tuple<si32, si32>):
-      %3 = field_reference %arg[0] : tuple<si32, si32>
-      %4 = field_reference %arg[1] : tuple<si32, si32>
+    ^bb0(%arg : !substrait.struct<si32, si32>):
+      %3 = field_reference %arg[0] : !substrait.struct<si32, si32>
+      %4 = field_reference %arg[1] : !substrait.struct<si32, si32>
       yield %3, %4 : si32, si32
     }
     yield %2 : rel<si32, si32, si32, si32>

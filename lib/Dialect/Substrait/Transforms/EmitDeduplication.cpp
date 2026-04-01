@@ -156,8 +156,8 @@ static void deduplicateRegionArgs(Region &region, ArrayAttr newMapping,
                                   PatternRewriter &rewriter) {
   assert(region.getNumArguments() == 1 &&
          "only regions with 1 argument are supported");
-  auto oldElementType = cast<TupleType>(region.getArgument(0).getType());
-  int64_t numOldFields = oldElementType.getTypes().size();
+  auto oldElementType = cast<StructType>(region.getArgument(0).getType());
+  int64_t numOldFields = oldElementType.getFieldTypes().size();
 
   // For each position in the original input type, compute which position it
   // corresponds to in the deduplicated input. This is required for replacing
@@ -250,7 +250,7 @@ struct EliminateDuplicateYieldsInProjectPattern
     SmallVector<Type> outputTypes;
     int64_t numNewYields = terminator->getNumOperands();
     outputTypes.reserve(inputType.size() + numNewYields);
-    append_range(outputTypes, inputType.getTypes());
+    append_range(outputTypes, inputType.getFieldTypes());
     append_range(outputTypes, terminator->getOperandTypes());
     auto newOutputType = RelationType::get(context, outputTypes);
 
@@ -319,7 +319,7 @@ struct EliminateIdentityYieldsInProjectPattern
     SmallVector<Type> outputTypes;
     int64_t numNewYields = terminator->getNumOperands();
     outputTypes.reserve(inputType.size() + numNewYields);
-    append_range(outputTypes, inputType.getTypes());
+    append_range(outputTypes, inputType.getFieldTypes());
     append_range(outputTypes, terminator->getOperandTypes());
     auto newOutputType = RelationType::get(context, outputTypes);
 
@@ -480,7 +480,7 @@ struct PushDuplicatesThroughProjectPattern
 
     SmallVector<Type> outputTypes;
     outputTypes.reserve(newInputType.size() + terminator->getNumOperands());
-    append_range(outputTypes, newInputType.getTypes());
+    append_range(outputTypes, newInputType.getFieldTypes());
     append_range(outputTypes, terminator->getOperandTypes());
     auto newOutputType = RelationType::get(context, outputTypes);
 

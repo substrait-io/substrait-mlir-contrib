@@ -69,7 +69,7 @@ using namespace ::substrait::proto;
 
 namespace {
 
-using ImportedNamedStruct = std::tuple<ArrayAttr, TupleType>;
+using ImportedNamedStruct = std::tuple<ArrayAttr, StructType>;
 
 // Copied from
 // https://github.com/llvm/llvm-project/blob/dea33c/mlir/lib/Transforms/CSE.cpp.
@@ -215,53 +215,103 @@ static std::string buildTypeVarSymName(int32_t anchor) {
   return ("extension_type_variation." + Twine(anchor)).str();
 }
 
+/// Returns true if the nullability of the given sub-message is anything other
+/// than NULLABILITY_REQUIRED.
+template <typename SubMsg>
+static bool isNullable(const SubMsg &msg) {
+  using N = proto::Type_Nullability;
+  return msg.nullability() != N::Type_Nullability_NULLABILITY_REQUIRED;
+}
+
 static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
                                               const proto::Type &type) {
-
   proto::Type::KindCase kindCase = type.kind_case();
+  mlir::Type baseType;
+  bool nullable = false;
+
   switch (kindCase) {
   case proto::Type::kBool:
-    return IntegerType::get(context, 1, IntegerType::Signed);
+    baseType = IntegerType::get(context, 1, IntegerType::Signed);
+    nullable = isNullable(type.bool_());
+    break;
   case proto::Type::kI8:
-    return IntegerType::get(context, 8, IntegerType::Signed);
+    baseType = IntegerType::get(context, 8, IntegerType::Signed);
+    nullable = isNullable(type.i8());
+    break;
   case proto::Type::kI16:
-    return IntegerType::get(context, 16, IntegerType::Signed);
+    baseType = IntegerType::get(context, 16, IntegerType::Signed);
+    nullable = isNullable(type.i16());
+    break;
   case proto::Type::kI32:
-    return IntegerType::get(context, 32, IntegerType::Signed);
+    baseType = IntegerType::get(context, 32, IntegerType::Signed);
+    nullable = isNullable(type.i32());
+    break;
   case proto::Type::kI64:
-    return IntegerType::get(context, 64, IntegerType::Signed);
+    baseType = IntegerType::get(context, 64, IntegerType::Signed);
+    nullable = isNullable(type.i64());
+    break;
   case proto::Type::kFp32:
-    return Float32Type::get(context);
+    baseType = Float32Type::get(context);
+    nullable = isNullable(type.fp32());
+    break;
   case proto::Type::kFp64:
-    return Float64Type::get(context);
+    baseType = Float64Type::get(context);
+    nullable = isNullable(type.fp64());
+    break;
   case proto::Type::kString:
-    return StringType::get(context);
+    baseType = StringType::get(context);
+    nullable = isNullable(type.string());
+    break;
   case proto::Type::kBinary:
-    return BinaryType::get(context);
+    baseType = BinaryType::get(context);
+    nullable = isNullable(type.binary());
+    break;
   case proto::Type::kTimestamp:
-    return TimestampType::get(context);
+    baseType = TimestampType::get(context);
+    nullable = isNullable(type.timestamp());
+    break;
   case proto::Type::kTimestampTz:
-    return TimestampTzType::get(context);
+    baseType = TimestampTzType::get(context);
+    nullable = isNullable(type.timestamp_tz());
+    break;
   case proto::Type::kDate:
-    return DateType::get(context);
+    baseType = DateType::get(context);
+    nullable = isNullable(type.date());
+    break;
   case proto::Type::kTime:
-    return TimeType::get(context);
+    baseType = TimeType::get(context);
+    nullable = isNullable(type.time());
+    break;
   case proto::Type::kIntervalYear:
-    return IntervalYearMonthType::get(context);
+    baseType = IntervalYearMonthType::get(context);
+    nullable = isNullable(type.interval_year());
+    break;
   case proto::Type::kIntervalDay:
-    return IntervalDaySecondType::get(context);
+    baseType = IntervalDaySecondType::get(context);
+    nullable = isNullable(type.interval_day());
+    break;
   case proto::Type::kUuid:
-    return UUIDType::get(context);
+    baseType = UUIDType::get(context);
+    nullable = isNullable(type.uuid());
+    break;
   case proto::Type::kFixedChar:
-    return FixedCharType::get(context, type.fixed_char().length());
+    baseType = FixedCharType::get(context, type.fixed_char().length());
+    nullable = isNullable(type.fixed_char());
+    break;
   case proto::Type::kVarchar:
-    return VarCharType::get(context, type.varchar().length());
+    baseType = VarCharType::get(context, type.varchar().length());
+    nullable = isNullable(type.varchar());
+    break;
   case proto::Type::kFixedBinary:
-    return FixedBinaryType::get(context, type.fixed_binary().length());
+    baseType = FixedBinaryType::get(context, type.fixed_binary().length());
+    nullable = isNullable(type.fixed_binary());
+    break;
   case proto::Type::kDecimal: {
     const proto::Type::Decimal &decimalType = type.decimal();
-    return mlir::substrait::DecimalType::get(context, decimalType.precision(),
-                                             decimalType.scale());
+    baseType = mlir::substrait::DecimalType::get(
+        context, decimalType.precision(), decimalType.scale());
+    nullable = isNullable(type.decimal());
+    break;
   }
   case proto::Type::kStruct: {
     const proto::Type::Struct &structType = type.struct_();
@@ -273,7 +323,9 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
         return failure();
       fieldTypes.push_back(mlirFieldType.value());
     }
-    return TupleType::get(context, fieldTypes);
+    baseType = StructType::get(context, fieldTypes);
+    nullable = isNullable(type.struct_());
+    break;
   }
     // TODO(ingomueller): Support more types.
   default: {
@@ -285,6 +337,10 @@ static mlir::FailureOr<mlir::Type> importType(MLIRContext *context,
                           << desc->name();
   }
   }
+
+  if (nullable)
+    return NullableType::get(context, baseType);
+  return baseType;
 }
 
 mlir::FailureOr<CallOp>
@@ -334,13 +390,13 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   if (failed(inputOp))
     return failure();
   TypedValue<RelationType> inputVal = inputOp.value().getResult();
-  TupleType inputTupleType = inputVal.getType().getStructType();
+  StructType inputStructType = inputVal.getType().getStructType();
 
   // Import measures if any.
   auto measuresRegion = std::make_unique<Region>();
   if (aggregateRel.measures_size() > 0) {
     Block *measuresBlock = &measuresRegion->emplaceBlock();
-    measuresBlock->addArgument(inputTupleType, loc);
+    measuresBlock->addArgument(inputStructType, loc);
 
     OpBuilder::InsertionGuard guard(builder);
     builder.setInsertionPointToStart(measuresBlock);
@@ -365,7 +421,7 @@ importAggregateRel(ImplicitLocOpBuilder builder, const Rel &message) {
   SmallVector<Attribute> groupingSetsAttrs;
   if (aggregateRel.groupings_size() > 0) {
     Block *groupingsBlock = &groupingsRegion->emplaceBlock();
-    groupingsBlock->addArgument(inputTupleType, loc);
+    groupingsBlock->addArgument(inputStructType, loc);
 
     // Grouping expressions, i.e., values yielded from `groupings`.
     SmallVector<Value> groupingExprValues;
@@ -566,7 +622,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
       importNamedStruct(builder, baseSchema);
   if (failed(importedNamedStruct))
     return failure();
-  auto [fieldNamesAttr, tupleType] = importedNamedStruct.value();
+  auto [fieldNamesAttr, structType] = importedNamedStruct.value();
 
   // Import `detail` attribute.
   const ::google::protobuf::Any &detail = extensionTable.detail();
@@ -574,7 +630,7 @@ importExtensionTable(ImplicitLocOpBuilder builder, const Rel &message) {
 
   // Assemble final op.
   auto resultType =
-      RelationType::get(builder.getContext(), tupleType.getTypes());
+      RelationType::get(builder.getContext(), structType.getFieldTypes());
   auto extensionTableOp =
       ExtensionTableOp::create(builder, resultType, fieldNamesAttr, detailAttr);
 
@@ -882,7 +938,7 @@ importNamedStruct(ImplicitLocOpBuilder builder, const NamedStruct &message) {
       return failure();
     resultTypes.push_back(mlirType.value());
   }
-  auto resultType = TupleType::get(context, resultTypes);
+  auto resultType = StructType::get(context, resultTypes);
 
   return ImportedNamedStruct{fieldNamesAttr, resultType};
 }
@@ -913,10 +969,10 @@ importNamedTable(ImplicitLocOpBuilder builder, const Rel &message) {
       importNamedStruct(builder, baseSchema);
   if (failed(importedNamedStruct))
     return failure();
-  auto [fieldNamesAttr, tupleType] = importedNamedStruct.value();
+  auto [fieldNamesAttr, structType] = importedNamedStruct.value();
 
   // Assemble final op.
-  auto resultType = RelationType::get(context, tupleType.getTypes());
+  auto resultType = RelationType::get(context, structType.getFieldTypes());
   auto namedTableOp =
       NamedTableOp::create(builder, resultType, tableName, fieldNamesAttr);
 

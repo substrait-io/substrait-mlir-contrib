@@ -2,7 +2,7 @@
 
 // Test error if providing too many names (1 name for 0 fields).
 substrait.plan version 0 : 42 : 1 {
-  // expected-error@+2 {{'substrait.relation' op has mismatching 'field_names' (["x", "y"]) and result type ('tuple<si32>')}}
+  // expected-error@+2 {{'substrait.relation' op has mismatching 'field_names' (["x", "y"]) and result type ('!substrait.struct<si32>')}}
   // expected-note@+1 {{too many field names provided}}
   relation as ["x", "y"] {
     %0 = named_table @t1 as ["a"] : rel<si32>
@@ -14,7 +14,7 @@ substrait.plan version 0 : 42 : 1 {
 
 // Test error if providing too few names (0 names for 1 field).
 substrait.plan version 0 : 42 : 1 {
-  // expected-error@+2 {{'substrait.relation' op has mismatching 'field_names' (["x"]) and result type ('tuple<si32, si32>')}}
+  // expected-error@+2 {{'substrait.relation' op has mismatching 'field_names' (["x"]) and result type ('!substrait.struct<si32, si32>')}}
   // expected-error@+1 {{not enough field names provided}}
   relation as ["x"] {
     %0 = named_table @t1 as ["a", "b"] : rel<si32, si32>
@@ -26,7 +26,7 @@ substrait.plan version 0 : 42 : 1 {
 
 // Test error if providing duplicate field names in the same nesting level.
 substrait.plan version 0 : 42 : 1 {
-  // expected-error@+2 {{'substrait.relation' op has mismatching 'field_names' (["x", "x"]) and result type ('tuple<si32, si32>')}}
+  // expected-error@+2 {{'substrait.relation' op has mismatching 'field_names' (["x", "x"]) and result type ('!substrait.struct<si32, si32>')}}
   // expected-error@+1 {{duplicate field name: 'x'}}
   relation as ["x", "x"] {
     %0 = named_table @t1 as ["a", "b"] : rel<si32, si32>

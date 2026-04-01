@@ -5,7 +5,7 @@
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si32> -> rel<si32, si1, si32> {
-// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si32>):
+// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: !substrait.struct<si32>):
 // CHECK-NEXT:      %[[V2:.*]] = literal -1 : si1
 // CHECK-NEXT:      %[[V3:.*]] = literal 42 : si32
 // CHECK-NEXT:      yield %[[V2]], %[[V3]] : si1, si32
@@ -16,7 +16,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = project %0 : rel<si32> -> rel<si32, si1, si32> {
-    ^bb0(%arg : tuple<si32>):
+    ^bb0(%arg : !substrait.struct<si32>):
       %true = literal -1 : si1
       %42 = literal 42 : si32
       yield %true, %42 : si1, si32
@@ -31,14 +31,14 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:   relation
 // CHECK:         %[[V0:.*]] = named_table
 // CHECK-NEXT:    %[[V1:.*]] = project %[[V0]] : rel<si32> -> rel<si32> {
-// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: tuple<si32>):
+// CHECK-NEXT:    ^[[BB0:.*]](%[[ARG0:.*]]: !substrait.struct<si32>):
 // CHECK-NEXT:    }
 
 substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = project %0 : rel<si32> -> rel<si32> {
-    ^bb0(%arg0: tuple<si32>):
+    ^bb0(%arg0: !substrait.struct<si32>):
       yield
     }
     yield %1 : rel<si32>
@@ -62,7 +62,7 @@ substrait.plan version 0 : 42 : 1 {
             advanced_extension optimization = "\08*"
               : !substrait.any<"type.googleapis.com/google.protobuf.Int32Value">
             : rel<si32> -> rel<si32> {
-    ^bb0(%arg0: tuple<si32>):
+    ^bb0(%arg0: !substrait.struct<si32>):
       yield
     }
     yield %1 : rel<si32>

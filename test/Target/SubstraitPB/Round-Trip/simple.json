@@ -162,6 +162,7 @@
                   },
                   {
                     "struct": {
+                      "nullability": "NULLABILITY_NULLABLE",
                       "types": [
                         {
                           "i32": {

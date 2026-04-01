@@ -121,7 +121,7 @@ version {
 # CHECK-LABEL: substrait.plan
 # CHECK:         relation
 # CHECK:         %[[V0:.*]] = named_table @t1
-# CHECK-SAME:      as ["outer", "inner"] : rel<tuple<si32>>
+# CHECK-SAME:      as ["outer", "inner"] : rel<struct<si32>>
 # CHECK-NEXT:    yield %[[V0]] :
 
 relations {
@@ -142,6 +142,7 @@ relations {
                   nullability: NULLABILITY_REQUIRED
                 }
               }
+              nullability: NULLABILITY_REQUIRED
             }
           }
           nullability: NULLABILITY_REQUIRED
@@ -163,7 +164,7 @@ version {
 # CHECK-LABEL: substrait.plan
 # CHECK:         relation
 # CHECK:         %[[V0:.*]] = named_table @t1
-# CHECK-SAME:      as ["a", "a"] : rel<tuple<si32>>
+# CHECK-SAME:      as ["a", "a"] : rel<struct<si32>>
 # CHECK-NEXT:    yield %[[V0]] :
 
 relations {
@@ -184,6 +185,7 @@ relations {
                   nullability: NULLABILITY_REQUIRED
                 }
               }
+              nullability: NULLABILITY_REQUIRED
             }
           }
           nullability: NULLABILITY_REQUIRED
