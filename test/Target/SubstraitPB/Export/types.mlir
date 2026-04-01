@@ -352,6 +352,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:                    nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:                  }
 // CHECK-NEXT:                }
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
 // CHECK-NEXT:            }
 // CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
@@ -361,8 +362,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c"] : rel<f32, tuple<f32>>
-    yield %0 : rel<f32, tuple<f32>>
+    %0 = named_table @t1 as ["a", "b", "c"] : rel<f32, !substrait.struct<f32>>
+    yield %0 : rel<f32, !substrait.struct<f32>>
   }
 }
 
@@ -437,6 +438,7 @@ substrait.plan version 0 : 42 : 1 {
 // CHECK-NEXT:                    nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:                  }
 // CHECK-NEXT:                }
+// CHECK-NEXT:                nullability: NULLABILITY_REQUIRED
 // CHECK-NEXT:              }
 // CHECK-NEXT:            }
 // CHECK-NEXT:            nullability: NULLABILITY_REQUIRED
@@ -446,7 +448,7 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "b", "c"] : rel<si1, tuple<si1>>
-    yield %0 : rel<si1, tuple<si1>>
+    %0 = named_table @t1 as ["a", "b", "c"] : rel<si1, !substrait.struct<si1>>
+    yield %0 : rel<si1, !substrait.struct<si1>>
   }
 }

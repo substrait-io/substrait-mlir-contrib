@@ -69,7 +69,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a", "b"] : rel<si32, si1>
     %1 = filter %0 : rel<si32, si1> {
-    ^bb0(%arg : tuple<si32, si1>):
+    ^bb0(%arg : !substrait.struct<si32, si1>):
       %2 = literal -1 : si1
       yield %2 : si1
     }
