@@ -46,15 +46,16 @@ using namespace mlir;
 using namespace mlir::substrait;
 
 namespace {
-
 struct SubstraitEmitDeduplicationPass
     : substrait::impl::SubstraitEmitDeduplicationPassBase<
           SubstraitEmitDeduplicationPass> {
   using substrait::impl::SubstraitEmitDeduplicationPassBase<
       SubstraitEmitDeduplicationPass>::SubstraitEmitDeduplicationPassBase;
 
+protected:
   void runOnOperation() override;
 };
+} // namespace
 
 void SubstraitEmitDeduplicationPass::runOnOperation() {
   mlir::RewritePatternSet patterns(&getContext());
@@ -66,8 +67,6 @@ void SubstraitEmitDeduplicationPass::runOnOperation() {
     signalPassFailure();
   }
 }
-
-} // namespace
 
 /// If the given `input` was produced by an `emit` op with duplicates, creates a
 /// new `emit` op without duplicates and returns the result of the new `emit`.
@@ -197,6 +196,8 @@ static void deduplicateRegionArgs(Region &region, ArrayAttr newMapping,
   // Update argument type of the region.
   region.getArgument(0).setType(newElementType);
 }
+
+namespace {
 
 struct EliminateDuplicateYieldsInProjectPattern
     : public OpRewritePattern<ProjectOp> {
@@ -514,6 +515,8 @@ struct PushDuplicatesThroughProjectPattern
     return failure();
   }
 };
+
+} // namespace
 
 namespace mlir {
 namespace substrait {
