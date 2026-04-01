@@ -69,10 +69,6 @@ using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
-namespace {
-
-namespace pb = ::google::protobuf;
-
 /// Main structure to drive export from the dialect to protobuf. This class
 /// holds the visitor functions for the various ops etc. from the dialect as
 /// well as state and utilities around the state that is built up during export.
@@ -98,7 +94,7 @@ public:
   DECLARE_EXPORT_FUNC(FilterOp, Rel)
   DECLARE_EXPORT_FUNC(JoinOp, Rel)
   DECLARE_EXPORT_FUNC(LiteralOp, Expression)
-  DECLARE_EXPORT_FUNC(ModuleOp, pb::Message)
+  DECLARE_EXPORT_FUNC(ModuleOp, google::protobuf::Message)
   DECLARE_EXPORT_FUNC(NamedTableOp, Rel)
   DECLARE_EXPORT_FUNC(PlanOp, Plan)
   DECLARE_EXPORT_FUNC(PlanVersionOp, PlanVersion)
@@ -120,10 +116,11 @@ public:
   FailureOr<std::unique_ptr<Expression>> exportCallOpScalar(CallOp op);
   FailureOr<std::unique_ptr<Expression>> exportCallOpWindow(CallOp op);
 
-  std::unique_ptr<pb::Any> exportAny(StringAttr attr);
+  std::unique_ptr<google::protobuf::Any> exportAny(StringAttr attr);
   FailureOr<std::unique_ptr<NamedStruct>>
   exportNamedStruct(Location loc, ArrayAttr fieldNames, TupleType tupleType);
-  FailureOr<std::unique_ptr<pb::Message>> exportOperation(Operation *op);
+  FailureOr<std::unique_ptr<google::protobuf::Message>>
+  exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
                                                      mlir::Type mlirType);
 
@@ -168,13 +165,15 @@ void SubstraitExporter::exportAdvancedExtension(ExtensibleOpInterface op,
 
   // Set `optimization` field if present.
   if (optimizationAttr) {
-    std::unique_ptr<pb::Any> optimization = exportAny(optimizationAttr);
+    std::unique_ptr<google::protobuf::Any> optimization =
+        exportAny(optimizationAttr);
     extension->set_allocated_optimization(optimization.release());
   }
 
   // Set `enhancement` field if present.
   if (enhancementAttr) {
-    std::unique_ptr<pb::Any> enhancement = exportAny(enhancementAttr);
+    std::unique_ptr<google::protobuf::Any> enhancement =
+        exportAny(enhancementAttr);
     extension->set_allocated_enhancement(enhancement.release());
   }
 
@@ -183,8 +182,9 @@ void SubstraitExporter::exportAdvancedExtension(ExtensibleOpInterface op,
   Trait::setAllocatedAdvancedExtension(message, extension.release());
 }
 
-std::unique_ptr<pb::Any> SubstraitExporter::exportAny(StringAttr attr) {
-  auto any = std::make_unique<pb::Any>();
+std::unique_ptr<google::protobuf::Any>
+SubstraitExporter::exportAny(StringAttr attr) {
+  auto any = std::make_unique<google::protobuf::Any>();
   auto anyType = mlir::cast<AnyType>(attr.getType());
   std::string typeUrl = anyType.getTypeUrl().getValue().str();
   std::string value = attr.getValue().str();
@@ -194,8 +194,8 @@ std::unique_ptr<pb::Any> SubstraitExporter::exportAny(StringAttr attr) {
 }
 
 /// Function that export `IntegerType`'s to the corresponding Substrait types.
-std::unique_ptr<proto::Type> exportIntegerType(IntegerType intType,
-                                               MLIRContext *context) {
+static std::unique_ptr<proto::Type> exportIntegerType(IntegerType intType,
+                                                      MLIRContext *context) {
   assert(intType.isSigned() && "only signed integer types supported");
 
   switch (intType.getWidth()) {
@@ -260,8 +260,8 @@ std::unique_ptr<proto::Type> exportIntegerType(IntegerType intType,
 }
 
 /// Function that export `FloatType`'s to the corresponding Substrait types.
-std::unique_ptr<proto::Type> exportFloatType(FloatType floatType,
-                                             MLIRContext *context) {
+static std::unique_ptr<proto::Type> exportFloatType(FloatType floatType,
+                                                    MLIRContext *context) {
 
   switch (floatType.getWidth()) {
   case 32: { // Handle FP32.
@@ -813,7 +813,7 @@ SubstraitExporter::exportOperation(ExtensionTableOp op) {
 
   // Build `ExtensionTable` message.
   StringAttr detailAttr = op.getDetailAttr();
-  std::unique_ptr<pb::Any> detail = exportAny(detailAttr);
+  std::unique_ptr<google::protobuf::Any> detail = exportAny(detailAttr);
   auto extensionTable = std::make_unique<ReadRel::ExtensionTable>();
   extensionTable->set_allocated_detail(detail.release());
 
@@ -1115,7 +1115,7 @@ SubstraitExporter::exportOperation(LiteralOp op) {
   return expression;
 }
 
-FailureOr<std::unique_ptr<pb::Message>>
+FailureOr<std::unique_ptr<google::protobuf::Message>>
 SubstraitExporter::exportOperation(ModuleOp op) {
   if (!op->getAttrs().empty()) {
     op->emitOpError("has attributes");
@@ -1631,24 +1631,25 @@ SubstraitExporter::exportOperation(RelOpInterface op) {
       });
 }
 
-FailureOr<std::unique_ptr<pb::Message>>
+FailureOr<std::unique_ptr<google::protobuf::Message>>
 SubstraitExporter::exportOperation(Operation *op) {
-  return llvm::TypeSwitch<Operation *, FailureOr<std::unique_ptr<pb::Message>>>(
-             op)
+  return llvm::TypeSwitch<
+             Operation *,
+             FailureOr<std::unique_ptr<google::protobuf::Message>>>(op)
       .Case<ModuleOp, PlanOp, PlanVersionOp>(
-          [&](auto op) -> FailureOr<std::unique_ptr<pb::Message>> {
+          [&](auto op)
+              -> FailureOr<std::unique_ptr<google::protobuf::Message>> {
             auto typedMessage = exportOperation(op);
             if (failed(typedMessage))
               return failure();
-            return std::unique_ptr<pb::Message>(typedMessage.value().release());
+            return std::unique_ptr<google::protobuf::Message>(
+                typedMessage.value().release());
           })
       .Default([](auto op) {
         op->emitOpError("not supported for export");
         return failure();
       });
 }
-
-} // namespace
 
 mlir::LogicalResult mlir::substrait::translateSubstraitToProtobuf(
     Operation *op, llvm::raw_ostream &output,

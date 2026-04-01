@@ -6,11 +6,12 @@ Checks: >
     llvm-*,
     -llvm-twine-local,
     misc-*,
-    -misc-const-correctness,
     -misc-confusable-identifiers,
+    -misc-const-correctness,
+    -misc-non-private-member-variables-in-classes,
     -misc-no-recursion,
     -misc-unused-parameters,
-    -misc-non-private-member-variables-in-classes,
+    -misc-use-anonymous-namespace,
     readability-braces-around-statements,
     readability-identifier-naming
 

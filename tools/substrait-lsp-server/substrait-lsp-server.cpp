@@ -29,11 +29,9 @@
 
 using namespace mlir;
 
-namespace {
-void registerSubstraitDialects(DialectRegistry &registry) {
+static void registerSubstraitDialects(DialectRegistry &registry) {
   registry.insert<mlir::substrait::SubstraitDialect>();
 }
-} // namespace
 
 int main(int argc, char **argv) {
   static std::string executable =
