@@ -69,6 +69,8 @@ using namespace mlir::substrait::protobuf_utils;
 using namespace ::substrait;
 using namespace ::substrait::proto;
 
+namespace {
+
 /// Main structure to drive export from the dialect to protobuf. This class
 /// holds the visitor functions for the various ops etc. from the dialect as
 /// well as state and utilities around the state that is built up during export.
@@ -149,6 +151,8 @@ private:
   DenseMap<Operation *, int32_t> anchorsByOp{}; // Maps anchors to ops.
   std::unique_ptr<SymbolTable> symbolTable;     // Symbol table cache.
 };
+
+} // namespace
 
 template <typename MessageType>
 void SubstraitExporter::exportAdvancedExtension(ExtensibleOpInterface op,
@@ -1202,6 +1206,8 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   return rel;
 }
 
+namespace {
+
 /// Helper for creating unique anchors from symbol names. While in MLIR, symbol
 /// names and their references are strings, in Substrait they are integer
 /// numbers. In order to preserve the anchor values through an import/export
@@ -1292,6 +1298,8 @@ struct ExtensionOpTraits<ExtensionTypeVariationOp> {
     return decl.mutable_extension_type_variation();
   }
 };
+
+} // namespace
 
 FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
   using extensions::SimpleExtensionDeclaration;

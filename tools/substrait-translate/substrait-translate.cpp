@@ -31,14 +31,13 @@
 using namespace mlir;
 using namespace mlir::substrait;
 
-namespace {
-void registerSubstraitDialects(DialectRegistry &registry) {
+static void registerSubstraitDialects(DialectRegistry &registry) {
   registry.insert<mlir::substrait::SubstraitDialect>();
 }
 
 using SerdeFormat = mlir::substrait::SerializationFormat;
 
-llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
+static llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
     "substrait-protobuf-format", llvm::cl::ValueRequired,
     llvm::cl::desc(
         "Serialization format used when translating Substrait plans."),
@@ -50,7 +49,7 @@ llvm::cl::opt<SerdeFormat> substraitProtobufFormat(
                    "JSON format with new lines")),
     llvm::cl::init(SerdeFormat::kText));
 
-void registerSubstraitToProtobufTranslation() {
+static void registerSubstraitToProtobufTranslation() {
   TranslateFromMLIRRegistration registration(
       "substrait-to-protobuf", "translate from Substrait MLIR to protobuf",
       [&](mlir::Operation *op, llvm::raw_ostream &output) {
@@ -61,7 +60,7 @@ void registerSubstraitToProtobufTranslation() {
       registerSubstraitDialects);
 }
 
-void registerProtobufToSubstraitPlanTranslation() {
+static void registerProtobufToSubstraitPlanTranslation() {
   // Two aliases: `-protobuf-to-substrait` for conciseness and
   // `-protobuf-to-substrait-plan` for symmetry with the other translations.
   for (StringRef suffix : {"", "-plan"}) {
@@ -77,7 +76,7 @@ void registerProtobufToSubstraitPlanTranslation() {
   }
 }
 
-void registerProtobufToSubstraitPlanVersionTranslation() {
+static void registerProtobufToSubstraitPlanVersionTranslation() {
   TranslateToMLIRRegistration registration(
       "protobuf-to-substrait-plan-version",
       "translate a protobuf 'PlanVersion' to Substrait MLIR",
@@ -88,7 +87,6 @@ void registerProtobufToSubstraitPlanVersionTranslation() {
       },
       registerSubstraitDialects);
 }
-} // namespace
 
 int main(int argc, char **argv) {
   static std::string executable =

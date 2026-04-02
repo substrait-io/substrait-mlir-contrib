@@ -734,13 +734,11 @@ static void printSubstraitType(AsmPrinter &printer, Operation *op,
 static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
                                              ArrayRef<int64_t> position);
 
-namespace {
-
 /// Helper that extracts computes the type at a position given a container type.
 template <typename ContainerType>
-FailureOr<Type> computeTypeAtPositionHelper(Location loc,
-                                            ContainerType containerType,
-                                            ArrayRef<int64_t> position) {
+static FailureOr<Type> computeTypeAtPositionHelper(Location loc,
+                                                   ContainerType containerType,
+                                                   ArrayRef<int64_t> position) {
   assert(!position.empty() && "expected to be called with non-empty position");
 
   // Recurse into fields of first index in position array.
@@ -752,7 +750,6 @@ FailureOr<Type> computeTypeAtPositionHelper(Location loc,
 
   return computeTypeAtPosition(loc, fieldTypes[index], position.drop_front());
 }
-} // namespace
 
 // Implementation of `computeTypeAtPosition`.
 //
