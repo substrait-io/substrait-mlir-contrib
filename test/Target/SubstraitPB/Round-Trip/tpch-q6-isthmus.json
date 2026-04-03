@@ -3,7 +3,6 @@
 // RUN:   json-to-substrait | substrait-to-json | \
 // RUN:   normalize-json > %{t:stem}.mlir.json
 // RUN: diff %{t:stem}.orig.json %{t:stem}.mlir.json
-// XFAIL: *
 //
 // This file has been copied from
 // https://github.com/substrait-io/consumer-testing/blob/c4afb025c49fd3c39afd5d946321393adff71d35/substrait_consumer/snapshots/producer/integration/tpch/q06-isthmus_plan.json

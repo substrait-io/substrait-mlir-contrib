@@ -163,6 +163,17 @@ LogicalResult mlir::substrait::VarCharAttr::verify(
 // Substrait types
 //===----------------------------------------------------------------------===//
 
+LogicalResult mlir::substrait::NullableType::verify(
+    llvm::function_ref<mlir::InFlightDiagnostic()> emitError, Type innerType) {
+  // Disallow double-wrapping: NullableType<NullableType<T>> is invalid.
+  if (mlir::isa<NullableType>(innerType))
+    return emitError() << "NullableType cannot wrap another NullableType";
+  // Note: inner-type validity (i.e., must be a Substrait expression type) is
+  // not checked here; that invariant is enforced at the ODS level by
+  // `Substrait_ExpressionType`.
+  return success();
+}
+
 LogicalResult mlir::substrait::DecimalType::verify(
     llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
     uint32_t precision, uint32_t scale) {
@@ -641,6 +652,13 @@ static ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
   if (result.has_value()) {
     if (failed(result.value()))
       return failure();
+    // Check for optional trailing '?' to make it nullable.
+    if (succeeded(parser.parseOptionalQuestion())) {
+      if (mlir::isa<NullableType>(valueType))
+        return parser.emitError(loc,
+                                "NullableType cannot be made nullable again");
+      valueType = NullableType::get(parser.getContext(), valueType);
+    }
     return success();
   }
 
@@ -674,7 +692,14 @@ static ParseResult parseSubstraitType(AsmParser &parser, Type &valueType) {
             parser.emitError(loc) << "unknown Substrait type: " << keyword;
             return Type();
           })();
-  return success(valueType != Type());
+  if (!valueType)
+    return failure();
+
+  // Check for optional trailing '?' to make the type nullable.
+  if (succeeded(parser.parseOptionalQuestion()))
+    valueType = NullableType::get(context, valueType);
+
+  return success();
 }
 
 static ParseResult parseSubstraitType(AsmParser &parser,
@@ -690,6 +715,13 @@ static ParseResult parseSubstraitType(AsmParser &parser,
 
 static void printSubstraitType(AsmPrinter &printer, Operation * /*op*/,
                                Type type) {
+  // Handle NullableType: recursively print inner type and append '?'.
+  if (auto nullable = mlir::dyn_cast<NullableType>(type)) {
+    printSubstraitType(printer, /*op=*/nullptr, nullable.getInnerType());
+    printer << "?";
+    return;
+  }
+
   StringRef keyword = getTypeKeyword(type);
 
   // No short-hand version available: print type in regular form.
@@ -764,6 +796,10 @@ static FailureOr<Type> computeTypeAtPosition(Location loc, Type type,
   if (position.empty())
     return type;
 
+  // Strip a nullable wrapper before descending into compound types.
+  if (auto nullable = mlir::dyn_cast<NullableType>(type))
+    type = nullable.getInnerType();
+
   return TypeSwitch<Type, FailureOr<Type>>(type)
       .Case<RelationType, TupleType>([&](auto type) {
         return computeTypeAtPositionHelper(loc, type, position);
@@ -795,8 +831,11 @@ verifyNamedStructHelper(Location loc, llvm::ArrayRef<Attribute> fieldNames,
                                 currentName.getValue() + "'");
     numConsumedNames++;
 
-    // Recurse for nested structs/tuples.
-    if (auto tupleType = llvm::dyn_cast<TupleType>(type)) {
+    // Recurse for nested structs/tuples, also through NullableType.
+    Type innerType = type;
+    if (auto nullableType = llvm::dyn_cast<NullableType>(type))
+      innerType = nullableType.getInnerType();
+    if (auto tupleType = llvm::dyn_cast<TupleType>(innerType)) {
       llvm::ArrayRef<Type> nestedFieldTypes = tupleType.getTypes();
       llvm::ArrayRef<Attribute> remainingNames =
           fieldNames.drop_front(numConsumedNames);
@@ -1001,6 +1040,18 @@ CallOp::verifySymbolUses(SymbolTableCollection &symbolTables) {
           *this, getCalleeAttr()))
     return emitOpError() << "refers to " << getCalleeAttr()
                          << ", which is not a valid 'extension_function' op";
+  return success();
+}
+
+LogicalResult CastOp::verify() {
+  // When failure_behavior is return_null, the result type must be nullable so
+  // that null can be returned on overflow.
+  if (getFailureBehavior() == FailureBehavior::return_null &&
+      !mlir::isa<NullableType>(getResult().getType())) {
+    return emitOpError() << "result type must be nullable (T?) when "
+                            "'failure_behavior' is 'return_null', but got "
+                         << getResult().getType();
+  }
   return success();
 }
 
