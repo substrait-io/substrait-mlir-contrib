@@ -120,7 +120,7 @@ public:
 
   std::unique_ptr<google::protobuf::Any> exportAny(StringAttr attr);
   FailureOr<std::unique_ptr<NamedStruct>>
-  exportNamedStruct(Location loc, ArrayAttr fieldNames, TupleType tupleType);
+  exportNamedStruct(Location loc, ArrayAttr fieldNames, StructType structType);
   FailureOr<std::unique_ptr<google::protobuf::Message>>
   exportOperation(Operation *op);
   FailureOr<std::unique_ptr<proto::Type>> exportType(Location loc,
@@ -427,20 +427,20 @@ SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
     return std::move(type);
   }
 
-  // Handle tuple types.
-  if (auto tupleType = llvm::dyn_cast<TupleType>(innerType)) {
-    auto structType = std::make_unique<proto::Type::Struct>();
-    setNullability(structType.get(), nullable);
-    for (mlir::Type fieldType : tupleType.getTypes()) {
+  // Handle struct types.
+  if (auto structType = llvm::dyn_cast<StructType>(innerType)) {
+    auto structMsg = std::make_unique<proto::Type::Struct>();
+    setNullability(structMsg.get(), nullable);
+    for (mlir::Type fieldType : structType.getFieldTypes()) {
       // Convert field type recursively.
       FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
       if (failed(type))
         return failure();
-      *structType->add_types() = *type.value();
+      *structMsg->add_types() = *type.value();
     }
 
     auto type = std::make_unique<proto::Type>();
-    type->set_allocated_struct_(structType.release());
+    type->set_allocated_struct_(structMsg.release());
     return std::move(type);
   }
 
@@ -784,9 +784,9 @@ SubstraitExporter::exportOperation(ExtensionTableOp op) {
   // TODO(ingomueller): factor out common logic of `ReadRel`.
   // Export field names and result type into `base_schema`.
   RelationType relationType = op.getResult().getType();
-  TupleType tupleType = relationType.getStructType();
+  StructType structType = relationType.getStructType();
   FailureOr<std::unique_ptr<NamedStruct>> baseSchema =
-      exportNamedStruct(loc, op.getFieldNames(), tupleType);
+      exportNamedStruct(loc, op.getFieldNames(), structType);
   if (failed(baseSchema))
     return failure();
 
@@ -1102,13 +1102,13 @@ SubstraitExporter::exportOperation(ModuleOp op) {
 
 FailureOr<std::unique_ptr<NamedStruct>>
 SubstraitExporter::exportNamedStruct(Location loc, ArrayAttr fieldNames,
-                                     TupleType tupleType) {
+                                     StructType structType) {
 
   // Build `Struct` message.
   auto structMsg = std::make_unique<proto::Type::Struct>();
   structMsg->set_nullability(
       Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-  for (mlir::Type fieldType : tupleType.getTypes()) {
+  for (mlir::Type fieldType : structType.getFieldTypes()) {
     FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
     if (failed(type))
       return (failure());
@@ -1144,9 +1144,9 @@ SubstraitExporter::exportOperation(NamedTableOp op) {
   // TODO(ingomueller): factor out common logic of `ReadRel`.
   // Export field names and result type into `base_schema`.
   RelationType relationType = op.getResult().getType();
-  TupleType tupleType = relationType.getStructType();
+  StructType structType = relationType.getStructType();
   FailureOr<std::unique_ptr<NamedStruct>> baseSchema =
-      exportNamedStruct(loc, op.getFieldNames(), tupleType);
+      exportNamedStruct(loc, op.getFieldNames(), structType);
   if (failed(baseSchema))
     return failure();
 

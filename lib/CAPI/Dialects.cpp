@@ -56,6 +56,17 @@ MlirType mlirSubstraitNullableTypeGet(MlirContext context, MlirType innerType) {
   return wrap(NullableType::get(unwrap(context), unwrap(innerType)));
 }
 
+bool mlirTypeIsASubstraitStructType(MlirType type) {
+  return mlir::isa<StructType>(unwrap(type));
+}
+
+MlirType mlirSubstraitStructTypeGet(MlirContext context, intptr_t numFields,
+                                    MlirType *fieldTypes) {
+  SmallVector<Type, 4> types;
+  ArrayRef<Type> typesRef = unwrapList(numFields, fieldTypes, types);
+  return wrap(StructType::get(unwrap(context), typesRef));
+}
+
 MlirModule mlirSubstraitImportPlan(MlirContext context, MlirStringRef input,
                                    MlirSubstraitSerdeFormat format) {
   ImportExportOptions options;

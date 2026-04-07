@@ -148,8 +148,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["outer", "inner"] : rel<tuple<si32>>
-    yield %0 : rel<tuple<si32>>
+    %0 = named_table @t1 as ["outer", "inner"] : rel<struct<si32>>
+    yield %0 : rel<struct<si32>>
   }
 }
 
@@ -189,8 +189,8 @@ substrait.plan version 0 : 42 : 1 {
 
 substrait.plan version 0 : 42 : 1 {
   relation {
-    %0 = named_table @t1 as ["a", "a"] : rel<tuple<si32>>
-    yield %0 : rel<tuple<si32>>
+    %0 = named_table @t1 as ["a", "a"] : rel<struct<si32>>
+    yield %0 : rel<struct<si32>>
   }
 }
 

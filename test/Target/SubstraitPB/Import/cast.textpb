@@ -14,8 +14,8 @@
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      named_table
 # CHECK-NEXT:      project
-# CHECK-NEXT:      (%[[V0:.*]]: tuple<si32>):
-# CHECK-DAG:         %[[V1:.*]] = cast %{{.*}} or return_null : si32 to si64?
+# CHECK-NEXT:      (%[[V0:.*]]: !substrait.struct<si32>):
+# CHECK-DAG:         %[[V1:.*]] = cast %{{.*}} or return_null : si32 to si64
 # CHECK-DAG:         %[[V2:.*]] = cast %{{.*}} or throw_exception : si32 to si64
 # CHECK-DAG:         %[[V3:.*]] = cast %{{.*}} or unspecified : si32 to si64
 # CHECK-NEXT:        yield %[[V1]], %[[V2]], %[[V3]] :

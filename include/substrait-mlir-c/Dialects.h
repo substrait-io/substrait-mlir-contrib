@@ -41,6 +41,15 @@ bool mlirTypeIsASubstraitNullableType(MlirType type);
 MLIR_CAPI_EXPORTED
 MlirType mlirSubstraitNullableTypeGet(MlirContext context, MlirType innerType);
 
+/// Checks whether the given type is a `StructType`.
+MLIR_CAPI_EXPORTED
+bool mlirTypeIsASubstraitStructType(MlirType type);
+
+/// Gets the `StructType` with the given `fieldTypes`.
+MLIR_CAPI_EXPORTED
+MlirType mlirSubstraitStructTypeGet(MlirContext context, intptr_t numFields,
+                                    MlirType *fieldTypes);
+
 /// Serialization/deserialization format for exporting/importing Substrait
 /// plans. The enum values correspond exactly to those in
 /// `mlir::substrait::SerializationFormat`, i.e., conversion through integers

@@ -17,8 +17,8 @@
 # CHECK-NEXT:    relation
 # CHECK-NEXT:      named_table
 # CHECK-NEXT:      filter
-# CHECK-NEXT:      (%[[V0:.*]]: tuple<si32>):
-# CHECK-NEXT:        %[[V1:.*]] = field_reference %[[V0]][0] : tuple<si32>
+# CHECK-NEXT:      (%[[V0:.*]]: !substrait.struct<si32>):
+# CHECK-NEXT:        %[[V1:.*]] = field_reference %[[V0]][0] : !substrait.struct<si32>
 # CHECK-NEXT:        %[[V2:.*]] = call @[[F2]](%[[V1]]) : (si32) -> si1
 # CHECK-NEXT:        yield %[[V2]] : si1
 

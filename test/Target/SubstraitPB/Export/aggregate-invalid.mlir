@@ -10,7 +10,7 @@ substrait.plan version 0 : 42 : 1 {
     // expected-error@+1 {{'substrait.aggregate' op cannot be exported: values yielded from 'groupings' region are not all distinct after CSE}}
     %1 = aggregate %0 : rel<si32> -> rel<si1, si1>
       groupings {
-      ^bb0(%arg : tuple<si32>):
+      ^bb0(%arg : !substrait.struct<si32>):
         %2 = literal 0 : si1
         %3 = literal 0 : si1
         yield %2, %3 : si1, si1

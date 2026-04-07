@@ -5,7 +5,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = project %0 : rel<si32> -> rel<si32, si64> {
-    ^bb0(%arg : tuple<si32>):
+    ^bb0(%arg : !substrait.struct<si32>):
       %2 = literal 42 : si32
       // expected-error@+1 {{result type must be nullable (T?) when 'failure_behavior' is 'return_null', but got 'si64'}}
       %3 = cast %2 or return_null : si32 to si64
@@ -23,7 +23,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = project %0 : rel<si32> -> rel<si32, si64> {
-    ^bb0(%arg : tuple<si32>):
+    ^bb0(%arg : !substrait.struct<si32>):
       %2 = literal 42 : si32
       %3 = cast %2 or throw_exception : si32 to si64
       yield %3 : si64
@@ -40,7 +40,7 @@ substrait.plan version 0 : 42 : 1 {
   relation {
     %0 = named_table @t1 as ["a"] : rel<si32>
     %1 = project %0 : rel<si32> -> rel<si32, si64?> {
-    ^bb0(%arg : tuple<si32>):
+    ^bb0(%arg : !substrait.struct<si32>):
       %2 = literal 42 : si32
       %3 = cast %2 or return_null : si32 to si64?
       yield %3 : si64?
