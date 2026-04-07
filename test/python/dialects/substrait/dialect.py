@@ -57,3 +57,23 @@ def testNamedTable():
   # CHECK: substrait.plan
   # CHECK: relation {
   # CHECK: named_table @t
+
+
+# CHECK-LABEL: TEST: testRelationType
+@run
+def testRelationType():
+  si32 = ir.IntegerType.get_signed(32)
+  result_type = ss.RelationType.get([si32, si32])
+  print(result_type)
+  # CHECK: !substrait.relation<si32, si32>
+  assert isinstance(result_type, ss.RelationType)
+
+
+# CHECK-LABEL: TEST: testNullableType
+@run
+def testNullableType():
+  si32 = ir.IntegerType.get_signed(32)
+  nullable_type = ss.NullableType.get(si32)
+  print(nullable_type)
+  # CHECK: !substrait.nullable<si32>
+  assert isinstance(nullable_type, ss.NullableType)

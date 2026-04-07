@@ -48,6 +48,14 @@ MlirType mlirSubstraitRelationTypeGet(MlirContext context, intptr_t numFields,
   return wrap(RelationType::get(unwrap(context), typesRef));
 }
 
+bool mlirTypeIsASubstraitNullableType(MlirType type) {
+  return mlir::isa<NullableType>(unwrap(type));
+}
+
+MlirType mlirSubstraitNullableTypeGet(MlirContext context, MlirType innerType) {
+  return wrap(NullableType::get(unwrap(context), unwrap(innerType)));
+}
+
 MlirModule mlirSubstraitImportPlan(MlirContext context, MlirStringRef input,
                                    MlirSubstraitSerdeFormat format) {
   ImportExportOptions options;

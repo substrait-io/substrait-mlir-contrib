@@ -91,6 +91,20 @@ NB_MODULE(_substraitDialects, mainModule) {
                   "context: typing.Optional[substrait_mlir.ir.Context] = None) "
                   "-> RelationType"));
 
+  mlir_type_subclass(substraitModule, "NullableType",
+                     mlirTypeIsASubstraitNullableType)
+      .def_classmethod(
+          "get",
+          [](const nb::object &cls, MlirType innerType, MlirContext context) {
+            return cls(mlirSubstraitNullableTypeGet(context, innerType));
+          },
+          nb::arg("cls"), nb::arg("inner_type"),
+          nb::arg("context").none() = nb::none(),
+          nb::sig("def get(cls: object, "
+                  "inner_type: substrait_mlir.ir.Type, "
+                  "context: typing.Optional[substrait_mlir.ir.Context] = None) "
+                  "-> NullableType"));
+
   //
   // Import
   //

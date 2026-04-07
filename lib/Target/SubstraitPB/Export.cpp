@@ -197,62 +197,62 @@ SubstraitExporter::exportAny(StringAttr attr) {
   return any;
 }
 
+/// Returns the inner type and whether the type is nullable.
+static std::pair<mlir::Type, bool> unwrapNullable(mlir::Type type) {
+  if (auto nullable = mlir::dyn_cast<NullableType>(type))
+    return {nullable.getInnerType(), true};
+  return {type, false};
+}
+
+/// Sets the nullability field on any Type sub-message proto.
+template <typename SubMsg>
+static void setNullability(SubMsg *msg, bool nullable) {
+  using N = Type_Nullability;
+  msg->set_nullability(nullable ? N::Type_Nullability_NULLABILITY_NULLABLE
+                                : N::Type_Nullability_NULLABILITY_REQUIRED);
+}
+
 /// Function that export `IntegerType`'s to the corresponding Substrait types.
-static std::unique_ptr<proto::Type> exportIntegerType(IntegerType intType,
-                                                      MLIRContext *context) {
+static std::unique_ptr<proto::Type>
+exportIntegerType(IntegerType intType, bool nullable, MLIRContext *context) {
   assert(intType.isSigned() && "only signed integer types supported");
 
   switch (intType.getWidth()) {
   case 1: { // Handle SI1.
-    // TODO(ingomueller): support other nullability modes.
     auto i1Type = std::make_unique<proto::Type::Boolean>();
-    i1Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(i1Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_bool_(i1Type.release());
     return type;
   }
 
   case 8: { // Handle SI8.
-    // TODO(ingomueller): support other nullability modes.
     auto i8Type = std::make_unique<proto::Type::I8>();
-    i8Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(i8Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i8(i8Type.release());
     return type;
   }
 
   case 16: { // Handle SI16.
-    // TODO(ingomueller): support other nullability modes.
     auto i16Type = std::make_unique<proto::Type::I16>();
-    i16Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(i16Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i16(i16Type.release());
     return type;
   }
 
   case 32: { // Handle SI32.
-    // TODO(ingomueller): support other nullability modes.
     auto i32Type = std::make_unique<proto::Type::I32>();
-    i32Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(i32Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i32(i32Type.release());
     return type;
   }
 
   case 64: { // Handle SI64.
-    // TODO(ingomueller): support other nullability modes.
     auto i64Type = std::make_unique<proto::Type::I64>();
-    i64Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(i64Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_i64(i64Type.release());
     return type;
@@ -264,27 +264,20 @@ static std::unique_ptr<proto::Type> exportIntegerType(IntegerType intType,
 }
 
 /// Function that export `FloatType`'s to the corresponding Substrait types.
-static std::unique_ptr<proto::Type> exportFloatType(FloatType floatType,
-                                                    MLIRContext *context) {
-
+static std::unique_ptr<proto::Type>
+exportFloatType(FloatType floatType, bool nullable, MLIRContext *context) {
   switch (floatType.getWidth()) {
   case 32: { // Handle FP32.
-    // TODO(ingomueller): support other nullability modes.
     auto fp32Type = std::make_unique<proto::Type::FP32>();
-    fp32Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(fp32Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fp32(fp32Type.release());
     return type;
   }
 
   case 64: { // Handle FP64.
-    // TODO(ingomueller): support other nullability modes.
     auto fp64Type = std::make_unique<proto::Type::FP64>();
-    fp64Type->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(fp64Type.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fp64(fp64Type.release());
     return type;
@@ -297,180 +290,147 @@ static std::unique_ptr<proto::Type> exportFloatType(FloatType floatType,
 
 FailureOr<std::unique_ptr<proto::Type>>
 SubstraitExporter::exportType(Location loc, mlir::Type mlirType) {
-  MLIRContext *context = mlirType.getContext();
+  // Unwrap NullableType to determine actual type kind and nullability.
+  auto [innerType, nullable] = unwrapNullable(mlirType);
+  MLIRContext *context = innerType.getContext();
 
   // Handle `IntegerType`'s.
-  if (auto intType = mlir::dyn_cast<IntegerType>(mlirType)) {
-    return exportIntegerType(intType, context);
+  if (auto intType = mlir::dyn_cast<IntegerType>(innerType)) {
+    return exportIntegerType(intType, nullable, context);
   }
 
   // Handle `FloatType`'s.
-  if (auto floatType = mlir::dyn_cast<FloatType>(mlirType)) {
-    return exportFloatType(floatType, context);
+  if (auto floatType = mlir::dyn_cast<FloatType>(innerType)) {
+    return exportFloatType(floatType, nullable, context);
   }
 
   // Handle String.
-  if (mlir::isa<StringType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<StringType>(innerType)) {
     auto stringType = std::make_unique<proto::Type::String>();
-    stringType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(stringType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_string(stringType.release());
     return std::move(type);
   }
 
   // Handle binary type.
-  if (mlir::isa<BinaryType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<BinaryType>(innerType)) {
     auto binaryType = std::make_unique<proto::Type::Binary>();
-    binaryType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(binaryType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_binary(binaryType.release());
     return std::move(type);
   }
 
   // Handle timestamp.
-  if (mlir::isa<TimestampType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<TimestampType>(innerType)) {
     auto timestampType = std::make_unique<proto::Type::Timestamp>();
-    timestampType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(timestampType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_timestamp(timestampType.release());
     return std::move(type);
   }
 
   // Handle timestamp_tz.
-  if (mlir::isa<TimestampTzType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<TimestampTzType>(innerType)) {
     auto timestampTzType = std::make_unique<proto::Type::TimestampTZ>();
-    timestampTzType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(timestampTzType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_timestamp_tz(timestampTzType.release());
     return std::move(type);
   }
 
   // Handle date.
-  if (mlir::isa<DateType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<DateType>(innerType)) {
     auto dateType = std::make_unique<proto::Type::Date>();
-    dateType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(dateType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_date(dateType.release());
     return std::move(type);
   }
 
   // Handle time.
-  if (mlir::isa<TimeType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<TimeType>(innerType)) {
     auto timeType = std::make_unique<proto::Type::Time>();
-    timeType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(timeType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_time(timeType.release());
     return std::move(type);
   }
 
   // Handle interval_year.
-  if (mlir::isa<IntervalYearMonthType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<IntervalYearMonthType>(innerType)) {
     auto intervalYearType = std::make_unique<proto::Type::IntervalYear>();
-    intervalYearType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(intervalYearType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_interval_year(intervalYearType.release());
     return std::move(type);
   }
-  // Handle interval_day.
-  if (mlir::isa<IntervalDaySecondType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
-    auto intervalDayType = std::make_unique<proto::Type::IntervalDay>();
-    intervalDayType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
 
+  // Handle interval_day.
+  if (mlir::isa<IntervalDaySecondType>(innerType)) {
+    auto intervalDayType = std::make_unique<proto::Type::IntervalDay>();
+    setNullability(intervalDayType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_interval_day(intervalDayType.release());
     return std::move(type);
   }
 
   // Handle uuid.
-  if (mlir::isa<UUIDType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<UUIDType>(innerType)) {
     auto uuidType = std::make_unique<proto::Type::UUID>();
-    uuidType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(uuidType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_uuid(uuidType.release());
     return std::move(type);
   }
 
   // Handle fixed char.
-  if (mlir::isa<FixedCharType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<FixedCharType>(innerType)) {
     auto fixedCharType = std::make_unique<proto::Type::FixedChar>();
-    fixedCharType->set_length(mlir::cast<FixedCharType>(mlirType).getLength());
-    fixedCharType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    fixedCharType->set_length(mlir::cast<FixedCharType>(innerType).getLength());
+    setNullability(fixedCharType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fixed_char(fixedCharType.release());
     return std::move(type);
   }
 
   // Handle varchar.
-  if (mlir::isa<VarCharType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<VarCharType>(innerType)) {
     auto varCharType = std::make_unique<proto::Type::VarChar>();
-    varCharType->set_length(mlir::cast<VarCharType>(mlirType).getLength());
-    varCharType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+    varCharType->set_length(mlir::cast<VarCharType>(innerType).getLength());
+    setNullability(varCharType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_varchar(varCharType.release());
     return std::move(type);
   }
 
   // Handle fixed binary.
-  if (mlir::isa<FixedBinaryType>(mlirType)) {
-    // TODO(ingomueller): support other nullability modes.
+  if (mlir::isa<FixedBinaryType>(innerType)) {
     auto fixedBinaryType = std::make_unique<proto::Type::FixedBinary>();
     fixedBinaryType->set_length(
-        mlir::cast<FixedBinaryType>(mlirType).getLength());
-    fixedBinaryType->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
+        mlir::cast<FixedBinaryType>(innerType).getLength());
+    setNullability(fixedBinaryType.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_fixed_binary(fixedBinaryType.release());
     return std::move(type);
   }
 
   // Handle decimal.
-  if (auto decimalType = llvm::dyn_cast<DecimalType>(mlirType)) {
+  if (auto decimalType = llvm::dyn_cast<DecimalType>(innerType)) {
     auto decimalTypeProto = std::make_unique<proto::Type::Decimal>();
     decimalTypeProto->set_precision(decimalType.getPrecision());
     decimalTypeProto->set_scale(decimalType.getScale());
-
-    // TODO(ingomueller): support other nullability modes.
-    decimalTypeProto->set_nullability(
-        Type_Nullability::Type_Nullability_NULLABILITY_REQUIRED);
-
+    setNullability(decimalTypeProto.get(), nullable);
     auto type = std::make_unique<proto::Type>();
     type->set_allocated_decimal(decimalTypeProto.release());
     return std::move(type);
   }
 
   // Handle tuple types.
-  if (auto tupleType = llvm::dyn_cast<TupleType>(mlirType)) {
+  if (auto tupleType = llvm::dyn_cast<TupleType>(innerType)) {
     auto structType = std::make_unique<proto::Type::Struct>();
+    setNullability(structType.get(), nullable);
     for (mlir::Type fieldType : tupleType.getTypes()) {
       // Convert field type recursively.
       FailureOr<std::unique_ptr<proto::Type>> type = exportType(loc, fieldType);
