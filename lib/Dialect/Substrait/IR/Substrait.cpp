@@ -30,6 +30,7 @@
 #include "mlir/IR/ValueRange.h"
 #include "mlir/Support/LLVM.h"
 #include "mlir/Support/LogicalResult.h"
+#include "mlir/Support/TypeID.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/STLFunctionalExtras.h"
@@ -899,9 +900,9 @@ void AggregateOp::build(OpBuilder &builder, OperationState &result, Value input,
   // work, but the op that is built in the end will not verify and the
   // diagnostics of `inferReturnType` will have been emitted.
   SmallVector<mlir::Type> returnTypes;
-  (void)AggregateOp::inferReturnTypes(context, loc, input, {},
-                                      OpaqueProperties(&properties), regions,
-                                      returnTypes);
+  PropertyRef propertyRef(TypeID::get<Properties>(), &properties);
+  (void)AggregateOp::inferReturnTypes(context, loc, input, {}, propertyRef,
+                                      regions, returnTypes);
 
   // Call existing `build` function and move bodies into the new regions.
   AggregateOp::build(builder, result, returnTypes, input, groupingSets,
@@ -912,7 +913,7 @@ void AggregateOp::build(OpBuilder &builder, OperationState &result, Value input,
 
 LogicalResult AggregateOp::inferReturnTypes(
     MLIRContext *context, std::optional<Location> loc, ValueRange operands,
-    DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
+    DictionaryAttr attributes, PropertyRef properties, RegionRange regions,
     llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   auto *typedProperties = properties.as<Properties *>();
   assert(typedProperties && "could not get typed properties");
@@ -1058,7 +1059,7 @@ LogicalResult CastOp::verify() {
 LogicalResult
 CrossOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                           ValueRange operands, DictionaryAttr attributes,
-                          OpaqueProperties properties, RegionRange regions,
+                          PropertyRef properties, RegionRange regions,
                           llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   Value leftInput = operands[0];
   Value rightInput = operands[1];
@@ -1123,7 +1124,7 @@ OpFoldResult EmitOp::fold(FoldAdaptor adaptor) {
 LogicalResult
 EmitOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                          ValueRange operands, DictionaryAttr attributes,
-                         OpaqueProperties properties, RegionRange regions,
+                         PropertyRef properties, RegionRange regions,
                          llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   auto *typedProperties = properties.as<Properties *>();
   if (!loc)
@@ -1161,7 +1162,7 @@ LogicalResult ExtensionTableOp::verify() {
 
 LogicalResult FieldReferenceOp::inferReturnTypes(
     MLIRContext *context, std::optional<Location> loc, ValueRange operands,
-    DictionaryAttr attributes, OpaqueProperties properties, RegionRange regions,
+    DictionaryAttr attributes, PropertyRef properties, RegionRange regions,
     llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   auto *typedProperties = properties.as<Properties *>();
   if (!loc)
@@ -1226,7 +1227,7 @@ OpFoldResult LiteralOp::fold(FoldAdaptor adaptor) { return getValue(); }
 LogicalResult
 LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                             ValueRange operands, DictionaryAttr attributes,
-                            OpaqueProperties properties, RegionRange regions,
+                            PropertyRef properties, RegionRange regions,
                             llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   auto *typedProperties = properties.as<Properties *>();
   Attribute valueAttr = typedProperties->getValue();
@@ -1243,7 +1244,7 @@ LiteralOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
 LogicalResult
 JoinOp::inferReturnTypes(MLIRContext *context, std::optional<Location> loc,
                          ValueRange operands, DictionaryAttr attributes,
-                         OpaqueProperties properties, RegionRange regions,
+                         PropertyRef properties, RegionRange regions,
                          llvm::SmallVectorImpl<Type> &inferredReturnTypes) {
   Value leftInput = operands[0];
   Value rightInput = operands[1];
