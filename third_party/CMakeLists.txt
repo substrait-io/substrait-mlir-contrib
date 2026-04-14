@@ -2,14 +2,6 @@
 # Substrait
 # ##############################################################################
 
-# Some of our dependencies don't properyl IWYU, so they don't work on
-# implementations of the standard headers that don't transitively include
-# `cstdint` for them. Work-around: include it always via compiler flag.
-add_compile_options(
-  "$<$<COMPILE_LANGUAGE:CXX>:
-       $<$<CXX_COMPILER_ID:MSVC>:/FIcstdint>
-       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include;cstdint>>")
-
 # The way how Substrait uses sanitizers seems to be incompatible with some flags
 # set by LLVM, leading to linker errors, so we deactivate them.
 set(SUBSTRAIT_CPP_SANITIZE_DEBUG_BUILD OFF)
