@@ -72,7 +72,7 @@ namespace {
 using ImportedNamedStruct = std::tuple<ArrayAttr, StructType>;
 
 // Copied from
-// https://github.com/llvm/llvm-project/blob/dea33c/mlir/lib/Transforms/CSE.cpp.
+// https://github.com/llvm/llvm-project/blob/4b91251/mlir/lib/Transforms/Utils/CSE.cpp.
 struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
   static unsigned getHashValue(const Operation *opC) {
     return OperationEquivalence::computeHash(
@@ -86,8 +86,7 @@ struct SimpleOperationInfo : public llvm::DenseMapInfo<Operation *> {
     auto *rhs = const_cast<Operation *>(rhsC);
     if (lhs == rhs)
       return true;
-    if (lhs == getTombstoneKey() || lhs == getEmptyKey() ||
-        rhs == getTombstoneKey() || rhs == getEmptyKey())
+    if (lhs == getEmptyKey() || rhs == getEmptyKey())
       return false;
     return OperationEquivalence::isEquivalentTo(
         const_cast<Operation *>(lhsC), const_cast<Operation *>(rhsC),
