@@ -6,9 +6,11 @@ jobs:
   license:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      with:
+        persist-credentials: false
 
     - name: Run SPDX license checker
-      uses: enarx/spdx@8524ffcc5b5ffc02b0e8f0389a2bbb3cb4bbb5a2  # November 23, 2024
+      uses: enarx/spdx@d4020ee98e3101dd487c5184f27c6a6fb4f88709  # June 25, 2026
       env:
         INPUT_LICENSES: '["Apache-2.0 WITH LLVM-exception"]'

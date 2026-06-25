@@ -23,12 +23,14 @@ jobs:
         echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_c_runner_utils.so" | tee -a $GITHUB_ENV
 
     - name: Set up Python
-      uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
       with:
         python-version: 3.12
 
     - name: Checkout project
-      uses: actions/checkout@v3
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      with:
+        persist-credentials: false
 
     - name: Install Python depends
       run: |
