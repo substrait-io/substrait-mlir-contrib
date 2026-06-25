@@ -34,33 +34,33 @@ jobs:
         echo "MLIR_C_RUNNER_UTILS_LIB=${GITHUB_WORKSPACE}/substrait-mlir/build/lib/libmlir_c_runner_utils.so" | tee -a $GITHUB_ENV
 
     - name: Set up Python
-      uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
+      uses: actions/setup-python@v6.3.0
       with:
         python-version: 3.12
 
     - name: Cache git folder
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: substrait-mlir/.git
         key: git-folder
 
     - name: Install dependencies from apt
-      uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40 # v1.4.3
+      uses: awalsh128/cache-apt-pkgs-action@v1.6.1
       with:
         packages: libcurl4-gnutls-dev
         version: 1.0
 
     - name: Checkout project
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         path: substrait-mlir
         submodules: recursive
 
     - name: Install Ninja
-      uses: llvm/actions/install-ninja@6a57890d0e3f9f35dfc72e7e48bc5e1e527cdd6c # Jan 17
+      uses: llvm/actions/install-ninja@89a8cf80982d830faab019237860b344a6390c30 # June 25, 2026
 
     - name: Ccache for C++ compilation
-      uses: hendrikmuhs/ccache-action@53911442209d5c18de8a31615e0923161e435875 # v1.2.16
+      uses: hendrikmuhs/ccache-action@v1.2.23
       with:
         key: ${{ runner.os }}-substrait-mlir-${{ matrix.llvm_enable_assertions }}
         # LLVM needs serious cache size
@@ -112,7 +112,7 @@ jobs:
 
     # Run this as part of the `build` job because we need the `build` folder.
     - name: Run pyright to test if typing annotations are correct
-      uses: jakebailey/pyright-action@v2
+      uses: jakebailey/pyright-action@v3.0.2
       with:
         stats: true
         working-directory: substrait-mlir
@@ -124,18 +124,18 @@ jobs:
     timeout-minutes: 240
     steps:
     - name: Set up Python
-      uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
+      uses: actions/setup-python@v6.3.0
       with:
         python-version: 3.12
 
     - name: Cache git folder
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: substrait-mlir/.git
         key: git-folder
 
     - name: Checkout project
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         path: substrait-mlir
         submodules: recursive
@@ -146,7 +146,7 @@ jobs:
         echo "SUBSTRAIT_MLIR_MAIN_SRC_DIR=X:\" >> $env:GITHUB_ENV
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v5.3.0
       with:
         distribution: 'temurin'
         java-version: '11'
@@ -157,7 +157,7 @@ jobs:
     # builds due to a bug between cmake and sccache. See:
     #   - https://gitlab.kitware.com/cmake/cmake/-/issues/22529
     - name: sccache
-      uses: hendrikmuhs/ccache-action@v1.2
+      uses: hendrikmuhs/ccache-action@v1.2.23
       with:
         key: ${{ runner.os }}-substrait-mlir
         max-size: 6G

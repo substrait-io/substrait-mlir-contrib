@@ -13,7 +13,7 @@ jobs:
     name: Run yapf
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
     - name: run YAPF to test if python code is correctly formatted
       uses: AlexanderMelde/yapf-action@efc672c0c96776f74b4fb4197b334dc07035ec4f # v2.0
       with:

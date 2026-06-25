@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Set up bazel
-      uses: bazel-contrib/setup-bazel@e8776f58fb6a6e9055cbaf1b38c52ccc5247e9c4 # v0.14.0
+      uses: bazel-contrib/setup-bazel@0.19.0
       with:
         # Avoid downloading Bazel every time.
         bazelisk-cache: true
@@ -25,13 +25,13 @@ jobs:
         external-cache: true
 
     - name: Cache git folder
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: substrait-mlir/.git
         key: git-folder
 
     - name: Checkout project
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         path: substrait-mlir
         submodules: recursive
