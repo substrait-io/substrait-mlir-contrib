@@ -14,9 +14,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      with:
+        persist-credentials: false
     - name: Format CMake files
-      uses: puneetmatharu/cmake-format-lint-action@v1.0.8
+      uses: puneetmatharu/cmake-format-lint-action@4ed77e1b4e9ae7b072e4e34c54461316771566c9 # v1.0.8
       with:
         args: --in-place
     - name: Check for diff

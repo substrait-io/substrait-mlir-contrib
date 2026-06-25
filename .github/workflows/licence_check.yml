@@ -6,7 +6,9 @@ jobs:
   license:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      with:
+        persist-credentials: false
 
     - name: Run SPDX license checker
       uses: enarx/spdx@d4020ee98e3101dd487c5184f27c6a6fb4f88709  # June 25, 2026

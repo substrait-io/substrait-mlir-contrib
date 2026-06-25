@@ -13,7 +13,9 @@ jobs:
     name: Run yapf
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      with:
+        persist-credentials: false
     - name: run YAPF to test if python code is correctly formatted
       uses: AlexanderMelde/yapf-action@efc672c0c96776f74b4fb4197b334dc07035ec4f # v2.0
       with:
