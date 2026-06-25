@@ -18,7 +18,7 @@ pandas==2.3.2
 parsy==2.1
 pillow==11.3.0
 platformdirs==4.3.8
-protobuf==6.32.0
+protobuf==6.33.5
 pyarrow==15.0.2
 pybind11==2.13.6
 pyparsing==3.2.3
