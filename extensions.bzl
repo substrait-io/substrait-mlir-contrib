@@ -1,8 +1,6 @@
 """Module extensions for MLIR Substrait dependencies."""
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 def _substrait_mlir_deps_impl(ctx):
     """Implementation of the `substrait_mlir_deps` module extension."""
