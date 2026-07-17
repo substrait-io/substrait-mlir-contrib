@@ -10,7 +10,7 @@ bazel_dep(name = "abseil-cpp", version = "20250512.1", repo_name = "com_google_a
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.1")
 bazel_dep(name = "nanobind", version = "2.12.0.bcr.1")
-bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "platforms", version = "1.1.0")
 bazel_dep(name = "protobuf", version = "33.1", repo_name = "com_google_protobuf")
 bazel_dep(name = "rules_cc", version = "0.2.19")
 bazel_dep(name = "rules_license", version = "1.0.0")
@@ -18,6 +18,8 @@ bazel_dep(name = "rules_python", version = "1.7.0")
 bazel_dep(name = "rules_shell", version = "0.6.1")
 bazel_dep(name = "zlib-ng", version = "2.0.7", repo_name = "llvm_zlib")
 bazel_dep(name = "zstd", version = "1.5.7", repo_name = "llvm_zstd")
+
+bazel_dep(name = "llvm", version = "0.8.5", dev_dependency = True)
 
 substrait_mlir_deps = use_extension("//:extensions.bzl", "substrait_mlir_deps")
 use_repo(
