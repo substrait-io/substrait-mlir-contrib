@@ -94,4 +94,22 @@ def SetOpKind : I32EnumAttr<"SetOpKind", "", [
   let cppNamespace = "::mlir::substrait";
 }
 
+/// Represents the `SortField.SortDirection` protobuf enum.
+///
+/// The enum values correspond exactly to those in the
+/// `SortField.SortDirection` enum, i.e., conversion through integers is
+/// possible.
+def SortFieldComparisonType : I32EnumAttr<"SortFieldComparisonType", "", [
+    // clang-format off
+    I32EnumAttrCase<"UNSPECIFIED", 0>,
+    I32EnumAttrCase<"ASC_NULLS_FIRST", 1>,
+    I32EnumAttrCase<"ASC_NULLS_LAST", 2>,
+    I32EnumAttrCase<"DESC_NULLS_FIRST", 3>,
+    I32EnumAttrCase<"DESC_NULLS_LAST", 4>,
+    I32EnumAttrCase<"CLUSTERED", 5>,
+    // clang-format on
+  ]> {
+  let cppNamespace = "::mlir::substrait";
+}
+
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITENUMS
