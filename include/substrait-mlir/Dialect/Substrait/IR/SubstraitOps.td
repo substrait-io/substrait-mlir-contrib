@@ -63,6 +63,7 @@ def StringArrayAttr :
 //===----------------------------------------------------------------------===//
 
 def Substrait_ExtensionUriOp : Substrait_Op<"extension_uri", [
+    SymbolName,
     Symbol,
     Substrait_PlanBodyOpInterface
   ]> {
@@ -87,12 +88,20 @@ def Substrait_ExtensionUriOp : Substrait_Op<"extension_uri", [
     StrAttr:$uri
   );
   let assemblyFormat = "$sym_name `at` $uri attr-dict";
+  let extraClassDeclaration = [{
+    /// Implement `SymbolOpInterface`.
+    ::mlir::SymbolTable::Visibility getVisibility() {
+      return ::mlir::SymbolTable::Visibility::Private;
+    }
+    void setVisibility(::mlir::SymbolTable::Visibility) {}
+  }];
 }
 
 class Substrait_ExtensionOp<string mnemonic, list<Trait> traits = []> :
   Substrait_Op<"extension_" # mnemonic, traits # [
+    SymbolName,
+    Symbol,
     DeclareOpInterfaceMethods<SymbolUserOpInterface>,
-    DeclareOpInterfaceMethods<Symbol>,
     Substrait_PlanBodyOpInterface
   ]> {
   let description = [{
@@ -107,11 +116,18 @@ class Substrait_ExtensionOp<string mnemonic, list<Trait> traits = []> :
   let arguments = (ins
     SymbolNameAttr:$sym_name, // corresponds to `anchor`
     FlatSymbolRefAttr:$uri,
-    StrAttr:$name
+    StrAttr:$extension_name
   );
-  let assemblyFormat = "$sym_name `at` $uri `[` $name `]` attr-dict";
-  let extraClassDefinition = [{
+  let assemblyFormat = "$sym_name `at` $uri `[` $extension_name `]` attr-dict";
+  let extraClassDeclaration = [{
     /// Implement `SymbolOpInterface`.
+    ::mlir::SymbolTable::Visibility getVisibility() {
+      return ::mlir::SymbolTable::Visibility::Private;
+    }
+    void setVisibility(::mlir::SymbolTable::Visibility) {}
+  }];
+  let extraClassDefinition = [{
+    /// Implement `SymbolUserOpInterface`.
     ::mlir::LogicalResult $cppClass::verifySymbolUses(
         mlir::SymbolTableCollection &symbolTables) {
       if (!symbolTables.lookupNearestSymbolFrom<ExtensionUriOp>(*this,

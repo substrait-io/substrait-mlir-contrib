@@ -1320,7 +1320,7 @@ FailureOr<std::unique_ptr<Plan>> SubstraitExporter::exportOperation(PlanOp op) {
       typename OpTraits::ExtensionMessageType ext;
       OpTraits::setAnchor(ext, anchor);
       ext.set_extension_uri_reference(uriReference);
-      ext.set_name(extOp.getName().str());
+      ext.set_name(extOp.getExtensionName().str());
       SimpleExtensionDeclaration *decl = plan->add_extensions();
       *OpTraits::getMutableExtension(*decl) = ext;
     };
