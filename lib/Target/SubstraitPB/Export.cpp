@@ -39,7 +39,7 @@
 #include "llvm/Support/raw_ostream.h"
 
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgcc-compat"
+#pragma clang diagnostic ignored "-Weverything"
 #include "absl/status/status.h"
 #pragma clang diagnostic pop
 

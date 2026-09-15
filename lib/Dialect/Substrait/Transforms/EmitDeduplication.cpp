@@ -257,7 +257,8 @@ struct EliminateDuplicateYieldsInProjectPattern
 
     // Create new `project` op with updated region and output type.
     auto newOp =
-        ProjectOp::create(rewriter, op.getLoc(), newOutputType, op.getInput());
+        ProjectOp::create(rewriter, op.getLoc(), newOutputType, op.getInput(),
+                          op.getAdvancedExtensionAttr());
     rewriter.inlineRegionBefore(op.getExpressions(), newOp.getExpressions(),
                                 newOp.getExpressions().end());
 
@@ -326,7 +327,8 @@ struct EliminateIdentityYieldsInProjectPattern
 
     // Create new `project` op with updated region.
     auto newOp =
-        ProjectOp::create(rewriter, op.getLoc(), newOutputType, op.getInput());
+        ProjectOp::create(rewriter, op.getLoc(), newOutputType, op.getInput(),
+                          op.getAdvancedExtensionAttr());
     rewriter.inlineRegionBefore(op.getExpressions(), newOp.getExpressions(),
                                 newOp.getExpressions().end());
 
@@ -419,7 +421,8 @@ struct PushDuplicatesThroughFilterPattern : public OpRewritePattern<FilterOp> {
 
     // Create new `filter` op. Move over the `condition` region. This needs to
     // happen now because replacing the op will destroy the region.
-    auto newOp = FilterOp::create(rewriter, op.getLoc(), newInput);
+    auto newOp = FilterOp::create(rewriter, op.getLoc(), newInput,
+                                  op.getAdvancedExtensionAttr());
     rewriter.inlineRegionBefore(op.getCondition(), newOp.getCondition(),
                                 newOp.getCondition().end());
 
@@ -487,8 +490,8 @@ struct PushDuplicatesThroughProjectPattern
 
     // Create new `project` op. Move over the `expressions` region. This needs
     // to happen now because replacing the op will destroy the region.
-    auto newOp =
-        ProjectOp::create(rewriter, op.getLoc(), newOutputType, newInput);
+    auto newOp = ProjectOp::create(rewriter, op.getLoc(), newOutputType,
+                                   newInput, op.getAdvancedExtensionAttr());
     rewriter.inlineRegionBefore(op.getExpressions(), newOp.getExpressions(),
                                 newOp.getExpressions().end());
 
