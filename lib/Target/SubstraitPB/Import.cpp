@@ -886,7 +886,8 @@ static mlir::FailureOr<FilterOp> importFilterRel(ImplicitLocOpBuilder builder,
     return failure();
 
   // Create filter op.
-  auto filterOp = FilterOp::create(builder, inputOp.value().getResult());
+  auto filterOp = FilterOp::create(builder, inputOp.value().getResult(),
+                                   AdvancedExtensionAttr());
   filterOp.getCondition().push_back(new Block);
   Block &conditionBlock = filterOp.getCondition().front();
   RelationType inputType = filterOp.getResult().getType();
@@ -1180,7 +1181,8 @@ static mlir::FailureOr<ProjectOp> importProjectRel(ImplicitLocOpBuilder builder,
 
   // Create `project` op.
   auto projectOp =
-      ProjectOp::create(builder, resultType, inputOp.value().getResult());
+      ProjectOp::create(builder, resultType, inputOp.value().getResult(),
+                        AdvancedExtensionAttr());
   projectOp.getExpressions().push_back(conditionBlock.release());
 
   // Import advanced extension if it is present.
