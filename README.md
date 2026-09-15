@@ -275,8 +275,8 @@ Run the command below to set up the build system, possibly adapting it to your
 needs. For example, you may choose not to compile `clang`, `clang-tools-extra`,
 `lld`, and/or the examples to save compilation time, or use a different variant
 than `Debug`. Similarly, you may want to set `DLLVM_ENABLE_LLD=OFF` on some Macs
-that don't have `lld` or disable `clang-tidy` if this slows down your builds too
-much or you don't have that tool installed.
+that don't have `lld`, disable `clang-tidy` if this slows down your builds too
+much or you don't have that tool installed, or re-enable precompiled headers.
 
 ```bash
 cmake \
@@ -301,6 +301,7 @@ cmake \
   -DSUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR=ON \
   -DSUBSTRAIT_MLIR_CLANG_TIDY_PATH=$(which clang-tidy) \
   -DSUBSTRAIT_MLIR_ENABLE_CLANG_TIDY=ON \
+  -DSUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS=ON \
   -S${SUBSTRAIT_MLIR_SOURCE_DIR}/third_party/llvm-project/llvm \
   -B${SUBSTRAIT_MLIR_BUILD_DIR} \
   -G Ninja

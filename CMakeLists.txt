@@ -13,6 +13,23 @@ endif()
 option(SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR
        "value for 'CMAKE_COMPILE_WARNING_AS_ERROR' for Substrait MLIR targets"
        OFF)
+option(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY
+       "Enable clang-tidy static analysis on Substrait MLIR targets" OFF)
+option(SUBSTRAIT_MLIR_CLANG_TIDY_PATH "path to 'clang-tidy' executable")
+option(SUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS
+       "Disable precompiled headers for Substrait MLIR targets" OFF)
+
+if("${CMAKE_DISABLE_PRECOMPILE_HEADERS}"
+   AND NOT "${SUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS}")
+  message(STATUS "Precompiled headers not enabled globally, disabling them "
+                 "for Substrait MLIR")
+  set(SUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS ON)
+endif()
+if("${SUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS}")
+  message(STATUS "Precompiled headers for Substrait MLIR disabled")
+else()
+  message(STATUS "Precompiled headers for Substrait MLIR enabled")
+endif()
 
 # ##############################################################################
 # Set some variables
@@ -34,10 +51,6 @@ message(STATUS "Substrait MLIR build directory: ${SUBSTRAIT_MLIR_BINARY_DIR}")
 # ##############################################################################
 # Set up clang-tidy
 # ##############################################################################
-
-option(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY
-       "Enable clang-tidy static analysis on Substrait MLIR targets" OFF)
-option(SUBSTRAIT_MLIR_CLANG_TIDY_PATH "path to 'clang-tidy' executable")
 
 if(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
   # Find `clang-tidy` executable.
@@ -62,6 +75,11 @@ if(SUBSTRAIT_MLIR_ENABLE_CLANG_TIDY)
   if(${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
     set(SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND
         "${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND};--warnings-as-errors=*")
+
+    if(NOT "${SUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS}")
+      message(WARNING "clang-tidy produces false positives with precompiled "
+                      "headers; the build will probably fail")
+    endif()
   endif()
   set(CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR
       "${SUBSTRAIT_MLIR_BINARY_DIR}/clang-tidy-fixes")
@@ -104,11 +122,12 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ${SUBSTRAIT_MLIR_COMPILE_WARNING_AS_ERROR})
 # Enable clang-tidy for our targets.
 set(CMAKE_CXX_CLANG_TIDY ${SUBSTRAIT_MLIR_CLANG_TIDY_COMMAND})
 
+# Configure precompiled headers for our targets.
+set(CMAKE_DISABLE_PRECOMPILE_HEADERS
+    ${SUBSTRAIT_MLIR_DISABLE_PRECOMPILE_HEADERS})
+
 add_subdirectory(lib)
 add_subdirectory(include)
 add_subdirectory(python)
 add_subdirectory(test)
 add_subdirectory(tools)
-
-# Disable clang-tidy for everything that may came after.
-unset(CMAKE_CXX_CLANG_TIDY)
