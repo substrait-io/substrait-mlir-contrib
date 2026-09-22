@@ -6,20 +6,18 @@ module(
     name = "substrait_mlir",
 )
 
-bazel_dep(name = "abseil-cpp", version = "20250512.1", repo_name = "com_google_absl")
-bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "abseil-cpp", version = "20250814.1", repo_name = "com_google_absl")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.1")
 bazel_dep(name = "nanobind", version = "2.12.0.bcr.1")
 bazel_dep(name = "platforms", version = "1.1.0")
-bazel_dep(name = "protobuf", version = "33.1", repo_name = "com_google_protobuf")
-bazel_dep(name = "rules_cc", version = "0.2.19")
+bazel_dep(name = "protobuf", version = "35.0", repo_name = "com_google_protobuf")
+bazel_dep(name = "rules_cc", version = "0.2.25")
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_python", version = "1.7.0")
-bazel_dep(name = "rules_shell", version = "0.6.1")
-bazel_dep(name = "zlib-ng", version = "2.0.7", repo_name = "llvm_zlib")
-bazel_dep(name = "zstd", version = "1.5.7", repo_name = "llvm_zstd")
-
-bazel_dep(name = "llvm", version = "0.8.5", dev_dependency = True)
+bazel_dep(name = "rules_python", version = "1.8.4")
+bazel_dep(name = "rules_shell", version = "0.8.0")
+bazel_dep(name = "zlib-ng", version = "2.3.3.bcr.2", repo_name = "llvm_zlib")
+bazel_dep(name = "zstd", version = "1.5.7.bcr.1", repo_name = "llvm_zstd")
 
 substrait_mlir_deps = use_extension("//:extensions.bzl", "substrait_mlir_deps")
 use_repo(
@@ -30,12 +28,6 @@ use_repo(
 
 _LLVM_TARGETS = [
     "X86",
-    # The bazel dependency graph for mlir-opt fails to load (at the analysis
-    # step) without the NVPTX target in this list, because mlir/test:TestGPU
-    # depends on the //llvm:NVPTXCodeGen target, which is not defined unless this
-    # is included. @j2kun asked the LLVM maintiners for tips on how to fix this,
-    # see https://github.com/llvm/llvm-project/issues/63135
-    "NVPTX",
 ]
 
 # Configure LLVM project using use_repo_rule
