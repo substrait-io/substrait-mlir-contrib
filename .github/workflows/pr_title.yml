@@ -1,8 +1,5 @@
 name: PR Title
 
-# pull_request rather than pull_request_target: this job only reads the PR
-# title and description, so it needs neither secrets nor a write token. edited
-# is not a default activity type, so it is listed for retitles to re-run it.
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
