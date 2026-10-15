@@ -1,11 +1,10 @@
 name: PR Title
 
-# GitHub blocks pull_request_target in public repositories by default. A
-# repository Actions policy (Settings > Actions > Policies) allows it for this
-# workflow only, matched by its file path, so renaming or moving this file
-# blocks the check until the policy's workflow path is updated to match.
+# pull_request rather than pull_request_target: this job only reads the PR
+# title and description, so it needs neither secrets nor a write token. edited
+# is not a default activity type, so it is listed for retitles to re-run it.
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, edited, synchronize, reopened]
 jobs:
   commitlint:
