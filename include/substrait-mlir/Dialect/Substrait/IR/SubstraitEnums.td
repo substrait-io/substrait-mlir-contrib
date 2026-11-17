@@ -94,4 +94,20 @@ def SetOpKind : I32EnumAttr<"SetOpKind", "", [
   let cppNamespace = "::mlir::substrait";
 }
 
+
+/// Represents the `SimpleComparisonType` protobuf enum.
+///
+/// The enum values correspond exactly to those in the `SimpleComparisonType` enum,
+/// i.e., conversion through integers is possible.
+def SimpleComparisonType : I32EnumAttr<"SimpleComparisonType", "", [
+    // clang-format off
+    I32EnumAttrCase<"unspecified", 0>,
+    I32EnumAttrCase<"equal", 1>,
+    I32EnumAttrCase<"is_not_distinct_from", 2>,
+    I32EnumAttrCase<"might_equal", 3>,
+    // clang-format on
+  ]> {
+  let cppNamespace = "::mlir::substrait";
+}
+
 #endif // SUBSTRAIT_DIALECT_SUBSTRAIT_IR_SUBSTRAITENUMS
