@@ -1,0 +1,138 @@
+# RUN: substrait-translate -protobuf-to-substrait %s --split-input-file="# ""-----" | FileCheck %s
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    relation {
+# CHECK-NEXT:      %[[V0:.*]] = named_table @t1 as ["a", "b"] : rel<si32, si32>
+# CHECK-NEXT:      %[[V1:.*]] = sort %[[V0]] : rel<si32, si32> by {
+# CHECK-NEXT:      ^bb0(%[[ARG0:.*]]: tuple<si32, si32>, %[[ARG1:.*]]: tuple<si32, si32>):
+# CHECK-NEXT:        %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V3:.*]] = field_reference %[[ARG1]][0] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V4:.*]] = sort_field_compare ASC_NULLS_FIRST %[[V2]], %[[V3]] : (si32, si32) -> si8
+# CHECK-NEXT:        yield %[[V4]] : si8
+# CHECK-NEXT:      ^bb1(%[[ARG2:.*]]: tuple<si32, si32>, %[[ARG3:.*]]: tuple<si32, si32>):
+# CHECK-NEXT:        %[[V5:.*]] = field_reference %[[ARG2]][1] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V6:.*]] = field_reference %[[ARG3]][1] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V7:.*]] = sort_field_compare DESC_NULLS_LAST %[[V5]], %[[V6]] : (si32, si32) -> si8
+# CHECK-NEXT:        yield %[[V7]] : si8
+# CHECK-NEXT:      }
+# CHECK-NEXT:      yield %[[V1]] : rel<si32, si32>
+
+relations {
+  rel {
+    sort {
+      common { direct {} }
+      input {
+        read {
+          common { direct {} }
+          base_schema {
+            names: "a"
+            names: "b"
+            struct {
+              types { i32 { nullability: NULLABILITY_REQUIRED } }
+              types { i32 { nullability: NULLABILITY_REQUIRED } }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table { names: "t1" }
+        }
+      }
+      sorts {
+        expr {
+          selection {
+            direct_reference { struct_field { field: 0 } }
+            root_reference {}
+          }
+        }
+        direction: SORT_DIRECTION_ASC_NULLS_FIRST
+      }
+      sorts {
+        expr {
+          selection {
+            direct_reference { struct_field { field: 1 } }
+            root_reference {}
+          }
+        }
+        direction: SORT_DIRECTION_DESC_NULLS_LAST
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
+
+# -----
+
+# CHECK-LABEL: substrait.plan
+# CHECK-NEXT:    relation {
+# CHECK-NEXT:      %[[V0:.*]] = named_table @t1 as ["a", "b"] : rel<si32, si32>
+# CHECK-NEXT:      %[[V1:.*]] = sort %[[V0]] : rel<si32, si32> by {
+# CHECK-NEXT:      ^bb0(%[[ARG0:.*]]: tuple<si32, si32>, %[[ARG1:.*]]: tuple<si32, si32>):
+# CHECK-NEXT:        %[[V2:.*]] = field_reference %[[ARG0]][0] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V3:.*]] = field_reference %[[ARG1]][0] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V4:.*]] = sort_field_compare ASC_NULLS_FIRST %[[V2]], %[[V3]] : (si32, si32) -> si8
+# CHECK-NEXT:        yield %[[V4]] : si8
+# CHECK-NEXT:      ^bb1(%[[ARG2:.*]]: tuple<si32, si32>, %[[ARG3:.*]]: tuple<si32, si32>):
+# CHECK-NEXT:        %[[LIT1:.*]] = literal 42 : si32
+# CHECK-NEXT:        %[[LIT2:.*]] = literal 42 : si32
+# CHECK-NEXT:        %[[V5:.*]] = sort_field_compare DESC_NULLS_LAST %[[LIT1]], %[[LIT2]] : (si32, si32) -> si8
+# CHECK-NEXT:        yield %[[V5]] : si8
+# CHECK-NEXT:      ^bb2(%[[ARG4:.*]]: tuple<si32, si32>, %[[ARG5:.*]]: tuple<si32, si32>):
+# CHECK-NEXT:        %[[V6:.*]] = field_reference %[[ARG4]][0] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V7:.*]] = field_reference %[[ARG5]][0] : tuple<si32, si32>
+# CHECK-NEXT:        %[[V8:.*]] = sort_field_compare ASC_NULLS_LAST %[[V6]], %[[V7]] : (si32, si32) -> si8
+# CHECK-NEXT:        yield %[[V8]] : si8
+# CHECK-NEXT:      }
+# CHECK-NEXT:      yield %[[V1]] : rel<si32, si32>
+
+relations {
+  rel {
+    sort {
+      common { direct {} }
+      input {
+        read {
+          common { direct {} }
+          base_schema {
+            names: "a"
+            names: "b"
+            struct {
+              types { i32 { nullability: NULLABILITY_REQUIRED } }
+              types { i32 { nullability: NULLABILITY_REQUIRED } }
+              nullability: NULLABILITY_REQUIRED
+            }
+          }
+          named_table { names: "t1" }
+        }
+      }
+      sorts {
+        expr {
+          selection {
+            direct_reference { struct_field { field: 0 } }
+            root_reference {}
+          }
+        }
+        direction: SORT_DIRECTION_ASC_NULLS_FIRST
+      }
+      sorts {
+        expr {
+          literal { i32: 42 }
+        }
+        direction: SORT_DIRECTION_DESC_NULLS_LAST
+      }
+      sorts {
+        expr {
+          selection {
+            direct_reference { struct_field { field: 0 } }
+            root_reference {}
+          }
+        }
+        direction: SORT_DIRECTION_ASC_NULLS_LAST
+      }
+    }
+  }
+}
+version {
+  minor_number: 42
+  patch_number: 1
+}
